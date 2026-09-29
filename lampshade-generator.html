@@ -1,0 +1,1255 @@
+<title>FabLab Lampshade Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: three-pane workbench. Controls | dark light-stage | section view + print sheet. */
+:root{
+  --bg:#E8EAED; --panel:#F7F8FA; --ink:#16181D; --muted:#5B616C; --line:#D2D6DD; --chip:#E4E7EC;
+  --accent:#E39B17; --accent-strong:#A86A05; --accent-ink:#1E1403;
+  --stage:#0D0F12; --stage-2:#171A1F; --stage-ink:#C7CCD4; --stage-muted:#7E8591;
+  --ok:#2E8452; --warn:#B7791F; --bad:#C0403A;
+  --f-display:'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --f-body:'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --f-mono:'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101215; --panel:#171A1E; --ink:#E7E9ED; --muted:#98A0AC; --line:#2A2F36; --chip:#22262C;
+    --accent:#F0AE38; --accent-strong:#F4BE5E; --accent-ink:#1E1403;
+    --stage:#08090B; --stage-2:#121418; --stage-ink:#C7CCD4; --stage-muted:#7E8591;
+    --ok:#4CB67A; --warn:#E0A445; --bad:#E36A62; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101215; --panel:#171A1E; --ink:#E7E9ED; --muted:#98A0AC; --line:#2A2F36; --chip:#22262C;
+  --accent:#F0AE38; --accent-strong:#F4BE5E; --accent-ink:#1E1403;
+  --stage:#08090B; --stage-2:#121418; --stage-ink:#C7CCD4; --stage-muted:#7E8591;
+  --ok:#4CB67A; --warn:#E0A445; --bad:#E36A62; color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--f-body)}
+*{box-sizing:border-box}
+button,input,select{font:inherit;color:inherit}
+.app{height:100%;display:grid;grid-template-rows:auto 1fr;min-height:0}
+header.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;min-width:0}
+.brand h1{font:700 20px/1.1 var(--f-display);letter-spacing:-.01em;margin:0}
+.brand .tag{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn:focus-visible,.seg button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible,.swatch:focus-visible,.idea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn svg{width:16px;height:16px}
+.seedbox{display:flex;align-items:center;gap:6px;font:500 12px var(--f-mono);color:var(--muted)}
+.seedbox input{width:92px;border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:5px 7px;font:500 12px var(--f-mono);text-transform:uppercase}
+
+.work{display:grid;grid-template-columns:330px minmax(0,1fr) 320px;min-height:0}
+.panel{overflow:auto;min-height:0;background:var(--panel)}
+.panel.left{border-right:1px solid var(--line)}
+.panel.right{border-left:1px solid var(--line)}
+.sec{padding:14px 16px 16px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.sec h2{margin:0;font:600 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+.field{display:grid;gap:5px}
+.field > label, .lbl{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--ink)}
+.field output, .val{font:500 12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.hint{font-size:12px;color:var(--muted);margin:0}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+select{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:6px 8px}
+.seg{display:flex;background:var(--chip);border-radius:8px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{flex:1 1 0;border:0;background:transparent;border-radius:6px;padding:6px 6px;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--muted);min-width:0}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.seg button small{display:block;font:400 10.5px var(--f-mono);color:var(--muted)}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.chips.four{grid-template-columns:repeat(4,1fr)}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 4px 5px;cursor:pointer;display:grid;justify-items:center;gap:2px;font-size:11.5px;color:var(--muted);min-width:0}
+.chip svg{width:34px;height:34px}
+.chip[aria-pressed="true"]{border-color:var(--accent);color:var(--ink);background:color-mix(in srgb,var(--accent) 12%,var(--bg))}
+.chip.txt{padding:7px 4px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatch{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
+.swatch[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--panel) inset}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.stage{position:relative;background:radial-gradient(ellipse at 50% 40%,var(--stage-2),var(--stage) 70%);min-height:0;overflow:hidden}
+.stage canvas#view{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;display:block}
+.stage .hud{position:absolute;left:14px;right:14px;top:12px;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
+.hud .name{font:700 17px/1.2 var(--f-display);color:#F2F3F5;text-wrap:balance}
+.hud .sub{font:500 11.5px var(--f-mono);color:var(--stage-muted);margin-top:3px}
+.stage .navhint{position:absolute;left:14px;bottom:52px;font:500 11px var(--f-mono);color:var(--stage-muted);pointer-events:none}
+.stage .tools{position:absolute;left:12px;bottom:12px;display:flex;gap:6px;flex-wrap:wrap}
+.stage .tools button{border:1px solid #2C3138;background:rgba(18,20,24,.85);color:var(--stage-ink);border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer}
+.stage .tools button[aria-pressed="true"]{border-color:var(--accent);color:#FFE3B0}
+.stage .scale{position:absolute;right:14px;bottom:14px;font:500 11px var(--f-mono);color:var(--stage-muted);text-align:right;white-space:pre;pointer-events:none}
+#lhSeg button{flex:1 1 30%}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.stat{background:var(--panel);padding:8px 10px;display:grid;gap:1px;min-width:0}
+.stat .k{font:500 10.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font:600 15px var(--f-mono);font-variant-numeric:tabular-nums}
+.stat .v small{font-weight:400;font-size:11px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:5px;font:600 11px var(--f-mono);padding:2px 7px;border-radius:99px;border:1px solid currentColor}
+.pill.ok{color:var(--ok)} .pill.warn{color:var(--warn)} .pill.bad{color:var(--bad)}
+.checks{display:grid;gap:6px;font-size:12.5px}
+.checks div{display:flex;justify-content:space-between;gap:8px;align-items:center}
+canvas#profile{width:100%;height:280px;display:block;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.sheet{font:12px/1.55 var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.ideas{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.idea{border:1px solid var(--line);border-radius:8px;background:var(--stage);padding:0;cursor:pointer;overflow:hidden;aspect-ratio:4/5;max-width:100%}
+.idea img{width:100%;height:100%;object-fit:cover;display:block}
+.idea:hover{border-color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:13px;max-width:min(92vw,520px);z-index:10;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.busy{position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,9,11,.55);color:#F2F3F5;font:500 13px var(--f-mono)}
+
+@media (max-width:1180px){
+  .work{grid-template-columns:300px minmax(0,1fr)}
+  .panel.right{grid-column:1 / -1;border-left:0;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .app{height:auto}
+  html,body{height:auto}
+  .stage{min-height:560px}
+  .panel.left{max-height:none}
+}
+@media (max-width:760px){
+  .work{grid-template-columns:minmax(0,1fr)}
+  .stage{order:-1;min-height:0;height:62vh}
+  .panel.left{border-right:0}
+  .panel.right{display:block}
+  .stage .scale{display:none}
+  .stage .navhint{display:none}
+  header.top{gap:8px}
+  .brand h1{font-size:18px}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><h1>Lampshade Generator</h1><span class="tag">SP FabLab · Bambu Lab</span></div>
+    <div class="seedbox"><label for="seedIn">Seed</label><input id="seedIn" maxlength="8" spellcheck="false" autocomplete="off"></div>
+    <button class="btn" id="btnPrev" title="Go back to the previous design" disabled>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3 5 8l5 5"/></svg>Back</button>
+    <button class="btn" id="btnMutate" title="Small random changes to this design">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c2-6 4 2 6-3s4 1 6-3"/></svg>Mutate</button>
+    <button class="btn" id="btnRandom" title="Random design (R)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="12" height="12" rx="2.5"/><circle cx="5.5" cy="5.5" r="1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8" cy="8" r="1" fill="currentColor"/></svg>Randomise</button>
+    <button class="btn primary" id="btnExport">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg>Export 3MF</button>
+  </header>
+
+  <div class="work">
+    <!-- LEFT: controls -->
+    <aside class="panel left" id="controls">
+      <section class="sec">
+        <h2>Light source</h2>
+        <div class="seg" data-key="light">
+          <button data-v="strimsav">STRIMSÄV<small>Ø60 × 10 mm · 115 lm</small></button>
+          <button data-v="mittled">MITTLED<small>Ø83 × 11 mm · 150 lm</small></button>
+        </div>
+        <p class="hint" id="lightHint"></p>
+      </section>
+
+      <section class="sec">
+        <h2>Printer &amp; slicing</h2>
+        <div class="row2">
+          <div class="field"><label for="printer">Printer</label>
+            <select id="printer" data-key="printer">
+              <option value="a1mini">A1 mini · 180³</option>
+              <option value="a1">A1 · 256³</option>
+              <option value="p1">P1S / P1P / X1C / P2S · 256³</option>
+              <option value="h2d">H2D · 325×320×325</option>
+            </select></div>
+          <div class="field"><label for="nozzle">Nozzle</label>
+            <select id="nozzle" data-key="nozzle">
+              <option value="0.2">0.2 mm</option>
+              <option value="0.4">0.4 mm</option>
+              <option value="0.6">0.6 mm</option>
+              <option value="0.8">0.8 mm</option>
+            </select></div>
+        </div>
+        <div class="field"><span class="lbl">Layer height <span class="val" id="lhVal"></span></span>
+          <div class="seg" id="lhSeg" data-key="lh"></div></div>
+        <div class="field"><span class="lbl">Print mode</span>
+          <div class="seg" data-key="mode">
+            <button data-v="vase">Spiral vase<small>single wall, max glow</small></button>
+            <button data-v="wall">Solid wall<small>thicker, cable arch</small></button>
+          </div></div>
+        <div class="field" data-show="vase"><label for="vaseLW">Vase wall (line width) <output id="vaseLWo"></output></label>
+          <input type="range" id="vaseLW" data-key="vaseLW" min="0.3" max="1.2" step="0.02"></div>
+        <div class="field" data-show="wall"><label for="wall">Wall thickness <output id="wallo"></output></label>
+          <input type="range" id="wall" data-key="wall" min="0.8" max="3" step="0.1"></div>
+        <div class="field" data-show="wall" data-noholder><span class="lbl">Base</span>
+          <div class="seg" data-key="base">
+            <button data-v="ring">Weighted ring<small>centres on the light</small></button>
+            <button data-v="open">Open<small>wall only</small></button>
+          </div></div>
+        <label class="toggle" data-show="wall" for="arch">Cable arch at the base <input type="checkbox" id="arch" data-key="arch"></label>
+        <div class="field"><span class="lbl">Top</span>
+          <div class="seg" data-key="top">
+            <button data-v="open">Open<small>light spills up</small></button>
+            <button data-v="closed">Closed cap<small>solid wall only</small></button>
+          </div>
+          <p class="hint" id="topHint"></p></div>
+      </section>
+
+      <section class="sec">
+        <h2>Light holder</h2>
+        <label class="toggle" for="holder">Print a holder for the light <input type="checkbox" id="holder" data-key="holder"></label>
+        <div class="field" data-hold><span class="lbl">Arms</span>
+          <div class="seg" data-key="holderArms">
+            <button data-v="3">3</button><button data-v="4">4 · cross</button><button data-v="5">5</button><button data-v="6">6</button>
+          </div></div>
+        <div class="field" data-hold><label for="holderH">Arm height <output id="holderHo"></output></label>
+          <input type="range" id="holderH" data-key="holderH" min="2" max="8" step="0.5"></div>
+        <p class="hint" id="holderHint"></p>
+        <button class="btn" id="btnHolder" data-holdvase style="justify-self:start">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg>Export insert 3MF</button>
+      </section>
+
+      <section class="sec">
+        <h2>Body</h2>
+        <div class="chips" id="bodyChips" data-key="body"></div>
+        <div class="field"><label for="H">Height <output id="Ho"></output></label>
+          <input type="range" id="H" data-key="H" min="60" max="250" step="1"></div>
+        <div class="row2">
+          <div class="field"><label for="Db">Base Ø <output id="Dbo"></output></label>
+            <input type="range" id="Db" data-key="Db" min="70" max="230" step="1"></div>
+          <div class="field"><label for="Dt">Top Ø <output id="Dto"></output></label>
+            <input type="range" id="Dt" data-key="Dt" min="30" max="230" step="1"></div>
+        </div>
+        <div class="field"><label for="bulge" id="bulgeLbl">Bulge <output id="bulgeo"></output></label>
+          <input type="range" id="bulge" data-key="bulge" min="0" max="60" step="1"></div>
+      </section>
+
+      <section class="sec">
+        <h2>Surface pattern</h2>
+        <div class="chips four" id="patChips" data-key="pattern"></div>
+        <div class="field" data-pat="count"><label for="count" id="countLbl">Count <output id="counto"></output></label>
+          <input type="range" id="count" data-key="count" min="0" max="48" step="1"></div>
+        <div class="field" data-pat="depth"><label for="depth">Depth <output id="deptho"></output></label>
+          <input type="range" id="depth" data-key="depth" min="0.5" max="10" step="0.1"></div>
+        <div class="field" data-pat="freq"><label for="freq" id="freqLbl">Rows <output id="freqo"></output></label>
+          <input type="range" id="freq" data-key="freq" min="1" max="30" step="1"></div>
+        <div class="field" data-pat="twist"><label for="twist">Twist over height <output id="twisto"></output></label>
+          <input type="range" id="twist" data-key="twist" min="-360" max="360" step="5"></div>
+        <div class="field" data-pat="profile"><span class="lbl">Rib profile</span>
+          <div class="seg" data-key="profile">
+            <button data-v="round">Round</button><button data-v="pointed">Pointed</button><button data-v="square">Square</button><button data-v="scallop">Scallop</button>
+          </div></div>
+        <div class="field" data-pat="env"><label for="env">Depth along height</label>
+          <select id="env" data-key="env">
+            <option value="uniform">Even</option><option value="rise">Grows upward</option><option value="fade">Fades upward</option><option value="swell">Deepest in the middle</option><option value="ends">Deepest at the ends</option>
+          </select></div>
+      </section>
+
+      <section class="sec">
+        <h2>Layer pattern <span class="val" id="bandMm"></span></h2>
+        <div class="chips" id="layerChips" data-key="layer"></div>
+        <div class="field" data-lay="band"><label for="bandN">Band size <output id="bandNo"></output></label>
+          <input type="range" id="bandN" data-key="bandN" min="2" max="60" step="1"></div>
+        <div class="field" data-lay="off"><label for="layerOff">Layer offset <output id="layerOffo"></output></label>
+          <input type="range" id="layerOff" data-key="layerOff" min="0.2" max="2.5" step="0.05"></div>
+        <p class="hint" id="layerHint"></p>
+      </section>
+
+      <section class="sec">
+        <h2>Printability</h2>
+        <label class="toggle" for="fix">Auto-fix overhangs <input type="checkbox" id="fix" data-key="fix"></label>
+        <div class="field"><label for="maxA">Max overhang angle <output id="maxAo"></output></label>
+          <input type="range" id="maxA" data-key="maxA" min="30" max="65" step="1"></div>
+        <div class="field"><span class="lbl">Filament colour (preview)</span>
+          <div class="swatches" id="swatches"></div></div>
+      </section>
+    </aside>
+
+    <!-- CENTRE: stage -->
+    <main class="stage" id="stage">
+      <canvas id="view" aria-label="3D preview of the lampshade. Drag to rotate, scroll or pinch to zoom."></canvas>
+      <div class="hud"><div><div class="name" id="hudName"></div><div class="sub" id="hudSub"></div></div></div>
+      <div class="tools">
+        <button id="tStudio" aria-pressed="true">Studio</button>
+        <button id="tLit" aria-pressed="false">Light on</button>
+        <button id="tSpin" aria-pressed="true">Spin</button>
+        <button id="tShade" aria-pressed="true">Shade</button>
+        <button id="tReset">Reset view</button>
+      </div>
+      <div class="scale" id="scaleTxt"></div>
+      <div class="navhint">Drag to rotate · Middle-drag, right-drag or Shift-drag to pan · Scroll to zoom</div>
+      <div class="busy" id="busy" hidden>Building 3MF…</div>
+    </main>
+
+    <!-- RIGHT: analysis -->
+    <aside class="panel right">
+      <section class="sec">
+        <h2>Print check</h2>
+        <div class="stats" id="stats"></div>
+        <div class="checks" id="checks"></div>
+      </section>
+      <section class="sec">
+        <h2>Section <span class="val">cut through the cable side</span></h2>
+        <canvas id="profile"></canvas>
+        <canvas id="lens"></canvas>
+      </section>
+      <section class="sec">
+        <h2>Bambu Studio settings <button class="btn" id="btnCopy" style="padding:3px 9px;font-size:12px">Copy</button></h2>
+        <pre class="sheet" id="sheet"></pre>
+      </section>
+      <section class="sec">
+        <h2>Ideas <button class="btn" id="btnIdeas" style="padding:3px 9px;font-size:12px">New set</button></h2>
+        <div class="ideas" id="ideas"></div>
+        <p class="hint">Click one to load it. Your light, printer, nozzle, layer height and print mode stay as they are.</p>
+      </section>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const PI = Math.PI, TAU = PI*2;
+
+/* ---------- reference data ---------- */
+const LIGHTS = {
+  strimsav:{name:'STRIMSÄV', d:60, h:10, lm:115, w:1,  note:'Ø60 × 10 mm, 115 lm, 1 W. Press the lamp to switch it on or off, so lift the shade to reach it.'},
+  mittled: {name:'MITTLED',  d:83, h:11, lm:150, w:2.2,note:'Ø83 × 11 mm, 150 lm, 2.2 W, 2700 K. Needs a TRÅDFRI driver and FÖRNIMMA cord.'}
+};
+const PRINTERS = {
+  a1mini:{name:'Bambu Lab A1 mini', x:180, y:180, z:180},
+  a1:    {name:'Bambu Lab A1',      x:256, y:256, z:256},
+  p1:    {name:'Bambu Lab P1S / P1P / X1C / P2S', x:256, y:256, z:256},
+  h2d:   {name:'Bambu Lab H2D',     x:325, y:320, z:325}
+};
+const LAYERS = {
+  '0.2':[[0.06,'Extra fine'],[0.08,'Fine'],[0.10,'Optimal'],[0.12,'Standard'],[0.14,'Draft']],
+  '0.4':[[0.08,'Extra fine'],[0.12,'Fine'],[0.16,'Optimal'],[0.20,'Standard'],[0.24,'Draft'],[0.28,'Extra draft']],
+  '0.6':[[0.18,'Fine'],[0.24,'Optimal'],[0.30,'Standard'],[0.36,'Draft'],[0.42,'Extra draft']],
+  '0.8':[[0.24,'Fine'],[0.32,'Optimal'],[0.40,'Standard'],[0.48,'Draft'],[0.56,'Extra draft']]
+};
+const COLORS = [
+  ['Cool white','#EEF1F4'],['Ivory','#EDE4D0'],['Sand','#D6BF95'],['Sage','#A6B79C'],
+  ['Blush','#E7B3A8'],['Sky','#A3C1DE'],['Lilac','#BBAED6'],['Charcoal','#3A3D43']
+];
+const MAX_H = 250;
+
+/* ---------- body shapes: r(t) with t = 0 bottom .. 1 top ---------- */
+const lin = (t,a,b)=>a+(b-a)*t;
+const BODIES = {
+  column:   {name:'Column',    bulge:'Bulge (unused)', f:(t,B,a,b)=>lin(t,a,b)},
+  barrel:   {name:'Barrel',    bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*Math.sin(PI*t)},
+  bell:     {name:'Bell',      bulge:'Flare',  f:(t,B,a,b)=>b+(a-b)*Math.pow(1-t,2)+B*Math.pow(1-t,7)},
+  globe:    {name:'Globe',     bulge:'Roundness', f:(t,B,a,b)=>lin(t,a,b)+B*Math.sqrt(Math.max(0,Math.sin(PI*t)))},
+  tulip:    {name:'Tulip',     bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*Math.sin(PI*Math.pow(t,1.6))},
+  gourd:    {name:'Gourd',     bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*Math.sin(PI*Math.pow(t,0.6))},
+  hourglass:{name:'Hourglass', bulge:'Pinch',  f:(t,B,a,b)=>lin(t,a,b)-B*Math.sin(PI*t)},
+  lantern:  {name:'Lantern',   bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*(1-Math.pow(Math.abs(2*t-1),4))},
+  pagoda:   {name:'Pagoda',    bulge:'Tier step', f:(t,B,a,b)=>{const u=(t*4)%1; return lin(t,a,b)+B*0.6*(1-u);}}
+};
+const ENVS = {
+  uniform:t=>1, rise:t=>0.15+0.85*t, fade:t=>1-0.85*t, swell:t=>Math.sin(PI*t), ends:t=>1-0.85*Math.sin(PI*t)
+};
+const WAVES = {
+  round:x=>Math.cos(x),
+  pointed:x=>1-2*Math.acos(Math.max(-1,Math.min(1,Math.cos(x))))/PI,
+  square:x=>Math.tanh(3*Math.cos(x))/Math.tanh(3),
+  scallop:x=>2*Math.abs(Math.cos(x/2))-1
+};
+const PATTERNS = {
+  smooth: {name:'Smooth',  uses:[]},
+  ribs:   {name:'Ribs',    uses:['count','depth','twist','profile','env'], count:'Ribs'},
+  waves:  {name:'Waves',   uses:['count','depth','freq','profile','env','twist'], count:'Wobble lobes', freq:'Waves up the height'},
+  lattice:{name:'Lattice', uses:['count','depth','freq','profile','env'], count:'Diamonds around', freq:'Diamonds up'},
+  bubbles:{name:'Bubbles', uses:['count','depth','freq','env','twist'], count:'Per row', freq:'Rows'},
+  pillows:{name:'Pillows', uses:['count','depth','freq','env','twist'], count:'Around', freq:'Rows'},
+  facets: {name:'Facets',  uses:['count','twist','env'], count:'Sides'},
+  organic:{name:'Organic', uses:['depth','freq','env','twist'], freq:'Scale'}
+};
+const RIBBED = new Set(['ribs','lattice','bubbles','pillows','facets','waves']);
+const LAYERPATS = {
+  none:     {name:'None'},
+  bands:    {name:'Bands',   uses:['band','off'], hint:'Alternating bands stepped out by the offset. Each band is a set number of layers, so changing layer height changes band size.'},
+  ridges:   {name:'Ridges',  uses:['band','off'], hint:'A raised bead every N layers, like stacked rings.'},
+  shingles: {name:'Shingles',uses:['band','off'], hint:'Each band leans out then steps back in, like stacked cups.'},
+  brick:    {name:'Brick',   uses:['band'],       hint:'The surface pattern shifts half a step every N layers. Works with ribs, bubbles, pillows, lattice and facets.'},
+  steptwist:{name:'Stepped twist', uses:['band'], hint:'Twist happens in steps every N layers instead of smoothly. Needs some twist on the pattern.'}
+};
+
+/* ---------- random ---------- */
+function hashStr(s){ let h=1779033703^s.length; for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19;} h=Math.imul(h^h>>>16,2246822507); h=Math.imul(h^h>>>13,3266489909); return (h^h>>>16)>>>0; }
+function rng(seed){ let a=hashStr(String(seed)); return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function newSeed(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<6;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
+
+/* value noise for the organic pattern */
+function h3(x,y,z,s){ let h=Math.imul(x,374761393)^Math.imul(y,668265263)^Math.imul(z,1274126177)^Math.imul(s,2246822519); h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967295; }
+function vnoise(x,y,z,s){ const xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z); const xf=x-xi,yf=y-yi,zf=z-zi; const u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf),w=zf*zf*(3-2*zf);
+  let r=0; for(let dx=0;dx<2;dx++)for(let dy=0;dy<2;dy++)for(let dz=0;dz<2;dz++){ r+=h3(xi+dx,yi+dy,zi+dz,s)*(dx?u:1-u)*(dy?v:1-v)*(dz?w:1-w);} return r*2-1; }
+function fbm(x,y,z,s){ return vnoise(x,y,z,s)*0.6+vnoise(x*2.1,y*2.1,z*2.1,s+7)*0.3+vnoise(x*4.3,y*4.3,z*4.3,s+13)*0.1; }
+
+/* ---------- state ---------- */
+const P = {
+  light:'strimsav', printer:'p1', nozzle:'0.4', lh:0.2, mode:'vase', vaseLW:0.6, wall:1.6, base:'ring', arch:true,
+  body:'barrel', H:180, Db:130, Dt:95, bulge:18,
+  pattern:'ribs', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
+  layer:'none', bandN:12, layerOff:0.8,
+  fix:true, maxA:45, top:'open', holder:false, holderArms:4, holderH:4, color:'#EDE4D0', seed:'FABLAB', edited:false
+};
+const DESIGN_KEYS = ['body','H','Db','Dt','bulge','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
+const history = [];
+
+function maxHeight(p){ return Math.min(MAX_H, PRINTERS[p.printer].z - 5); }
+function bedMaxD(p){ const pr=PRINTERS[p.printer]; return Math.min(pr.x, pr.y) - 12; }
+function wallT(p){ return p.mode==='vase' ? p.vaseLW : p.wall; }
+
+/* ---------- geometry ---------- */
+function buildMesh(p, Q){
+  const Lt=LIGHTS[p.light], puckR=Lt.d/2, puckH=Lt.h;
+  const H=Math.min(p.H, maxHeight(p));
+  const lh=+p.lh, vase=p.mode==='vase', t=wallT(p);
+  const N=Math.max(1,Math.round(p.bandN));
+  let dzT = Q.dz; if(p.layer!=='none') dzT=Math.min(dzT, Math.max(lh, N*lh/3));
+  const k=Math.max(1, Math.round(dzT/lh), Math.ceil(H/lh/Q.maxRings));
+  const dz=k*lh, nz=Math.max(12, Math.round(H/dz));
+  const n=Math.max(p.pattern==='facets'?3:1, Math.round(p.count));
+  let seg=Q.seg;
+  if(RIBBED.has(p.pattern) && p.count>0){ seg=Math.max(seg, n*Q.perRib); seg=Math.min(seg, Q.segMax); seg=Math.max(n*2, Math.round(seg/n)*n); }
+  const Rb=p.Db/2, Rt=p.Dt/2, B=p.bulge, A=p.depth;
+  const body=BODIES[p.body].f, env=ENVS[p.env], w=WAVES[p.profile];
+  const tw=p.twist*PI/180, o=p.layerOff, f=p.freq;
+  const ring=!vase && p.base==='ring' && !p.holder, arch=!vase && p.arch;
+  const rc=puckR+0.5, collarH=puckH+2;
+  const ic=Math.min(nz-3, Math.ceil(collarH/dz));
+  let needR = vase ? puckR+2+t : (ring ? rc+1.2+t : puckR+2+t);
+  if(p.holder) needR=Math.max(needR, puckR+HOLDER.grip+HOLDER.ring+HOLDER.gap+t);
+  const needZ = ring ? (ic+1)*dz : puckH+3;
+  const tanA=Math.tan(p.maxA*PI/180);
+  const sN=hashStr(p.seed||'x')%100000;
+  const sig=Math.max(1.2*dz, 0.15*N*lh);
+  const archH=6, archHalf=8/Math.max(30,Rb);
+  const facetK = Math.sqrt(Math.cos(PI/Math.max(3,n)));
+
+  function radiusAt(th0, z, tn){
+    const L=z/lh, b=Math.floor(L/N), fr=L/N-b;
+    const tt = p.layer==='steptwist' ? Math.min(1,(b*N*lh)/H) : tn;
+    let th = th0 + tw*tt;
+    if(p.layer==='brick' && (b&1)) th += PI/n;
+    let r = body(tn,B,Rb,Rt);
+    const e = env(tn);
+    let d=0;
+    switch(p.pattern){
+      case 'ribs': d=0.5*A*w(n*th); break;
+      case 'waves': d=0.5*A*w(TAU*f*tn + (p.count>0 ? 0.9*Math.sin(Math.round(p.count)*th) : 0)); break;
+      case 'lattice': d=0.25*A*(w(n*th+TAU*f*tn)+w(n*th-TAU*f*tn)); break;
+      case 'bubbles': { const rows=Math.max(1,f); const row=Math.floor(rows*tn); const v=rows*tn-row; let u=n*th/TAU + ((row&1)?0.5:0); const du=(u-Math.floor(u)-0.5)*2, dv=(v-0.5)*2; const d2=du*du+dv*dv; d=A*((d2<1?Math.sqrt(1-d2):0)-0.35); break; }
+      case 'pillows': d=A*(Math.pow(Math.abs(Math.sin(n*th/2))*Math.abs(Math.sin(PI*f*tn)),0.7)-0.5); break;
+      case 'organic': { const sc=f/8+0.2; d=A*1.4*fbm(Math.cos(th)*sc*2+11, Math.sin(th)*sc*2+5, (z/60)*sc*3, sN); break; }
+      case 'facets': { const s=TAU/n; const ph=((th%s)+s)%s - s/2; const fac=facetK/Math.cos(ph); r = r*(1+(fac-1)*e); break; }
+    }
+    r += d*e;
+    switch(p.layer){
+      case 'bands': if(b&1) r+=o; break;
+      case 'ridges': { const x=(fr-0.5)*N*lh/sig; r+=o*Math.exp(-x*x); break; }
+      case 'shingles': r+=o*fr; break;
+    }
+    return r;
+  }
+
+  const R=new Float32Array((nz+1)*seg), Z=new Float32Array((nz+1)*seg);
+  let rawSlope=0, slope=0, maxR=0, minR=1e9, maxZ=0;
+  for(let j=0;j<seg;j++){
+    const th0=TAU*j/seg;
+    let a=0;
+    if(arch){ let u=th0>PI?th0-TAU:th0; u/=archHalf; if(Math.abs(u)<1) a=archH*Math.pow(Math.cos(u*PI/2),0.7); }
+    for(let i=0;i<=nz;i++){
+      const z=a+(H-a)*i/nz, tn=z/H;
+      let r=radiusAt(th0,z,tn);
+      if(z<=needZ) r=Math.max(r,needR);
+      r=Math.max(r, 12+(vase?0:t));
+      R[i*seg+j]=r; Z[i*seg+j]=z;
+    }
+    for(let i=1;i<=nz;i++){
+      const q=i*seg+j, qp=q-seg, dzc=Z[q]-Z[qp];
+      const s0=Math.abs(R[q]-R[qp])/dzc; if(s0>rawSlope) rawSlope=s0;
+      if(p.fix){ const m=tanA*dzc; if(R[q]>R[qp]+m) R[q]=R[qp]+m; else if(R[q]<R[qp]-m) R[q]=R[qp]-m; }
+      const s1=Math.abs(R[q]-R[qp])/dzc; if(s1>slope) slope=s1;
+    }
+  }
+  for(let q=0;q<R.length;q++){ if(R[q]>maxR) maxR=R[q]; if(R[q]<minR) minR=R[q]; }
+
+  // assemble vertices
+  // vase export = closed solid (Bambu's spiral vase opens the top itself).
+  // vase preview = thin open shell so what you see matches the print.
+  const shell = !vase || !!Q.shell;
+  const closed = !vase && p.top==='closed';
+  const vOuter=(nz+1)*seg;
+  // inner rows: list of source descriptors {kind:'rc'|'src'|'cap', i}
+  const rows=[];
+  if(shell){
+    if(ring){ for(let ii=0;ii<=ic;ii++) rows.push({kind:'rc',i:ii}); for(let i=ic;i<=nz;i++) rows.push({kind:'src',i}); }
+    else { for(let i=0;i<=nz;i++) rows.push({kind:'src',i}); }
+    if(closed){
+      const zc=H-t, lim=zc-0.5*dz-0.25;
+      while(rows.length>2 && rows[rows.length-1].kind==='src' && H*rows[rows.length-1].i/nz>lim) rows.pop();
+      rows.push({kind:'cap',i:rows[rows.length-1].i});
+    }
+  }
+  const nInner=rows.length;
+  const extra = vase&&!shell ? 2 : (closed ? 2 : 0);
+  const nv = vOuter + nInner*seg + extra;
+  const pos=new Float32Array(nv*3);
+  const cosT=new Float32Array(seg), sinT=new Float32Array(seg);
+  for(let j=0;j<seg;j++){ cosT[j]=Math.cos(TAU*j/seg); sinT[j]=Math.sin(TAU*j/seg); }
+  for(let i=0;i<=nz;i++) for(let j=0;j<seg;j++){ const q=i*seg+j, v=q*3; pos[v]=R[q]*cosT[j]; pos[v+1]=R[q]*sinT[j]; pos[v+2]=Z[q]; }
+  let capR=0;
+  for(let ii=0;ii<nInner;ii++){ const rw=rows[ii]; for(let j=0;j<seg;j++){
+    let r,z;
+    if(rw.kind==='rc'){ r=rc; z=Z[rw.i*seg+j]; }
+    else if(rw.kind==='src'){ r=R[rw.i*seg+j]-t; z=Z[rw.i*seg+j]; }
+    else { const zc=H-t; let i=rw.i; while(i<nz-1 && Z[(i+1)*seg+j]<zc) i++; const za=Z[i*seg+j], zb=Z[(i+1)*seg+j]; const u=Math.max(0,Math.min(1,(zc-za)/((zb-za)||1))); r=R[i*seg+j]*(1-u)+R[(i+1)*seg+j]*u-t; z=zc; if(r>capR) capR=r; }
+    const v=(vOuter+ii*seg+j)*3; pos[v]=r*cosT[j]; pos[v+1]=r*sinT[j]; pos[v+2]=z;
+  }}
+  const cA=(vOuter+nInner*seg)*3;
+  if(vase&&!shell){ pos[cA+5]=H; }
+  if(closed){ pos[cA+2]=H; pos[cA+5]=H-t; }
+  const nt = nz*seg*2 + (shell ? (nInner-1)*seg*2 + seg*4 : seg*2);
+  const idx=new Uint32Array(nt*3); let ti=0;
+  const O=(i,j)=>i*seg+(j%seg), I=(ii,j)=>vOuter+ii*seg+(j%seg);
+  const tri=(a,b,c)=>{idx[ti++]=a;idx[ti++]=b;idx[ti++]=c;};
+  for(let i=0;i<nz;i++) for(let j=0;j<seg;j++){ const a=O(i,j),b=O(i,j+1),c=O(i+1,j+1),d=O(i+1,j); tri(a,b,c); tri(a,c,d); }
+  if(!shell){
+    const cb=vOuter, ct=vOuter+1;
+    for(let j=0;j<seg;j++){ tri(cb,O(0,j+1),O(0,j)); tri(ct,O(nz,j),O(nz,j+1)); }
+  } else {
+    for(let ii=0;ii<nInner-1;ii++) for(let j=0;j<seg;j++){ const a=I(ii,j),b=I(ii,j+1),c=I(ii+1,j+1),d=I(ii+1,j); tri(a,c,b); tri(a,d,c); }
+    const top=nInner-1, cT=vOuter+nInner*seg, cI=cT+1;
+    for(let j=0;j<seg;j++){
+      tri(O(0,j),I(0,j),I(0,j+1)); tri(O(0,j),I(0,j+1),O(0,j+1));
+      if(closed){ tri(cT,O(nz,j),O(nz,j+1)); tri(cI,I(top,j+1),I(top,j)); }
+      else { tri(O(nz,j),I(top,j+1),I(top,j)); tri(O(nz,j),O(nz,j+1),I(top,j+1)); }
+    }
+  }
+  return {pos, idx, seg, nz, dz, k, H, vOuter, nInner, ring, ic, vase, shell, closed, capR, t, rc, puckR, puckH, maxR, minR,
+    rawAngle:Math.atan(rawSlope)*180/PI, angle:Math.atan(slope)*180/PI, R, Z};
+}
+
+function meshStats(m, p){
+  const pos=m.pos, idx=m.idx; let vol=0, area=0;
+  const outerTris=m.nz*m.seg*2;
+  for(let q=0;q<idx.length;q+=3){
+    const a=idx[q]*3,b=idx[q+1]*3,c=idx[q+2]*3;
+    const ax=pos[a],ay=pos[a+1],az=pos[a+2],bx=pos[b],by=pos[b+1],bz=pos[b+2],cx=pos[c],cy=pos[c+1],cz=pos[c+2];
+    vol += (ax*(by*cz-bz*cy) - ay*(bx*cz-bz*cx) + az*(bx*cy-by*cx))/6;
+    if(q/3<outerTris){ const ux=bx-ax,uy=by-ay,uz=bz-az,vx=cx-ax,vy=cy-ay,vz=cz-az; const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx; area+=0.5*Math.sqrt(nx*nx+ny*ny+nz*nz); }
+  }
+  const plastic = m.vase ? area*p.vaseLW : vol*0.72; // wall mode: collar gets ~15% infill
+  const grams = plastic/1000*1.24;
+  const metres = plastic/(PI*0.875*0.875)/1000;
+  const flow = m.vase ? 11 : 8; // mm³/s, rough real-world average incl. travel
+  const mins = plastic/flow/60 + 6;
+  return {grams, metres, mins, layers:Math.ceil(m.H/p.lh)};
+}
+
+/* ---------- light holder: a cup for the light + a cross of arms to the shade wall ----------
+   Solid wall: printed as part of the shade.  Spiral vase: exported as a drop-in insert.
+   The cup and its ledge have a slot at the cable side (0°); arms sit between, clear of it. */
+const HOLDER = {grip:0.3, ring:1.6, ledge:1.2, ledgeIn:2.5, slot:6, armW:3, gap:3, seg:160};
+function polyCRing(ri, ro, w, n){
+  const go=Math.asin(Math.min(0.99,(w/2)/ro)), gi=Math.asin(Math.min(0.99,(w/2)/ri)); const pts=[];
+  for(let k=0;k<=n;k++){ const a=go+(TAU-2*go)*k/n; pts.push([ro*Math.cos(a),ro*Math.sin(a)]); }
+  for(let k=0;k<=n;k++){ const a=(TAU-gi)-(TAU-2*gi)*k/n; pts.push([ri*Math.cos(a),ri*Math.sin(a)]); }
+  return pts;
+}
+function polyArm(a, r0, r1, w){
+  const ux=Math.cos(a), uy=Math.sin(a), vx=-uy, vy=ux, h=w/2;
+  return [[r0*ux-h*vx, r0*uy-h*vy],[r1*ux-h*vx, r1*uy-h*vy],[r1*ux+h*vx, r1*uy+h*vy],[r0*ux+h*vx, r0*uy+h*vy]];
+}
+function extrude(pts, z0, z1, acc){
+  const n=pts.length, base=acc.pos.length/3;
+  for(const [x,y] of pts) acc.pos.push(x,y,z0);
+  for(const [x,y] of pts) acc.pos.push(x,y,z1);
+  const tris=THREE.ShapeUtils.triangulateShape(pts.map(([x,y])=>new THREE.Vector2(x,y)),[]);
+  for(let [a,b,c] of tris){
+    const ar=(pts[b][0]-pts[a][0])*(pts[c][1]-pts[a][1])-(pts[b][1]-pts[a][1])*(pts[c][0]-pts[a][0]);
+    if(ar<0){ const t=b; b=c; c=t; }
+    acc.idx.push(base+n+a,base+n+b,base+n+c);
+    acc.idx.push(base+a,base+c,base+b);
+  }
+  for(let i=0;i<n;i++){ const j=(i+1)%n; const bi=base+i,bj=base+j,ti=base+n+i,tj=base+n+j; acc.idx.push(bi,bj,tj, bi,tj,ti); }
+}
+function buildHolder(p, m){
+  const Lt=LIGHTS[p.light], puckR=Lt.d/2, puckH=Lt.h, H0=HOLDER;
+  const integrated=!m.vase;
+  const rsI=puckR+H0.grip, rsO=rsI+H0.ring;
+  const hs=Math.max(4, puckH-2);                 // cup wall height above the ledge
+  const ha=Math.min(p.holderH, H0.ledge+hs);     // arm height
+  const acc={pos:[],idx:[]};
+  extrude(polyCRing(puckR-H0.ledgeIn, rsI+0.3, H0.slot, H0.seg), 0, H0.ledge, acc);  // ledge the light rests on
+  extrude(polyCRing(rsI, rsO, H0.slot, H0.seg), 0, H0.ledge+hs, acc);              // cup wall
+  const n=Math.max(3,Math.round(p.holderArms)), arms=[];
+  for(let k=0;k<n;k++){
+    const a=PI/n + k*TAU/n;                      // offset so no arm sits on the cable slot at 0°
+    const j=Math.round(a/TAU*m.seg)%m.seg;
+    let minR=1e9, maxIn=-1e9;
+    for(let i=0;i<=m.nz;i++){ const q=i*m.seg+j; if(m.Z[q]>ha+0.5) break; if(m.R[q]<minR) minR=m.R[q]; if(m.R[q]-m.t>maxIn) maxIn=m.R[q]-m.t; }
+    const minIn=minR-m.t;
+    const r1 = integrated ? Math.min(minR-0.25, Math.max(maxIn+0.2, maxIn+m.t*0.6)) : minIn-0.3;
+    const r0 = rsO-0.4;
+    if(r1>r0+1){ extrude(polyArm(a,r0,r1,H0.armW), 0, ha, acc); arms.push({a,r0,r1}); }
+  }
+  const pos=new Float32Array(acc.pos), idx=new Uint32Array(acc.idx);
+  let vol=0; for(let t=0;t<idx.length;t+=3){const a=idx[t]*3,b=idx[t+1]*3,c=idx[t+2]*3; vol+=(pos[a]*(pos[b+1]*pos[c+2]-pos[b+2]*pos[c+1])-pos[a+1]*(pos[b]*pos[c+2]-pos[b+2]*pos[c])+pos[a+2]*(pos[b]*pos[c+1]-pos[b+1]*pos[c]))/6;}
+  return {pos, idx, integrated, ledge:H0.ledge, rsI, rsO, hs, ha, arms, ledgeR:puckR-H0.ledgeIn, grams:vol*0.9/1000*1.24};
+}
+function mergeMeshes(a, b){
+  const na=a.pos.length/3;
+  const pos=new Float32Array(a.pos.length+b.pos.length); pos.set(a.pos); pos.set(b.pos,a.pos.length);
+  const idx=new Uint32Array(a.idx.length+b.idx.length); idx.set(a.idx); for(let i=0;i<b.idx.length;i++) idx[a.idx.length+i]=b.idx[i]+na;
+  return {pos, idx};
+}
+
+/* ---------- 3MF export ---------- */
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c=CRC_T[(c^u8[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+async function deflateRaw(u8){
+  if(typeof CompressionStream==='undefined') return null;
+  try{ const s=new Blob([u8]).stream().pipeThrough(new CompressionStream('deflate-raw')); return new Uint8Array(await new Response(s).arrayBuffer()); }catch(e){ return null; }
+}
+async function makeZip(files){
+  const enc=new TextEncoder(); const chunks=[]; const cen=[]; let off=0;
+  for(const f of files){
+    const name=enc.encode(f.name), data=f.data, crc=crc32(data);
+    const comp=await deflateRaw(data); const method=comp?8:0; const body=comp||data;
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0,true); lh.setUint16(8,method,true);
+    lh.setUint16(10,0,true); lh.setUint16(12,33,true); lh.setUint32(14,crc,true); lh.setUint32(18,body.length,true);
+    lh.setUint32(22,data.length,true); lh.setUint16(26,name.length,true); lh.setUint16(28,0,true);
+    chunks.push(new Uint8Array(lh.buffer),name,body);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0,true); ch.setUint16(10,method,true);
+    ch.setUint16(12,0,true); ch.setUint16(14,33,true); ch.setUint32(16,crc,true); ch.setUint32(20,body.length,true); ch.setUint32(24,data.length,true);
+    ch.setUint16(28,name.length,true); ch.setUint16(30,0,true); ch.setUint16(32,0,true); ch.setUint16(34,0,true); ch.setUint16(36,0,true);
+    ch.setUint32(38,0,true); ch.setUint32(42,off,true);
+    cen.push(new Uint8Array(ch.buffer),name);
+    off+=30+name.length+body.length;
+  }
+  let cenSize=0; cen.forEach(c=>cenSize+=c.length);
+  const end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true); end.setUint16(8,files.length,true); end.setUint16(10,files.length,true);
+  end.setUint32(12,cenSize,true); end.setUint32(16,off,true);
+  return new Blob([...chunks,...cen,new Uint8Array(end.buffer)],{type:'application/vnd.ms-package.3dmanufacturing-3dmodel+xml'});
+}
+function xmlEsc(s){ return String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+function modelXml(m, p, title, descOverride){
+  const parts=[]; let s='';
+  const nv=m.pos.length/3, pos=m.pos, idx=m.idx;
+  const desc=descOverride || `${describe(p)}${p.mode==='wall'&&p.top==='closed'?', closed top':''}. Layer height ${(+p.lh).toFixed(2)} mm, ${p.mode==='vase'?'spiral vase mode':'solid wall '+p.wall+' mm'}, nozzle ${p.nozzle} mm, for ${LIGHTS[p.light].name} (Ø${LIGHTS[p.light].d} mm). Seed ${p.seed}.`;
+  s+='<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n';
+  s+=`<metadata name="Title">${xmlEsc(title)}</metadata>\n<metadata name="Designer">SP FabLab Lampshade Generator</metadata>\n<metadata name="Description">${xmlEsc(desc)}</metadata>\n<metadata name="CreationDate">${new Date().toISOString().slice(0,10)}</metadata>\n`;
+  s+=`<resources>\n<object id="1" type="model" name="${xmlEsc(title)}">\n<mesh>\n<vertices>\n`;
+  for(let i=0;i<nv;i++){ s+=`<vertex x="${pos[i*3].toFixed(3)}" y="${pos[i*3+1].toFixed(3)}" z="${pos[i*3+2].toFixed(3)}"/>\n`; if((i&8191)===8191){parts.push(s);s='';} }
+  s+='</vertices>\n<triangles>\n';
+  const nt=idx.length/3;
+  for(let i=0;i<nt;i++){ s+=`<triangle v1="${idx[i*3]}" v2="${idx[i*3+1]}" v3="${idx[i*3+2]}"/>\n`; if((i&8191)===8191){parts.push(s);s='';} }
+  s+='</triangles>\n</mesh>\n</object>\n</resources>\n<build>\n<item objectid="1"/>\n</build>\n</model>\n';
+  parts.push(s);
+  return parts;
+}
+async function build3mf(p, what){
+  const m=buildMesh(p, Q_EXPORT);
+  let title=fileBase(p), obj=m, desc=null;
+  if(what==='holder'){
+    obj=buildHolder(p, m); title=`holder-insert-${LIGHTS[p.light].name.toLowerCase().replace('ä','a')}-${p.seed}`.toLowerCase();
+    desc=`Cross holder insert for ${LIGHTS[p.light].name} (Ø${LIGHTS[p.light].d} mm), drops into lampshade ${fileBase(p)}. Print in normal mode, not spiral vase.`;
+  } else if(p.holder && !m.vase){
+    const hd=buildHolder(p, m); const mm=mergeMeshes(m, hd); obj={...m, pos:mm.pos, idx:mm.idx};
+  }
+  const enc=new TextEncoder();
+  const parts=modelXml(obj,p,title,desc);
+  const model=enc.encode(parts.join(''));
+  const ct='<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>';
+  const rels='<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>';
+  const blob=await makeZip([{name:'[Content_Types].xml',data:enc.encode(ct)},{name:'_rels/.rels',data:enc.encode(rels)},{name:'3D/3dmodel.model',data:model}]);
+  return {blob, name:title+'.3mf', mesh:obj};
+}
+function fileBase(p){ return `lampshade-${p.body}-${p.pattern}${p.layer!=='none'?'-'+p.layer:''}-${p.seed}-${(+p.lh).toFixed(2)}mm`.toLowerCase(); }
+window.__lamp = {P, buildMesh, buildHolder, build3mf, meshStats}; // exposed for testing
+
+/* ---------- quality presets ---------- */
+const Q_PREVIEW={dz:0.8, maxRings:320, seg:200, segMax:320, perRib:8, shell:true};
+const Q_DRAG   ={dz:1.6, maxRings:160, seg:120, segMax:200, perRib:6, shell:true};
+const Q_THUMB  ={dz:2.5, maxRings:90,  seg:84,  segMax:140, perRib:5, shell:true};
+const Q_EXPORT ={dz:0.4, maxRings:800, seg:256, segMax:384, perRib:10};
+
+/* ---------- describe ---------- */
+function describe(p){
+  const b=BODIES[p.body].name, pt=PATTERNS[p.pattern];
+  let s=b;
+  if(p.pattern!=='smooth'){ s+=' · '+pt.name; if(pt.uses.includes('count')&&p.count>0) s+=' × '+Math.round(p.count); if(pt.uses.includes('twist')&&p.twist) s+=` · ${p.twist>0?'+':''}${p.twist}° twist`; }
+  if(p.layer!=='none') s+=` · ${LAYERPATS[p.layer].name} / ${p.bandN} layers`;
+  return s;
+}
+
+/* ---------- randomiser ---------- */
+function randomDesign(seed, base){
+  const r=rng(seed), pick=a=>a[Math.floor(r()*a.length)], rr=(a,b)=>a+(b-a)*r();
+  const q={...base, seed, edited:false};
+  q.body=pick(Object.keys(BODIES));
+  const Hm=maxHeight(q);
+  q.H=Math.round(rr(Math.min(110,Hm*0.6),Hm));
+  const cap=Math.min(210,bedMaxD(q));
+  const minD=LIGHTS[q.light].d+2*wallT(q)+12;
+  q.Db=Math.round(rr(Math.max(minD,85),cap*0.8));
+  q.Dt=Math.round(rr(40,cap*0.75));
+  if(q.body==='bell'){ q.Dt=Math.round(Math.min(q.Dt,q.Db*0.6)); }
+  q.bulge=Math.round(rr(4,q.body==='hourglass'?Math.min(q.Db,q.Dt)*0.25:32));
+  q.pattern=pick(['ribs','ribs','waves','lattice','bubbles','pillows','facets','facets','organic','smooth']);
+  q.count = q.pattern==='facets' ? pick([5,6,7,8,9,10,12,16]) : q.pattern==='waves' ? pick([0,0,3,4,5,6,8]) : Math.round(rr(q.pattern==='ribs'?10:5,q.pattern==='ribs'?44:18));
+  q.depth=Math.round(rr(1.5,q.pattern==='bubbles'?5:7)*10)/10;
+  q.freq=q.pattern==='waves'?Math.round(rr(3,16)):q.pattern==='organic'?Math.round(rr(3,14)):Math.round(rr(4,14));
+  q.twist=pick([0,0,45,60,90,120,180,-90,-120,-180,270,360]);
+  q.profile=pick(['round','round','pointed','square','scallop']);
+  q.env=pick(['uniform','uniform','uniform','rise','fade','swell','ends']);
+  q.layer=r()<0.45?'none':pick(['bands','ridges','shingles','brick','steptwist']);
+  if(q.layer==='steptwist' && !q.twist) q.twist=pick([90,180,-180,270]);
+  if(q.layer==='brick' && ['smooth','organic'].includes(q.pattern)) q.layer='bands';
+  q.bandN=pick([4,6,8,10,12,16,20,24,32,40]);
+  if(q.layer!=='none' && q.bandN*q.lh<0.8) q.bandN=Math.ceil(0.8/q.lh);
+  q.layerOff=Math.round(rr(0.4,1.4)*20)/20;
+  return fitToBed(q);
+}
+function fitToBed(q){
+  for(let it=0;it<4;it++){
+    const m=buildMesh(q,Q_THUMB); const lim=bedMaxD(q);
+    if(m.maxR*2<=lim) break;
+    const s=(lim/(m.maxR*2))*0.97;
+    q.Db=Math.max(LIGHTS[q.light].d+20,Math.round(q.Db*s)); q.Dt=Math.max(30,Math.round(q.Dt*s)); q.bulge=Math.round(q.bulge*s); q.depth=Math.round(q.depth*s*10)/10;
+  }
+  return q;
+}
+function mutate(p){
+  const r=rng(newSeed()), jit=(v,amt,lo,hi,st=1)=>{ const x=v*(1+(r()*2-1)*amt); return Math.min(hi,Math.max(lo,Math.round(x/st)*st)); };
+  const q={...p, edited:true};
+  q.H=jit(q.H,0.12,60,maxHeight(q)); q.Db=jit(q.Db,0.12,70,230); q.Dt=jit(q.Dt,0.18,30,230); q.bulge=jit(q.bulge+2,0.35,0,60);
+  q.depth=jit(q.depth,0.3,0.5,10,0.1); q.count=Math.max(q.pattern==='facets'?3:0,jit(q.count,0.2,0,48));
+  q.twist=Math.max(-360,Math.min(360,Math.round((q.twist+(r()*2-1)*45)/5)*5)); q.freq=jit(q.freq,0.25,1,30);
+  if(r()<0.25) q.profile=['round','pointed','square','scallop'][Math.floor(r()*4)];
+  return fitToBed(q);
+}
+
+/* ---------- UI build ---------- */
+function profileSvg(key){
+  const f=BODIES[key].f; const pts=[];
+  const defs={column:[34,22,0],barrel:[30,24,8],bell:[40,14,6],globe:[22,16,14],tulip:[24,30,8],gourd:[26,14,12],hourglass:[34,30,10],lantern:[26,24,9],pagoda:[34,18,8]}[key];
+  for(let i=0;i<=24;i++){ const t=i/24; const r=Math.max(4,f(t,defs[2],defs[0],defs[1])); pts.push([r,t]); }
+  const s=0.42, cx=17, bot=31, h=28;
+  const right=pts.map(([r,t])=>`${(cx+r*s).toFixed(1)},${(bot-t*h).toFixed(1)}`);
+  const left=pts.slice().reverse().map(([r,t])=>`${(cx-r*s).toFixed(1)},${(bot-t*h).toFixed(1)}`);
+  return `<svg viewBox="0 0 34 34" aria-hidden="true"><polygon points="${right.concat(left).join(' ')}" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+}
+function patSvg(key){
+  const S='stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"';
+  const g={
+    smooth:`<rect x="9" y="5" width="16" height="24" rx="2" ${S}/>`,
+    ribs:`<path d="M10 5v24M14 5v24M18 5v24M22 5v24M26 5v24" ${S}/>`,
+    waves:`<path d="M6 9q4-4 8 0t8 0 8 0M6 17q4-4 8 0t8 0 8 0M6 25q4-4 8 0t8 0 8 0" ${S}/>`,
+    lattice:`<path d="M6 6l22 22M6 17l11 11M17 6l11 11M28 6L6 28M28 17L17 28M17 6L6 17" ${S}/>`,
+    bubbles:`<circle cx="11" cy="10" r="3.5" ${S}/><circle cx="23" cy="10" r="3.5" ${S}/><circle cx="17" cy="18" r="3.5" ${S}/><circle cx="11" cy="26" r="3.5" ${S}/><circle cx="23" cy="26" r="3.5" ${S}/>`,
+    pillows:`<rect x="6" y="6" width="10" height="10" rx="4" ${S}/><rect x="18" y="6" width="10" height="10" rx="4" ${S}/><rect x="6" y="18" width="10" height="10" rx="4" ${S}/><rect x="18" y="18" width="10" height="10" rx="4" ${S}/>`,
+    facets:`<path d="M17 4l11 6.5v13L17 30 6 23.5v-13z M17 4v26M6 10.5l22 13M28 10.5l-22 13" ${S}/>`,
+    organic:`<path d="M8 8c5-3 8 3 12 0s6 4 6 8-5 3-6 8-8 4-10 0-6-2-5-7 0-6 3-9z" ${S}/>`
+  }[key];
+  return `<svg viewBox="0 0 34 34" aria-hidden="true">${g}</svg>`;
+}
+function layerSvg(key){
+  const S='stroke="currentColor" stroke-width="1.3" fill="none"';
+  const rows=[]; for(let i=0;i<8;i++) rows.push(i);
+  let g='';
+  if(key==='none') g=rows.map(i=>`<line x1="9" x2="25" y1="${6+i*3}" y2="${6+i*3}" ${S}/>`).join('');
+  if(key==='bands') g=rows.map(i=>{const o=(Math.floor(i/2)%2)?3:0;return `<line x1="${9-o}" x2="${25+o}" y1="${6+i*3}" y2="${6+i*3}" ${S}/>`;}).join('');
+  if(key==='ridges') g=rows.map(i=>{const o=(i%3===1)?3:0;return `<line x1="${9-o}" x2="${25+o}" y1="${6+i*3}" y2="${6+i*3}" ${S}/>`;}).join('');
+  if(key==='shingles') g=rows.map(i=>{const o=(3-(i%4))*1.2;return `<line x1="${9-o}" x2="${25+o}" y1="${6+i*3}" y2="${6+i*3}" ${S}/>`;}).join('');
+  if(key==='brick') g=`<path d="M7 7h20M7 13h20M7 19h20M7 25h20M12 7v6M22 7v6M17 13v6M27 13v6M7 13v6M12 19v6M22 19v6" ${S}/>`;
+  if(key==='steptwist') g=`<path d="M8 28h6v-5h5v-5h5v-5h4v-5" ${S}/><path d="M8 22h4M8 16h4M8 10h4" stroke="currentColor" stroke-width="1" opacity=".5"/>`;
+  return `<svg viewBox="0 0 34 34" aria-hidden="true">${g}</svg>`;
+}
+function buildChips(){
+  $('#bodyChips').innerHTML=Object.entries(BODIES).map(([k,v])=>`<button class="chip" data-v="${k}" aria-pressed="false">${profileSvg(k)}<span>${v.name}</span></button>`).join('');
+  $('#patChips').innerHTML=Object.entries(PATTERNS).map(([k,v])=>`<button class="chip" data-v="${k}" aria-pressed="false">${patSvg(k)}<span>${v.name}</span></button>`).join('');
+  $('#layerChips').innerHTML=Object.entries(LAYERPATS).map(([k,v])=>`<button class="chip" data-v="${k}" aria-pressed="false">${layerSvg(k)}<span>${v.name}</span></button>`).join('');
+  $('#swatches').innerHTML=COLORS.map(([n,c])=>`<button class="swatch" data-c="${c}" title="${n}" aria-label="${n}" aria-pressed="false" style="background:${c}"></button>`).join('');
+}
+function buildLayerSeg(){
+  const list=LAYERS[P.nozzle];
+  if(!list.some(([v])=>Math.abs(v-P.lh)<1e-6)){ P.lh=list[Math.min(3,list.length-1)][0]; if(P.nozzle==='0.4') P.lh=0.2; }
+  $('#lhSeg').innerHTML=list.map(([v,n])=>`<button data-v="${v}">${v.toFixed(2)}<small>${n}</small></button>`).join('');
+}
+
+const fmt = {
+  H:v=>v+' mm', Db:v=>v+' mm', Dt:v=>v+' mm', bulge:v=>v+' mm', count:v=>v, depth:v=>(+v).toFixed(1)+' mm', freq:v=>v,
+  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>v+'°', holderH:v=>(+v).toFixed(1)+' mm', wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm'
+};
+function syncUI(){
+  // segmented + chips
+  $$('[data-key]').forEach(el=>{
+    const key=el.dataset.key;
+    if(el.classList.contains('seg')||el.classList.contains('chips')){
+      el.querySelectorAll('[data-v]').forEach(b=>b.setAttribute('aria-pressed', String(String(P[key])===b.dataset.v || (key==='lh' && Math.abs(+b.dataset.v-P.lh)<1e-6))));
+    } else if(el.type==='checkbox'){ el.checked=!!P[key]; }
+    else if(el.tagName==='SELECT'){ el.value=String(P[key]); }
+    else if(el.type==='range'){ el.value=P[key]; const out=document.getElementById(key+'o'); if(out) out.textContent=fmt[key]?fmt[key](P[key]):P[key]; }
+  });
+  $$('.swatch').forEach(s=>s.setAttribute('aria-pressed',String(s.dataset.c===P.color)));
+  $('#H').max=maxHeight(P);
+  const pt=PATTERNS[P.pattern];
+  $$('[data-pat]').forEach(el=>el.hidden=!pt.uses.includes(el.dataset.pat));
+  $('#countLbl').firstChild.textContent=(pt.count||'Count')+' ';
+  $('#freqLbl').firstChild.textContent=(pt.freq||'Rows')+' ';
+  $('#count').min = P.pattern==='facets'?3:(P.pattern==='waves'?0:2);
+  $('#bulgeLbl').firstChild.textContent=BODIES[P.body].bulge+' ';
+  const lp=LAYERPATS[P.layer];
+  $$('[data-lay]').forEach(el=>el.hidden=!(lp.uses||[]).includes(el.dataset.lay));
+  $('#layerHint').textContent=lp.hint||'Plain layers. Pick a layer pattern to add texture that follows your layer height.';
+  $('#bandMm').textContent = P.layer!=='none' ? `${P.bandN} × ${(+P.lh).toFixed(2)} = ${(P.bandN*P.lh).toFixed(2)} mm` : '';
+  $$('[data-show]').forEach(el=>el.hidden=(el.dataset.show!==P.mode) || (P.holder && el.hasAttribute('data-noholder')));
+  $$('[data-hold]').forEach(el=>el.hidden=!P.holder);
+  $$('[data-holdvase]').forEach(el=>el.hidden=!(P.holder && P.mode==='vase'));
+  $('#holderHint').textContent = !P.holder ? 'Off: the light sits loose on the table under the shade.'
+    : P.mode==='vase'
+      ? `A cup holds the ${LIGHTS[P.light].name} on a small ledge, with arms out to the shade wall. Spiral vase cannot print it inside the shade, so it exports as a separate insert that drops in from below. The cord leaves through the slot in the cup.`
+      : `A cup holds the ${LIGHTS[P.light].name} on a small ledge, with arms out to the shade wall. It prints as part of the shade, no supports. The cord leaves through the slot in the cup and out under the cable arch.`;
+  $('#lightHint').textContent=LIGHTS[P.light].note;
+  $('#topHint').textContent = P.mode==='vase' ? 'Spiral vase is always open at the top. Picking Closed cap switches to Solid wall.' : (P.top==='closed' ? `Cap is ${P.wall.toFixed(1)} mm thick and prints as a flat ceiling, so it needs supports unless the top narrows in.` : 'Open top lets light and heat out.');
+  $('#seedIn').value=P.seed;
+  $('#seedIn').title=P.edited?'Design has been edited since this seed':'';
+  $('#btnPrev').disabled=history.length===0;
+}
+
+/* ---------- three.js stage ---------- */
+const canvas=$('#view');
+const renderer=new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+renderer.outputEncoding = THREE.sRGBEncoding;
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(32,1,1,6000); camera.up.set(0,0,1);
+const hemi=new THREE.HemisphereLight(0xffffff,0x2a2d33,0.75); hemi.position.set(0,0,1); scene.add(hemi);
+const key=new THREE.DirectionalLight(0xffffff,0.85); key.position.set(260,-340,420); scene.add(key);
+const rim=new THREE.DirectionalLight(0xbfd4ff,0.35); rim.position.set(-300,260,160); scene.add(rim);
+const matStd=new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.62, metalness:0});
+const matLit=new THREE.MeshBasicMaterial({vertexColors:true});
+const shade=new THREE.Mesh(new THREE.BufferGeometry(), matStd); scene.add(shade);
+const matHolder=new THREE.MeshStandardMaterial({color:0xcfd3d9, roughness:0.7});
+const holderMesh=new THREE.Mesh(new THREE.BufferGeometry(), matHolder); scene.add(holderMesh);
+let currentHolder=null;
+// bed
+const bedGroup=new THREE.Group(); scene.add(bedGroup);
+function buildBed(){
+  bedGroup.clear();
+  const pr=PRINTERS[P.printer];
+  const plate=new THREE.Mesh(new THREE.BoxGeometry(pr.x,pr.y,2), new THREE.MeshStandardMaterial({color:0x22252a, roughness:0.9}));
+  plate.position.z=-1.05; bedGroup.add(plate);
+  const g=new THREE.GridHelper(Math.max(pr.x,pr.y), Math.round(Math.max(pr.x,pr.y)/20), 0x3a3f47, 0x2b2f35);
+  g.rotation.x=PI/2; g.position.z=0.02; g.scale.set(pr.x/Math.max(pr.x,pr.y),1,pr.y/Math.max(pr.x,pr.y)); bedGroup.add(g);
+}
+// puck
+const puckGroup=new THREE.Group(); scene.add(puckGroup);
+const puckMatTop=new THREE.MeshStandardMaterial({color:0xf4f4f0, roughness:0.4, emissive:0x000000});
+function buildPuck(){
+  puckGroup.clear(); const L=LIGHTS[P.light];
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(L.d/2,L.d/2,L.h,64), [new THREE.MeshStandardMaterial({color:0xe8e8e6,roughness:0.5}), puckMatTop, new THREE.MeshStandardMaterial({color:0xe8e8e6})]);
+  body.rotation.x=PI/2; body.position.z=L.h/2; puckGroup.add(body);
+}
+let lit=false, spin=true;
+const orbit={az:-0.9, el:0.32, dist:700, target:new THREE.Vector3(0,0,90)};
+function updateCam(){ const ce=Math.cos(orbit.el); camera.position.set(orbit.target.x+orbit.dist*ce*Math.cos(orbit.az), orbit.target.y+orbit.dist*ce*Math.sin(orbit.az), orbit.target.z+orbit.dist*Math.sin(orbit.el)); camera.lookAt(orbit.target); }
+function fitView(m){ const H=m.H, R=m.maxR; orbit.target.set(0,0,H*0.46); orbit.dist=Math.max(H*1.2,R*2.3)*2.9; updateCam(); }
+let needsRender=true;
+function frame(){
+  if(spin){ orbit.az+=0.0035; updateCam(); needsRender=true; }
+  if(needsRender){ renderer.render(scene,camera); needsRender=false; }
+  requestAnimationFrame(frame);
+}
+function resize(){ const r=$('#stage').getBoundingClientRect(); const w=Math.max(10,r.width),h=Math.max(10,r.height); renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); needsRender=true; }
+new ResizeObserver(resize).observe($('#stage'));
+// orbit input
+const ptrs=new Map(); let pinch0=0, pinchMid=null, dragMode='orbit';
+const _rv=new THREE.Vector3(), _uv=new THREE.Vector3();
+function panBy(dx,dy){
+  camera.updateMatrixWorld();
+  _rv.setFromMatrixColumn(camera.matrixWorld,0); _uv.setFromMatrixColumn(camera.matrixWorld,1);
+  const h=canvas.clientHeight||1; const k=2*orbit.dist*Math.tan(camera.fov*PI/360)/h;
+  orbit.target.addScaledVector(_rv,-dx*k).addScaledVector(_uv,dy*k);
+}
+canvas.addEventListener('mousedown',e=>{ if(e.button===1) e.preventDefault(); });
+canvas.addEventListener('auxclick',e=>{ if(e.button===1) e.preventDefault(); });
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('pointerdown',e=>{
+  canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  spin=false; $('#tSpin').setAttribute('aria-pressed','false');
+  if(ptrs.size===1) dragMode=(e.button===1||e.button===2||e.shiftKey)?'pan':'orbit';
+  if(e.button===1) e.preventDefault();
+  if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; pinch0=Math.hypot(a.x-b.x,a.y-b.y); pinchMid={x:(a.x+b.x)/2,y:(a.y+b.y)/2}; }
+  canvas.style.cursor=dragMode==='pan'?'move':'grabbing';
+});
+canvas.addEventListener('pointermove',e=>{ if(!ptrs.has(e.pointerId)) return; const prev=ptrs.get(e.pointerId); const cur={x:e.clientX,y:e.clientY}; ptrs.set(e.pointerId,cur);
+  if(ptrs.size===1){
+    if(dragMode==='pan') panBy(cur.x-prev.x,cur.y-prev.y);
+    else { orbit.az-=(cur.x-prev.x)*0.008; orbit.el=Math.max(-0.25,Math.min(1.45,orbit.el+(cur.y-prev.y)*0.008)); }
+  } else if(ptrs.size===2){
+    const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y), mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+    if(pinch0>0) orbit.dist=Math.max(60,Math.min(3000,orbit.dist*pinch0/d));
+    if(pinchMid) panBy(mid.x-pinchMid.x,mid.y-pinchMid.y);
+    pinch0=d; pinchMid=mid;
+  }
+  updateCam(); needsRender=true; });
+const endPtr=e=>{ ptrs.delete(e.pointerId); pinch0=0; pinchMid=null; if(!ptrs.size) dragMode='orbit'; canvas.style.cursor='grab'; };
+canvas.addEventListener('pointerup',endPtr); canvas.addEventListener('pointercancel',endPtr);
+canvas.addEventListener('wheel',e=>{ e.preventDefault(); orbit.dist=Math.max(60,Math.min(3000,orbit.dist*Math.exp(e.deltaY*0.001))); updateCam(); needsRender=true; },{passive:false});
+
+function hexToRgb(h){ const n=parseInt(h.slice(1),16); return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]; }
+function toGeometry(m){
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(m.pos,3));
+  g.setIndex(new THREE.BufferAttribute(m.idx,1));
+  g.computeVertexNormals();
+  return g;
+}
+function applyLitColors(g,m){
+  const pos=g.attributes.position.array, nor=g.attributes.normal.array, nv=pos.length/3;
+  const col=new Float32Array(nv*3); const c=hexToRgb(P.color);
+  const lz=m.puckH+(P.holder?HOLDER.ledge:0), att=Math.exp(-Math.max(0,m.t-0.5)*0.55);
+  const warm=[1.0,0.82,0.55];
+  for(let i=0;i<nv;i++){
+    const x=pos[i*3],y=pos[i*3+1],z=pos[i*3+2]-lz; const d=Math.hypot(x,y,z)||1;
+    const emit=Math.max(0,z/d)*0.85+0.15; const inc=Math.abs((nor[i*3]*x+nor[i*3+1]*y+nor[i*3+2]*z)/d);
+    let I=emit*inc*Math.pow(70/d,1.5)*att*3.2; I=1-Math.exp(-I*1.8); I=I*0.97+0.04;
+    for(let q=0;q<3;q++) col[i*3+q]=Math.min(1,I*(0.35+0.65*c[q])*warm[q]*1.25);
+  }
+  g.setAttribute('color',new THREE.BufferAttribute(col,3));
+}
+let current=null, lastFitKey='';
+function refresh(quality){
+  const q=quality||Q_PREVIEW;
+  const m=buildMesh(P,q);
+  const g=toGeometry(m);
+  if(lit) applyLitColors(g,m);
+  shade.geometry.dispose(); shade.geometry=g;
+  matStd.color.set(P.color);
+  shade.material = lit?matLit:matStd;
+  current=m;
+  if(P.holder){
+    const hd=buildHolder(P,m); currentHolder=hd;
+    const hg=new THREE.BufferGeometry(); hg.setAttribute('position',new THREE.BufferAttribute(hd.pos,3)); hg.setIndex(new THREE.BufferAttribute(hd.idx,1)); hg.computeVertexNormals();
+    holderMesh.geometry.dispose(); holderMesh.geometry=hg; holderMesh.visible=true;
+    matHolder.color.set(P.color).multiplyScalar(lit?0.3:(hd.integrated?1:0.8));
+    shade.position.z=0; puckGroup.position.z=hd.ledge;
+  } else { currentHolder=null; holderMesh.visible=false; shade.position.z=0; puckGroup.position.z=0; }
+  const fk=P.light+'|'+P.printer;
+  if(fk!==lastFitKey){ fitView(m); lastFitKey=fk; }
+  needsRender=true;
+  $('#hudName').textContent=describe(P);
+  $('#hudSub').textContent=`${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm max · ${(+P.lh).toFixed(2)} mm layers · ${P.mode==='vase'?'spiral vase':'solid wall'}${P.holder?' · + holder':''}`;
+  $('#scaleTxt').textContent=`${PRINTERS[P.printer].name}\nbed ${PRINTERS[P.printer].x} × ${PRINTERS[P.printer].y} mm`;
+  if(q!==Q_DRAG){ updateAnalysis(m); }
+  syncUI();
+}
+function setLit(on){
+  lit=on; $('#tLit').setAttribute('aria-pressed',String(on)); $('#tStudio').setAttribute('aria-pressed',String(!on));
+  hemi.intensity=on?0.05:0.75; key.intensity=on?0.0:0.85; rim.intensity=on?0.0:0.35;
+  puckMatTop.emissive.set(on?0xffd79a:0x000000);
+  refresh();
+}
+
+/* ---------- analysis panel ---------- */
+function updateAnalysis(m){
+  const st=meshStats(m,P);
+  const L=LIGHTS[P.light], pr=PRINTERS[P.printer];
+  const maxD=m.maxR*2, bedOk=maxD<=Math.min(pr.x,pr.y)-4 && m.H<=pr.z;
+  const ang=m.angle, angClass=ang<=P.maxA+0.5?'ok':(ang<=55?'warn':'bad');
+  const clearance = (m.vase ? minRadBottom(m)-m.t : (m.ring ? m.rc : minRadBottom(m)-m.t)) - L.d/2;
+  const hd=P.holder?currentHolder:null;
+  $('#stats').innerHTML=[
+    ['Height',`${m.H.toFixed(0)}<small> mm</small>`],
+    ['Max Ø',`${maxD.toFixed(0)}<small> mm</small>`],
+    ['Layers',`${st.layers}`],
+    ['Filament',`${st.grams.toFixed(0)}<small> g · ${st.metres.toFixed(1)} m</small>`],
+    ['Print time',`≈${fmtTime(st.mins)}`],
+    ['Top opening',`Ø${(topRad(m)*2).toFixed(0)}<small> mm</small>`]
+  ].map(([k,v])=>`<div class="stat"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+  const rows=[];
+  rows.push(['Fits the '+pr.name.replace('Bambu Lab ',''), bedOk?'<span class="pill ok">fits</span>':'<span class="pill bad">too big</span>']);
+  if(hd){
+    rows.push([`Cup holds ${L.name} (Ø${L.d})`, `<span class="pill ok">+${HOLDER.grip.toFixed(1)} mm</span>`]);
+    rows.push([`${hd.arms.length} arms · ≈${hd.grams.toFixed(0)} g`, hd.integrated?'<span class="pill ok">built in</span>':'<span class="pill ok">separate insert</span>']);
+    if(hd.arms.length<Math.round(P.holderArms)) rows.push(['Some arms','<span class="pill warn">no room, skipped</span>']);
+  } else rows.push([`Sits over ${L.name} (Ø${L.d})`, clearance>=0.3?`<span class="pill ok">+${clearance.toFixed(1)} mm</span>`:'<span class="pill bad">too tight</span>']);
+  rows.push([P.fix&&m.rawAngle>P.maxA+0.5?`Overhang (fixed from ${m.rawAngle.toFixed(0)}°)`:'Steepest overhang', `<span class="pill ${angClass}">${ang.toFixed(0)}°</span>`]);
+  if(P.mode==='vase' && P.layer!=='none' && ['bands','shingles'].includes(P.layer) && P.layerOff>P.vaseLW*0.9 && !P.fix) rows.push(['Layer offset vs wall','<span class="pill warn">steps wider than wall</span>']);
+  if(m.closed) rows.push([`Closed top spans Ø${(m.capR*2).toFixed(0)} mm`, m.capR*2>25?'<span class="pill warn">needs supports</span>':'<span class="pill ok">bridges</span>']);
+  if(P.mode==='vase' && P.vaseLW>parseFloat(P.nozzle)*2) rows.push(['Line width vs nozzle','<span class="pill warn">over 2× nozzle</span>']);
+  $('#checks').innerHTML=rows.map(([a,b])=>`<div><span>${a}</span>${b}</div>`).join('');
+  drawProfile(m); drawLens(m);
+  $('#sheet').textContent=settingsText(m,st);
+}
+function minRadBottom(m){ let r=1e9; const lim=m.puckH+1; for(let j=0;j<m.seg;j++) for(let i=0;i<=m.nz;i++){ const q=i*m.seg+j; if(m.Z[q]>lim) break; if(m.R[q]<r) r=m.R[q]; } return r; }
+function topRad(m){ let r=1e9; for(let j=0;j<m.seg;j++){ const v=m.R[m.nz*m.seg+j]-(m.vase?m.t:m.t); if(v<r) r=v; } return r; }
+function fmtTime(mins){ const h=Math.floor(mins/60), mm=Math.round(mins%60); return h?`${h} h ${mm} m`:`${mm} min`; }
+function settingsText(m,st){
+  const pr=PRINTERS[P.printer]; const lh=(+P.lh).toFixed(2);
+  const lines=[`Printer   ${pr.name}, ${P.nozzle} mm nozzle`,`Layer     ${lh} mm  (${st.layers} layers)`];
+  if(!m.vase) lines.push(`Top       ${m.closed?'Closed cap '+P.wall.toFixed(1)+' mm':'Open'}`);
+  if(P.mode==='vase'){
+    lines.push('Mode      Others > Spiral vase: ON');
+    lines.push(`Wall      Quality > Line width > Outer wall: ${(+P.vaseLW).toFixed(2)} mm`);
+    lines.push('Base      Strength > Bottom shell layers: 0');
+    lines.push('          (open base so it sits over the light)');
+  } else {
+    const lw=Math.round(parseFloat(P.nozzle)*1.05*100)/100; const loops=Math.max(1,Math.round(P.wall/lw));
+    lines.push(`Walls     Strength > Wall loops: ${loops}  (${loops} × ${lw.toFixed(2)} ≈ ${P.wall.toFixed(1)} mm)`);
+    lines.push('Infill    Sparse infill 15% (only the base ring uses it)');
+    lines.push('Top/bot   Keep defaults');
+  }
+  if(m.closed && m.capR*2>25) lines.push(`Support   On, Tree (auto), for the Ø${(m.capR*2).toFixed(0)} mm closed top`);
+  else lines.push(`Support   Off  (steepest overhang ${m.angle.toFixed(0)}°)`);
+  lines.push(m.H>150||m.maxR*2>170?'Adhesion  Brim: Outer brim only, 5 mm':'Adhesion  No brim needed on a clean plate');
+  lines.push('Filament  White or light PLA Basic / Matte glows best');
+  if(P.holder && P.mode==='vase'){
+    lines.push('');
+    lines.push('INSERT (separate 3MF, print separately)');
+    lines.push('Mode      Normal, NOT spiral vase');
+    lines.push(`Layer     ${lh} mm, 2 wall loops, 100% infill`);
+    lines.push('Support   Off, flat side down');
+  } else if(P.holder){
+    lines.push('Holder    Cross is built in, prints with the shade');
+  }
+  lines.push('');
+  lines.push('Bambu Studio loads this 3MF as geometry only,');
+  lines.push('so set the layer height above before slicing.');
+  return lines.join('\n');
+}
+
+/* section canvas */
+function prepCanvas(c){ const r=c.getBoundingClientRect(); const d=Math.min(2,window.devicePixelRatio||1); c.width=Math.max(10,Math.round(r.width*d)); c.height=Math.max(10,Math.round(r.height*d)); const x=c.getContext('2d'); x.setTransform(d,0,0,d,0,0); return {x,w:r.width,h:r.height}; }
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function columnPts(m,j){
+  const out=[], inn=[];
+  for(let i=0;i<=m.nz;i++){ const q=i*m.seg+j; out.push([m.R[q],m.Z[q]]); }
+  if(m.vase){ for(let i=m.nz;i>=0;i--){ const q=i*m.seg+j; inn.push([Math.max(0,m.R[q]-m.t),m.Z[q]]); } }
+  else { for(let ii=m.nInner-1;ii>=0;ii--){ const v=(m.vOuter+ii*m.seg+j)*3; inn.push([Math.hypot(m.pos[v],m.pos[v+1]),m.pos[v+2]]); } }
+  return {out,inn};
+}
+function drawProfile(m){
+  const c=$('#profile'); if(!c.offsetWidth) return; const {x,w,h}=prepCanvas(c);
+  const ink=css('--ink'), muted=css('--muted'), line=css('--line'), acc=css('--accent');
+  x.clearRect(0,0,w,h);
+  const hd=P.holder?currentHolder:null, zo=0;
+  const pad=26, s=Math.min((w-pad*2)/(m.maxR*2), (h-pad*2)/(m.H+zo));
+  const cx=w/2, by0=h-pad, by=by0-zo*s;
+  // bed
+  x.strokeStyle=line; x.lineWidth=1; x.beginPath(); x.moveTo(8,by0+0.5); x.lineTo(w-8,by0+0.5); x.stroke();
+  if(hd){
+    x.fillStyle=acc; x.globalAlpha=0.6;
+    const rect=(r0,r1,z0,z1)=>{ x.fillRect(cx+r0*s,by0-z1*s,(r1-r0)*s,(z1-z0)*s); };
+    rect(-hd.rsO,-hd.rsI,0,hd.ledge+hd.hs);          // cup wall (left; right side is the cable slot)
+    rect(-hd.rsI-0.3,-hd.ledgeR,0,hd.ledge);          // ledge
+    x.globalAlpha=0.35;
+    for(const a of hd.arms){ const sx=Math.cos(a.a)>=0?1:-1; rect(Math.min(sx*a.r0,sx*a.r1),Math.max(sx*a.r0,sx*a.r1),0,hd.ha); }
+    x.globalAlpha=1;
+  }
+  // light glow
+  const L=LIGHTS[P.light];
+  const grd=x.createRadialGradient(cx,by-L.h*s,2,cx,by-L.h*s,m.H*s*0.9); grd.addColorStop(0,'rgba(255,196,110,.35)'); grd.addColorStop(1,'rgba(255,196,110,0)');
+  x.fillStyle=grd; x.fillRect(0,0,w,h);
+  // walls
+  const sides=[[0,1],[Math.round(m.seg/2),-1]];
+  for(const [j,dir] of sides){
+    const {out,inn}=columnPts(m,j);
+    x.beginPath();
+    out.forEach(([r,z],k)=>{ const px=cx+dir*r*s, py=by-z*s; k?x.lineTo(px,py):x.moveTo(px,py); });
+    inn.forEach(([r,z])=>x.lineTo(cx+dir*r*s,by-z*s));
+    x.closePath(); x.fillStyle=ink; x.globalAlpha=0.85; x.fill(); x.globalAlpha=1;
+    if(m.vase){ x.strokeStyle=ink; x.lineWidth=1.6; x.beginPath(); out.forEach(([r,z],k)=>{ const px=cx+dir*r*s, py=by-z*s; k?x.lineTo(px,py):x.moveTo(px,py); }); x.stroke(); }
+  }
+  if(m.closed){ x.fillStyle=ink; x.globalAlpha=0.85; x.fillRect(cx-m.capR*s-1,by-m.H*s,(m.capR*2)*s+2,Math.max(1.5,m.t*s)); x.globalAlpha=1; }
+  // puck
+  x.fillStyle='#F1F1EC'; x.strokeStyle=muted; x.lineWidth=1;
+  const pz=hd?hd.ledge*s:0;
+  x.beginPath(); x.rect(cx-L.d/2*s,by-pz-L.h*s,L.d*s,L.h*s); x.fill(); x.stroke();
+  x.fillStyle=acc; x.fillRect(cx-L.d/2*s*0.8,by-pz-L.h*s-1.5,L.d*s*0.8,2);
+  // dims
+  x.fillStyle=muted; x.font='500 11px "IBM Plex Mono", monospace';
+  x.textAlign='left'; x.fillText(`${m.H.toFixed(0)} mm`,6,pad-8);
+  x.textAlign='right'; x.fillText(`Ø${(m.maxR*2).toFixed(0)} mm`,w-6,pad-8);
+  x.textAlign='center'; x.fillText(`${L.name} Ø${L.d}${hd?' in cup':''}`,cx,by0+15);
+
+  if(!m.vase && P.arch){ x.textAlign='left'; x.fillText('cable arch →',6,by-4); }
+}
+function drawLens(m){
+  const c=$('#lens'); if(!c.offsetWidth) return; const {x,w,h}=prepCanvas(c);
+  const ink=css('--ink'), muted=css('--muted'), acc=css('--accent'), line=css('--line');
+  x.clearRect(0,0,w,h);
+  // find steepest region on column 0 (skip the base)
+  const seg=m.seg; let best=Math.floor(m.nz*0.5), bs=-1;
+  for(let i=Math.ceil(m.nz*0.12);i<m.nz;i++){ const a=m.R[i*seg], b=m.R[(i-1)*seg]; const s=Math.abs(a-b)/(m.Z[i*seg]-m.Z[(i-1)*seg]); if(s>bs){bs=s;best=i;} }
+  const z0=m.Z[best*seg]; const lh=+P.lh; const nL=12;
+  const rAt=z=>{ for(let i=1;i<=m.nz;i++){ const za=m.Z[(i-1)*seg], zb=m.Z[i*seg]; if(z<=zb){ const u=(z-za)/(zb-za||1); return m.R[(i-1)*seg]*(1-u)+m.R[i*seg]*u; } } return m.R[m.nz*seg]; };
+  const zs=[]; const start=Math.floor(z0/lh)-nL/2; for(let k=0;k<nL;k++){ const zc=(start+k+0.5)*lh; if(zc>0&&zc<m.H) zs.push(zc); }
+  const rs=zs.map(rAt); const rMid=rs[Math.floor(rs.length/2)]||rAt(z0);
+  const areaH=h-50, sc=areaH/(nL*lh);
+  const loops = m.vase?1:Math.max(1,Math.round(P.wall/(parseFloat(P.nozzle)*1.05)));
+  const lw = m.vase?P.vaseLW:P.wall/loops;
+  const baseX=w*0.62;
+  x.strokeStyle=line; x.setLineDash([3,3]); x.beginPath(); x.moveTo(baseX+0.5,8); x.lineTo(baseX+0.5,h-26); x.stroke(); x.setLineDash([]);
+  zs.forEach((z,k)=>{
+    const py=h-26-(k+1)*lh*sc; const off=(rs[k]-rMid)*sc;
+    for(let l=0;l<loops;l++){
+      const px=baseX+off-(l+1)*lw*sc; const bw=lw*sc, bh=lh*sc;
+      if(px+bw<0||px>w) continue;
+      x.fillStyle= l===0?ink:muted; x.globalAlpha=l===0?0.9:0.55;
+      const rr=Math.min(bh,bw)/2; x.beginPath(); roundRect(x,px,py,bw-1,bh-1,rr); x.fill(); x.globalAlpha=1;
+    }
+  });
+  x.fillStyle=muted; x.font='500 11px "IBM Plex Mono", monospace'; x.textAlign='left';
+  x.fillText(`${lh.toFixed(2)} mm layers · ${loops>1?loops+' walls × ':''}${lw.toFixed(2)} mm line`,8,h-9);
+  x.textAlign='right'; x.fillStyle=acc; x.fillText(`zoom at z ${z0.toFixed(0)} mm`,w-8,16);
+  x.fillStyle=muted; x.textAlign='left'; x.fillText('← inside   outside →',8,16);
+}
+function roundRect(x,a,b,w,h,r){ x.moveTo(a+r,b); x.arcTo(a+w,b,a+w,b+h,r); x.arcTo(a+w,b+h,a,b+h,r); x.arcTo(a,b+h,a,b,r); x.arcTo(a,b,a+w,b,r); x.closePath(); }
+
+/* ---------- ideas ---------- */
+let thumbR=null, thumbScene, thumbCam, thumbMesh;
+function initThumbs(){
+  const cv=document.createElement('canvas'); cv.width=240; cv.height=300;
+  thumbR=new THREE.WebGLRenderer({canvas:cv, antialias:true, preserveDrawingBuffer:true, alpha:true});
+  thumbR.outputEncoding=THREE.sRGBEncoding; thumbR.setClearColor(0x000000,0);
+  thumbScene=new THREE.Scene();
+  thumbScene.add(new THREE.HemisphereLight(0xffffff,0x2a2d33,0.8));
+  const k=new THREE.DirectionalLight(0xffffff,0.8); k.position.set(260,-340,420); thumbScene.add(k);
+  thumbCam=new THREE.PerspectiveCamera(30,240/300,1,5000); thumbCam.up.set(0,0,1);
+  thumbMesh=new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({roughness:0.6}));
+  thumbScene.add(thumbMesh);
+}
+let ideaSet=[];
+function makeIdeas(){
+  if(!thumbR) initThumbs();
+  const host=$('#ideas'); host.innerHTML='';
+  ideaSet=[];
+  for(let i=0;i<6;i++){
+    const d=randomDesign(newSeed(), {...P});
+    ideaSet.push(d);
+    const m=buildMesh(d,Q_THUMB);
+    thumbMesh.geometry.dispose(); thumbMesh.geometry=toGeometry(m); thumbMesh.material.color.set(P.color);
+    const dist=Math.max(m.H*1.1,m.maxR*2.3)*2.2; thumbCam.position.set(dist*Math.cos(-0.9)*0.95,dist*Math.sin(-0.9)*0.95,m.H*0.45+dist*0.3); thumbCam.lookAt(0,0,m.H*0.45);
+    thumbR.render(thumbScene,thumbCam);
+    const b=document.createElement('button'); b.className='idea'; b.title=describe(d)+' · seed '+d.seed; b.setAttribute('aria-label','Load idea: '+describe(d));
+    const img=new Image(); img.alt=''; img.src=thumbR.domElement.toDataURL('image/png'); b.appendChild(img);
+    b.addEventListener('click',()=>{ pushHistory(); DESIGN_KEYS.forEach(k=>P[k]=d[k]); P.seed=d.seed; P.edited=false; lastFitKey=''; refresh(); });
+    host.appendChild(b);
+  }
+}
+
+/* ---------- actions ---------- */
+function pushHistory(){ const snap={}; DESIGN_KEYS.concat(['seed','edited']).forEach(k=>snap[k]=P[k]); history.push(snap); if(history.length>30) history.shift(); }
+function doRandom(seed){ pushHistory(); const d=randomDesign(seed||newSeed(), {...P}); DESIGN_KEYS.forEach(k=>P[k]=d[k]); P.seed=d.seed; P.edited=false; lastFitKey=''; refresh(); }
+function doMutate(){ pushHistory(); const d=mutate(P); DESIGN_KEYS.forEach(k=>P[k]=d[k]); P.edited=true; refresh(); }
+function doBack(){ const s=history.pop(); if(!s) return; Object.assign(P,s); refresh(); }
+
+let toastT=0;
+function toast(msg,ms){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true, ms||3500); }
+
+async function getDownloads(){ try{ if(window.claude && typeof window.claude.use==='function') return await window.claude.use('downloads'); }catch(e){} return null; }
+async function offerFile(name, blob){
+  const inViewer = !!(window.claude && typeof window.claude.use==='function');
+  const dl = inViewer ? await getDownloads() : null;
+  if(dl){
+    try{ await dl.save({filename:name, data:blob}); toast('Saved '+name); return; }
+    catch(e){
+      const code=e&&e.code;
+      if(code==='rejected_extension'){
+        try{ await dl.save({filename:name+'.zip', data:blob}); toast('Saved as '+name+'.zip. Delete the ".zip" at the end of the file name, then open it in Bambu Studio.', 9000); return; }
+        catch(e2){ if(e2&&e2.code==='declined'){ toast('Download cancelled'); return; } toast('Download is not available here. Open the standalone HTML file to export.', 7000); return; }
+      }
+      if(code==='declined'){ toast('Download cancelled'); return; }
+      if(code==='rate_limited'){ toast('A save prompt is already open'); return; }
+      toast('Download is not available here. Open the standalone HTML file to export.', 7000); return;
+    }
+  }
+  if(inViewer){ toast('Download is not available in this view. Open the standalone HTML file to export.', 7000); return; }
+  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
+  toast('Downloaded '+name);
+}
+async function doExport(what){
+  const btn=what==='holder'?$('#btnHolder'):$('#btnExport'); btn.disabled=true; $('#busy').hidden=false;
+  await new Promise(r=>setTimeout(r,30));
+  try{
+    const {blob,name}=await build3mf(P, what);
+    $('#busy').hidden=true;
+    await offerFile(name, blob);
+  }catch(e){ console.error(e); toast('Export failed: '+(e&&e.message||e)); }
+  finally{ btn.disabled=false; $('#busy').hidden=true; }
+}
+
+/* ---------- wiring ---------- */
+let dragTimer=0;
+function setParam(key,val,live){
+  const num=['holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
+  if(num.includes(key)) val=parseFloat(val);
+  if(P[key]===val && !live) return;
+  P[key]=val;
+  if(DESIGN_KEYS.includes(key)) P.edited=true;
+  if(key==='nozzle'){ buildLayerSeg(); P.vaseLW=Math.round(parseFloat(val)*1.5*100)/100; P.wall=Math.max(P.wall, parseFloat(val)*2); }
+  if(key==='printer'){ buildBed(); P.H=Math.min(P.H,maxHeight(P)); }
+  if(key==='light'){ buildPuck(); }
+  if(key==='top' && val==='closed' && P.mode==='vase'){ P.mode='wall'; toast('Switched to Solid wall. Spiral vase can only print an open top.'); }
+  if(key==='mode' && val==='vase' && P.top==='closed'){ P.top='open'; toast('Top set to Open. Spiral vase can only print an open top.'); }
+  if(key==='pattern' && val==='facets' && P.count<3) P.count=6;
+  if(key==='pattern' && val==='facets' && P.count>16) P.count=8;
+  if(live){ refresh(Q_DRAG); clearTimeout(dragTimer); dragTimer=setTimeout(()=>refresh(),260); }
+  else refresh();
+}
+function wire(){
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('[data-v]'); if(b){ const host=b.closest('[data-key]'); if(host){ let v=b.dataset.v; if(host.dataset.key==='lh') v=parseFloat(v); setParam(host.dataset.key,v); } }
+    const s=e.target.closest('.swatch'); if(s){ P.color=s.dataset.c; refresh(); }
+  });
+  $$('input[type=range][data-key]').forEach(el=>{
+    el.addEventListener('input',()=>setParam(el.dataset.key,el.value,true));
+  });
+  $$('select[data-key]').forEach(el=>el.addEventListener('change',()=>setParam(el.dataset.key,el.value)));
+  $$('input[type=checkbox][data-key]').forEach(el=>el.addEventListener('change',()=>setParam(el.dataset.key,el.checked)));
+  $('#btnRandom').addEventListener('click',()=>doRandom());
+  $('#btnMutate').addEventListener('click',doMutate);
+  $('#btnPrev').addEventListener('click',doBack);
+  $('#btnExport').addEventListener('click',()=>doExport());
+  $('#btnHolder').addEventListener('click',()=>doExport('holder'));
+  $('#btnIdeas').addEventListener('click',makeIdeas);
+  $('#seedIn').addEventListener('change',e=>{ const v=e.target.value.trim().toUpperCase(); if(v) doRandom(v); });
+  $('#tLit').addEventListener('click',()=>setLit(true));
+  $('#tStudio').addEventListener('click',()=>setLit(false));
+  $('#tSpin').addEventListener('click',()=>{ spin=!spin; $('#tSpin').setAttribute('aria-pressed',String(spin)); });
+  $('#tShade').addEventListener('click',()=>{ shade.visible=!shade.visible; $('#tShade').setAttribute('aria-pressed',String(shade.visible)); needsRender=true; });
+  $('#tReset').addEventListener('click',()=>{ orbit.az=-0.9; orbit.el=0.32; if(current) fitView(current); needsRender=true; });
+  $('#btnCopy').addEventListener('click',()=>{
+    const txt=$('#sheet').textContent;
+    try{ navigator.clipboard.writeText(txt).then(()=>toast('Settings copied'),()=>selectSheet()); }catch(e){ selectSheet(); }
+  });
+  document.addEventListener('keydown',e=>{ if(e.target.matches('input,select,textarea')) return; if(e.key==='r'||e.key==='R') doRandom(); });
+  let rT=0; window.addEventListener('resize',()=>{ clearTimeout(rT); rT=setTimeout(()=>{ if(current){ drawProfile(current); drawLens(current);} },120); });
+  if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{ if(current){ drawProfile(current); drawLens(current);} });
+}
+function selectSheet(){ const r=document.createRange(); r.selectNodeContents($('#sheet')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Press Ctrl+C to copy'); }
+
+/* ---------- boot ---------- */
+buildChips(); buildLayerSeg(); buildBed(); buildPuck(); wire();
+resize(); refresh();
+fitView(current);
+requestAnimationFrame(frame);
+setTimeout(makeIdeas, 60);
+})();
+</script>
