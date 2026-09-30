@@ -230,6 +230,8 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
 .idle div{background:var(--accent);color:var(--accent-ink);font:700 22px var(--f-display);padding:14px 26px;border-radius:40px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
 .modal{position:fixed;inset:0;background:rgba(8,9,11,.6);display:grid;place-items:center;z-index:20;padding:16px}
 .md-card{background:var(--panel);color:var(--ink);border-radius:16px;padding:22px 24px;width:min(520px,100%);display:grid;gap:14px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.md-card{max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain}
+.md-actions{position:sticky;bottom:-22px;background:var(--panel);padding:10px 0 4px;margin-bottom:-4px}
 .md-card h3{margin:0;font:700 24px/1.2 var(--f-display);text-wrap:balance}
 .md-body{font-size:15px;display:grid;gap:8px}
 .md-body .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}
@@ -328,6 +330,8 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
 
       <section class="sec" id="secPrint">
         <h2>Printer &amp; slicing</h2>
+        <button class="btn" id="btnGcode" type="button" style="justify-self:start" title="Direct toolpath: one wide wall line, spiral, no slicer">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 13c0-3 2-4 5-4s5-1 5-4M3 9c0-3 2-4 5-4"/></svg>Fast wall G-code (test)</button>
         <div class="row2">
           <div class="field"><label for="printer">Printer</label>
             <select id="printer" data-key="printer">
@@ -378,15 +382,17 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
         <h2>Body</h2>
         <div class="chips" id="bodyChips" data-key="body"></div>
         <div class="field"><label for="H">Height <output id="Ho"></output></label>
-          <input type="range" id="H" data-key="H" min="60" max="200" step="1"></div>
+          <input type="range" id="H" data-key="H" min="60" max="180" step="1"></div>
         <div class="row2">
           <div class="field"><label for="Db">Base Ø <output id="Dbo"></output></label>
-            <input type="range" id="Db" data-key="Db" min="70" max="230" step="1"></div>
+            <input type="range" id="Db" data-key="Db" min="70" max="180" step="1"></div>
           <div class="field"><label for="Dt">Top Ø <output id="Dto"></output></label>
-            <input type="range" id="Dt" data-key="Dt" min="30" max="230" step="1"></div>
+            <input type="range" id="Dt" data-key="Dt" min="30" max="180" step="1"></div>
         </div>
         <div class="field"><label for="bulge" id="bulgeLbl">Bulge <output id="bulgeo"></output></label>
           <input type="range" id="bulge" data-key="bulge" min="0" max="60" step="1"></div>
+        <label class="toggle" id="tipRow" for="tip">Pointed top (Christmas tree) <input type="checkbox" id="tip" data-key="tip"></label>
+        <p class="hint" id="shapeNote" hidden></p>
       </section>
 
       <section class="sec" id="secPattern">
@@ -541,7 +547,8 @@ const COLORS = [
   ['Cool white','#EEF1F4'],['Ivory','#EDE4D0'],['Sand','#D6BF95'],['Sage','#A6B79C'],
   ['Blush','#E7B3A8'],['Sky','#A3C1DE'],['Lilac','#BBAED6'],['Charcoal','#3A3D43']
 ];
-const MAX_H = 200;   // tallest lamp, mm
+const MAX_H = 180;   // tallest lamp, mm
+const MAX_D = 180;   // widest lamp (base, top or belly), mm
 
 /* ---------- body shapes: r(t) with t = 0 bottom .. 1 top ---------- */
 const lin = (t,a,b)=>a+(b-a)*t;
@@ -602,16 +609,20 @@ const P = {
   body:'barrel', H:180, Db:130, Dt:95, bulge:18,
   pattern:'ribs', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
   layer:'none', bandN:12, layerOff:0.8,
-  fix:true, maxA:45, top:'open', holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.6, slotBridge:1.6, color:'#EDE4D0', seed:'FABLAB', edited:false
+  fix:true, maxA:45, top:'open', tip:false, holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.6, slotBridge:1.6, color:'#EDE4D0', seed:'FABLAB', edited:false
 };
 const DEFAULT_P = JSON.parse(JSON.stringify(P));   // starting values, used by the step Reset buttons
-const DESIGN_KEYS = ['body','H','Db','Dt','bulge','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
+const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
 const history = [];
 
 let BOOTH=null, lastStats=null;
 function maxHeight(p){ return Math.min(MAX_H, PRINTERS[p.printer].z - 5, (BOOTH&&BOOTH.maxH)||999); }
-function bedMaxD(p){ const pr=PRINTERS[p.printer]; return Math.min(pr.x - 12, pr.y - 12, (BOOTH&&BOOTH.maxD)||999); }
+function bedMaxD(p){ const pr=PRINTERS[p.printer]; return Math.min(MAX_D, pr.x - 12, pr.y - 12, (BOOTH&&BOOTH.maxD)||999); }
 function wallT(p){ return p.mode==='vase' ? p.vaseLW : p.wall; }
+/* steepest overhang we allow: each layer may stick out at most half a line width past the one below.
+   0.4 nozzle: 0.20 mm layers -> 46 deg, 0.28 mm -> 37 deg. Staff can set it lower with the slider. */
+function autoMaxA(p){ const lw=(parseFloat(p.nozzle)||0.4)*1.05; return Math.floor(Math.atan(0.5*lw/(+p.lh||0.2))*180/PI); }
+function effMaxA(p){ return Math.max(25, Math.min(+p.maxA||45, autoMaxA(p))); }
 
 /* ---------- geometry ---------- */
 function lockFixed(p){ p.mode='wall'; p.top='open'; p.base='open'; p.holder=true; p.holderArms=4; return p; }
@@ -636,11 +647,13 @@ function buildMesh(p, Q){
   let needR = vase ? puckR+2+t : (ring ? rc+1.2+t : puckR+2+t);
   if(p.holder) needR=Math.max(needR, cupInnerR(p)+HOLDER.ring+HOLDER.gap+t);
   const needZ = ring ? (ic+1)*dz : puckH+3;
-  const tanA=Math.tan(p.maxA*PI/180);
+  const effA=effMaxA(p), tanA=Math.tan(effA*PI/180);
   const sN=hashStr(p.seed||'x')%100000;
   const sig=Math.max(1.2*dz, 0.15*N*lh);
   const archH=6, archHalf=8/Math.max(30,Rb);
   const facetK = Math.sqrt(Math.cos(PI/Math.max(3,n)));
+  const pointed = !vase && p.body==='pagoda' && !!p.tip;   // closed cone tip (Christmas tree)
+  const tipR=1.2;
 
   function radiusAt(th0, z, tn){
     const L=z/lh, b=Math.floor(L/N), fr=L/N-b;
@@ -674,12 +687,15 @@ function buildMesh(p, Q){
     const th0=TAU*j/seg;
     let a=0;
     if(arch){ let u=th0>PI?th0-TAU:th0; u/=archHalf; if(Math.abs(u)<1) a=archH*Math.pow(Math.cos(u*PI/2),0.7); }
+    const rFull=z=>{ let r=radiusAt(th0,z,z/H); if(z<=needZ) r=Math.max(r,needR); r=Math.max(r, 12+(vase?0:t)); if(pointed) r=Math.min(r, tipR+(H-z)*tanA); return r; };
     for(let i=0;i<=nz;i++){
-      const z=a+(H-a)*i/nz, tn=z/H;
-      let r=radiusAt(th0,z,tn);
-      if(z<=needZ) r=Math.max(r,needR);
-      r=Math.max(r, 12+(vase?0:t));
-      R[i*seg+j]=r; Z[i*seg+j]=z;
+      const z=a+(H-a)*i/nz;
+      R[i*seg+j]=rFull(z); Z[i*seg+j]=z;
+    }
+    if(p.fix && a>0){   // cable arch column: carry the overhang limit up from the bed so it matches its neighbours
+      const ns=Math.max(1,Math.ceil(a/Math.max(0.2,(H-a)/nz))), st=a/ns, mm=tanA*st; let rv=rFull(0);
+      for(let k=1;k<=ns;k++){ const r=rFull(st*k); rv=Math.min(Math.max(r,rv-mm),rv+mm); }
+      R[j]=rv;
     }
     for(let i=1;i<=nz;i++){
       const q=i*seg+j, qp=q-seg, dzc=Z[q]-Z[qp];
@@ -694,14 +710,22 @@ function buildMesh(p, Q){
   // vase export = closed solid (Bambu's spiral vase opens the top itself).
   // vase preview = thin open shell so what you see matches the print.
   const shell = !vase || !!Q.shell;
-  const closed = !vase && p.top==='closed';
+  const closed = pointed || (!vase && p.top==='closed');
+  let iTip=nz, zApex=H-t;
+  if(pointed){                                   // inner surface stops where the wall would pinch shut; above that the tip is solid
+    iTip=0;
+    for(let i=0;i<=nz;i++){ let mn=1e9; for(let j=0;j<seg;j++) mn=Math.min(mn,R[i*seg+j]-t); if(mn>=1.2) iTip=i; else if(i>nz*0.3) break; }
+    let rIn=1e9, zIn=0; for(let j=0;j<seg;j++){ rIn=Math.min(rIn,R[iTip*seg+j]-t); zIn=Math.max(zIn,Z[iTip*seg+j]); }
+    zApex=Math.min(H-t, zIn+rIn/tanA);
+  }
   const vOuter=(nz+1)*seg;
   // inner rows: list of source descriptors {kind:'rc'|'src'|'cap', i}
   const rows=[];
   if(shell){
     if(ring){ for(let ii=0;ii<=ic;ii++) rows.push({kind:'rc',i:ii}); for(let i=ic;i<=nz;i++) rows.push({kind:'src',i}); }
     else { for(let i=0;i<=nz;i++) rows.push({kind:'src',i}); }
-    if(closed){
+    if(pointed){ while(rows.length>2 && rows[rows.length-1].i>iTip) rows.pop(); }
+    else if(closed){
       const zc=H-t, lim=zc-0.5*dz-0.25;
       while(rows.length>2 && rows[rows.length-1].kind==='src' && H*rows[rows.length-1].i/nz>lim) rows.pop();
       rows.push({kind:'cap',i:rows[rows.length-1].i});
@@ -724,7 +748,7 @@ function buildMesh(p, Q){
   }}
   const cA=(vOuter+nInner*seg)*3;
   if(vase&&!shell){ pos[cA+5]=H; }
-  if(closed){ pos[cA+2]=H; pos[cA+5]=H-t; }
+  if(closed){ pos[cA+2]=H; pos[cA+5]=pointed?zApex:H-t; }
   const nt = nz*seg*2 + (shell ? (nInner-1)*seg*2 + seg*4 : seg*2);
   const idx=new Uint32Array(nt*3); let ti=0;
   const O=(i,j)=>i*seg+(j%seg), I=(ii,j)=>vOuter+ii*seg+(j%seg);
@@ -742,7 +766,7 @@ function buildMesh(p, Q){
       else { tri(O(nz,j),I(top,j+1),I(top,j)); tri(O(nz,j),O(nz,j+1),I(top,j+1)); }
     }
   }
-  return {pos, idx, seg, nz, dz, k, H, vOuter, nInner, ring, ic, vase, shell, closed, capR, t, rc, puckR, puckH, maxR, minR,
+  return {pos, idx, seg, nz, dz, k, H, vOuter, nInner, ring, ic, vase, shell, closed, pointed, effA, capR, t, rc, puckR, puckH, maxR, minR,
     rawAngle:Math.atan(rawSlope)*180/PI, angle:Math.atan(slope)*180/PI, R, Z};
 }
 
@@ -897,7 +921,400 @@ async function build3mf(p, what){
   return {blob, name:title+'.3mf', mesh:obj};
 }
 function fileBase(p){ return `lampshade-${p.body}-${p.pattern}${p.layer!=='none'?'-'+p.layer:''}-${p.seed}-${(+p.lh).toFixed(2)}mm`.toLowerCase(); }
-window.__lamp = {P, buildMesh, buildHolder, build3mf, meshStats}; // exposed for testing
+const GC_A1_START = ";===== machine: A1 =========================\n;===== date: 20260513 ==================\nG392 S0\nM9833.2\n;M400\n;M73 P1.717\n\n;===== start to heat heatbead&hotend==========\nM1002 gcode_claim_action : 2\nM1002 set_filament_type:{filament_type[initial_no_support_extruder]}\nM104 S140\nM140 S[bed_temperature_initial_layer_single]\n\n;=====start printer sound ===================\nM17\nM400 S1\nM1006 S1\nM1006 A0 B10 L100 C37 D10 M60 E37 F10 N60\nM1006 A0 B10 L100 C41 D10 M60 E41 F10 N60\nM1006 A0 B10 L100 C44 D10 M60 E44 F10 N60\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N60\nM1006 A43 B10 L100 C46 D10 M70 E39 F10 N80\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N80\nM1006 A0 B10 L100 C43 D10 M60 E39 F10 N80\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N80\nM1006 A0 B10 L100 C41 D10 M80 E41 F10 N80\nM1006 A0 B10 L100 C44 D10 M80 E44 F10 N80\nM1006 A0 B10 L100 C49 D10 M80 E49 F10 N80\nM1006 A0 B10 L100 C0 D10 M80 E0 F10 N80\nM1006 A44 B10 L100 C48 D10 M60 E39 F10 N80\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N80\nM1006 A0 B10 L100 C44 D10 M80 E39 F10 N80\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N80\nM1006 A43 B10 L100 C46 D10 M60 E39 F10 N80\nM1006 W\nM18 \n;=====start printer sound ===================\n\n;=====avoid end stop =================\nG91\nG380 S2 Z40 F1200\nG380 S3 Z-15 F1200\nG90\n\n;===== reset machine status =================\n;M290 X39 Y39 Z8\nM204 S6000\n\nM630 S0 P0\nG91\nM17 Z0.3 ; lower the z-motor current\n\nG90\nM17 X0.65 Y1.2 Z0.6 ; reset motor current to default\nM960 S5 P1 ; turn on logo lamp\nG90\nM220 S100 ;Reset Feedrate\nM221 S100 ;Reset Flowrate\nM73.2   R1.0 ;Reset left time magnitude\n;M211 X0 Y0 Z0 ; turn off soft endstop to prevent protential logic problem\n\n;====== cog noise reduction=================\nM982.2 S1 ; turn on cog noise reduction\n\nM1002 gcode_claim_action : 13\n\nG28 X\nG91\nG1 Z5 F1200\nG90\nG0 X128 F30000\nG0 Y254 F3000\nG91\nG1 Z-5 F1200\n\nM109 S25 H140\n\nM17 E0.3\nM83\nG1 E10 F1200\nG1 E-0.5 F30\nM17 D\n\nG28 Z P0 T140; home z with low precision,permit 300deg temperature\nM104 S{nozzle_temperature_initial_layer[initial_extruder]}\n\nM1002 judge_flag build_plate_detect_flag\nM622 S1\n  G39.4\n  G90\n  G1 Z5 F1200\nM623\n\n;M400\n;M73 P1.717\n\n;===== prepare print temperature and material ==========\nM1002 gcode_claim_action : 24\n\nM400\n;G392 S1\nM211 X0 Y0 Z0 ;turn off soft endstop\nM975 S1 ; turn on\n\nG90\nG1 X-28.5 F30000\nG1 X-48.2 F3000\n\nM620 M ;enable remap\nM620 S[initial_no_support_extruder]A   ; switch material if AMS exist\n    M1002 gcode_claim_action : 4\n    M400\n    M1002 set_filament_type:UNKNOWN\n    M109 S[nozzle_temperature_initial_layer]\n{if (filament_type[initial_no_support_extruder] == \"PLA\") && (nozzle_diameter != 0.2)}\n    M104 S220\n{else}\n    M104 S250\n{endif}\n    M400\n    T[initial_no_support_extruder]\n    G1 X-48.2 F3000\n    M400\n\n{if (filament_type[initial_no_support_extruder] == \"PLA\") && (nozzle_diameter != 0.2)}\n    M620.1 E F{flush_volumetric_speeds[initial_no_support_extruder]/2.4053*60} T220\n    M109 S220 ;set nozzle to common flush temp\n{else}\n    M620.1 E F{flush_volumetric_speeds[initial_no_support_extruder]/2.4053*60} T{flush_temperatures[initial_no_support_extruder]}\n    M109 S250 ;set nozzle to common flush temp\n{endif}\n    M106 P1 S0\n    G92 E0\n    G1 E50 F200\n    M400\n    M1002 set_filament_type:{filament_type[initial_no_support_extruder]}\nM621 S[initial_no_support_extruder]A\n\n{if (filament_type[initial_no_support_extruder] == \"PLA\") && (nozzle_diameter != 0.2)}\n    M109 S220 H300\n{else}\n    M109 S{flush_temperatures[initial_no_support_extruder]} H300\n{endif}\nG92 E0\nG1 E50 F200 ; lower extrusion speed to avoid clog\nM400\nM106 P1 S178\nG92 E0\nG1 E5 F200\nM104 S{nozzle_temperature_initial_layer[initial_no_support_extruder]}\nG92 E0\nG1 E-0.5 F300\n\nG1 X-28.5 F30000\nG1 X-48.2 F3000\nG1 X-28.5 F30000 ;wipe and shake\nG1 X-48.2 F3000\nG1 X-28.5 F30000 ;wipe and shake\nG1 X-48.2 F3000\n\n;G392 S0\n\nM400\nM106 P1 S0\n;===== prepare print temperature and material end =====\n\n;M400\n;M73 P1.717\n\n;===== auto extrude cali start =========================\nM975 S1\n;G392 S1\n\nG90\nM83\nT1000\nG1 X-48.2 Y0 Z10 F10000\nM400\nM1002 set_filament_type:UNKNOWN\n\nM412 S1 ;  ===turn on  filament runout detection===\nM400 P10\nM620.3 W1; === turn on filament tangle detection===\nM400 S2\n\nM1002 set_filament_type:{filament_type[initial_no_support_extruder]}\n\n;M1002 set_flag extrude_cali_flag=1\nM1002 judge_flag extrude_cali_flag\n\nM622 J1\n    M1002 gcode_claim_action : 8\n\n    M109 S{nozzle_temperature[initial_extruder]}\n    G1 E10 F{outer_wall_volumetric_speed/2.4*60}\n    M983 F{outer_wall_volumetric_speed/2.4} A0.3 H[nozzle_diameter]; cali dynamic extrusion compensation\n\n    M106 P1 S255\n    M400 S5\n    G1 X-28.5 F18000\n    G1 X-48.2 F3000\n    G1 X-28.5 F18000 ;wipe and shake\n    G1 X-48.2 F3000\n    G1 X-28.5 F12000 ;wipe and shake\n    G1 X-48.2 F3000\n    M400\n    M106 P1 S0\n\n    M1002 judge_last_extrude_cali_success\n    M622 J0\n        M983 F{outer_wall_volumetric_speed/2.4} A0.3 H[nozzle_diameter]; cali dynamic extrusion compensation\n        M106 P1 S255\n        M400 S5\n        G1 X-28.5 F18000\n        G1 X-48.2 F3000\n        G1 X-28.5 F18000 ;wipe and shake\n        G1 X-48.2 F3000\n        G1 X-28.5 F12000 ;wipe and shake\n        M400\n        M106 P1 S0\n    M623\n    \n    G1 X-48.2 F3000\n    M400\n    M984 A0.1 E1 S1 F{outer_wall_volumetric_speed/2.4} H[nozzle_diameter]\n    M106 P1 S178\n    M400 S7\n    G1 X-28.5 F18000\n    G1 X-48.2 F3000\n    G1 X-28.5 F18000 ;wipe and shake\n    G1 X-48.2 F3000\n    G1 X-28.5 F12000 ;wipe and shake\n    G1 X-48.2 F3000\n    M400\n    M106 P1 S0\nM623 ; end of \"draw extrinsic para cali paint\"\n\n;G392 S0\n;===== auto extrude cali end ========================\n\n;M400\n;M73 P1.717\n\nM104 S170 ; prepare to wipe nozzle\nM106 S255 ; turn on fan\n\n;===== mech mode fast check start =====================\nM1002 gcode_claim_action : 3\n\nG1 X128 Y128 F20000\nG1 Z5 F1200\nM400 P200\nM970.3 Q1 A5 K0 O3\nM974 Q1 S2 P0\n\nM970.2 Q1 K1 W58 Z0.1\nM974 S2\n\nG1 X128 Y128 F20000\nG1 Z5 F1200\nM400 P200\nM970.3 Q0 A10 K0 O1\nM974 Q0 S2 P0\n\nM970.2 Q0 K1 W78 Z0.1\nM974 S2\n\nM975 S1\nG1 F30000\nG1 X0 Y5\nG28 X ; re-home XY\n\nG1 Z4 F1200\n\n;===== mech mode fast check end =======================\n\n;M400\n;M73 P1.717\n\n;===== wipe nozzle ===============================\nM1002 gcode_claim_action : 14\n\nM975 S1\nM106 S255 ; turn on fan (G28 has turn off fan)\nM211 S; push soft endstop status\nM211 X0 Y0 Z0 ;turn off Z axis endstop\n\n;===== remove waste by touching start =====\n\nM104 S170 ; set temp down to heatbed acceptable\n\nM83\nG1 E-1 F500\nG90\nM83\n\nM109 S170\nG0 X108 Y-0.5 F30000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X110 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X112 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X114 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X116 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X118 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X120 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X122 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X124 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X126 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X128 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X130 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X132 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X134 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X136 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X138 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X140 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X142 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X144 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X146 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X148 F10000\nG380 S3 Z-5 F1200\n\nG1 Z5 F30000\n;===== remove waste by touching end =====\n\nG1 Z10 F1200\nG0 X118 Y261 F30000\nG1 Z5 F1200\nM109 S{nozzle_temperature_initial_layer[initial_extruder]-50}\n\nG28 Z P0 T300; home z with low precision,permit 300deg temperature\nG29.2 S0 ; turn off ABL\nM104 S140 ; prepare to abl\nG0 Z5 F20000\n\nG0 X128 Y261 F20000  ; move to exposed steel surface\nG0 Z-1.01 F1200      ; stop the nozzle\n\nG91\nG2 I1 J0 X2 Y0 F2000.1\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\n\nG90\nG1 Z10 F1200\n\n;===== brush material wipe nozzle =====\n\nG90\nG1 Y250 F30000\nG1 X55\nG1 Z1.300 F1200\nG1 Y262.5 F6000\nG91\nG1 X-35 F30000\nG1 Y-0.5\nG1 X45\nG1 Y-0.5\nG1 X-45\nG1 Y-0.5\nG1 X45\nG1 Y-0.5\nG1 X-45\nG1 Y-0.5\nG1 X45\nG1 Z5.000 F1200\n\nG90\nG1 X30 Y250.000 F30000\nG1 Z1.300 F1200\nG1 Y262.5 F6000\nG91\nG1 X35 F30000\nG1 Y-0.5\nG1 X-45\nG1 Y-0.5\nG1 X45\nG1 Y-0.5\nG1 X-45\nG1 Y-0.5\nG1 X45\nG1 Y-0.5\nG1 X-45\nG1 Z10.000 F1200\n\n;===== brush material wipe nozzle end =====\n\nG90\n;G0 X128 Y261 F20000  ; move to exposed steel surface\nG1 Y250 F30000\nG1 X138\nG1 Y261\nG0 Z-1.01 F1200      ; stop the nozzle\n\nG91\nG2 I1 J0 X2 Y0 F2000.1\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\n\nM109 S140\nM106 S255 ; turn on fan (G28 has turn off fan)\n\nM211 R; pop softend status\n\n;===== wipe nozzle end ================================\n\n;M400\n;M73 P1.717\n\n;===== bed leveling ==================================\nM1002 judge_flag g29_before_print_flag\n\nG90\nG1 Z5 F1200\nG1 X0 Y0 F30000\nG29.2 S1 ; turn on ABL\n\nM190 S[bed_temperature_initial_layer_single]; ensure bed temp\nM109 S140\nM106 S0 ; turn off fan , too noisy\n\nM622 J1\n    M1002 gcode_claim_action : 1\n    G29 A1 X{first_layer_print_min[0]} Y{first_layer_print_min[1]} I{first_layer_print_size[0]} J{first_layer_print_size[1]}\n    M400\n    M500 ; save cali data\nM623\n;===== bed leveling end ================================\n\n;===== home after wipe mouth============================\nM1002 judge_flag g29_before_print_flag\nM622 J0\n\n    M1002 gcode_claim_action : 13\n    G28\n\nM623\n\n;===== home after wipe mouth end =======================\n\n;M400\n;M73 P1.717\n\nG1 X108.000 Y-0.500 F30000\nG1 Z0.300 F1200\nM400\nG2814 Z0.32\n\nM104 S{nozzle_temperature_initial_layer[initial_extruder]} ; prepare to print\n\n;===== nozzle load line ===============================\n;G90\n;M83\n;G1 Z5 F1200\n;G1 X88 Y-0.5 F20000\n;G1 Z0.3 F1200\n\n;M109 S{nozzle_temperature_initial_layer[initial_extruder]}\n\n;G1 E2 F300\n;G1 X168 E4.989 F6000\n;G1 Z1 F1200\n;===== nozzle load line end ===========================\n\n;===== extrude cali test ===============================\n\nM400\n    M900 S\n    M900 C\n    G90\n    M83\n\n    M109 S{nozzle_temperature_initial_layer[initial_extruder]}\n    G0 X128 E8  F{outer_wall_volumetric_speed/(24/20)    * 60}\n    G0 X133 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G0 X138 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}\n    G0 X143 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G0 X148 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}\n    G0 X153 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G91\n    G1 X1 Z-0.300\n    G1 X4\n    G1 Z1 F1200\n    G90\n    M400\n\nM900 R\n\nM1002 judge_flag extrude_cali_flag\nM622 J1\n    G90\n    G1 X108.000 Y1.000 F30000\n    G91\n    G1 Z-0.700 F1200\n    G90\n    M83\n    G0 X128 E10  F{outer_wall_volumetric_speed/(24/20)    * 60}\n    G0 X133 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G0 X138 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}\n    G0 X143 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G0 X148 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}\n    G0 X153 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G91\n    G1 X1 Z-0.300\n    G1 X4\n    G1 Z1 F1200\n    G90\n    M400\nM623\n\nG1 Z0.2\n\n;M400\n;M73 P1.717\n\n;========turn off light and wait extrude temperature =============\nM1002 gcode_claim_action : 0\nM400\n\n;===== for Textured PEI Plate , lower the nozzle as the nozzle was touching topmost of the texture when homing ==\n;curr_bed_type={curr_bed_type}\n{if curr_bed_type==\"Textured PEI Plate\"}\nG29.1 Z{-0.02} ; for Textured PEI Plate\n{endif}\n\nM960 S1 P0 ; turn off laser\nM960 S2 P0 ; turn off laser\nM106 S0 ; turn off fan\nM106 P2 S0 ; turn off big fan\nM106 P3 S0 ; turn off chamber fan\n\nM975 S1 ; turn on mech mode supression\nG90\nM83\nT1000\n\nM211 X0 Y0 Z0 ;turn off soft endstop\n;G392 S1 ; turn on clog detection\nM1007 S1 ; turn on mass estimation\nG29.4\n";
+const GC_A1_END = ";===== date: 20260513 =====================\nG392 S0 ;turn off nozzle clog detect\n\nM400 ; wait for buffer to clear\nG92 E0 ; zero the extruder\nG90\nG1 Z{max_layer_z + 0.4} F900 ; lower z a little\nG1 X0 Y{first_layer_center_no_wipe_tower[1]} F18000 ; move to safe pos\nG1 X-13.0 F3000 ; move to safe pos\n{if !spiral_mode && print_sequence != \"by object\"}\nM1002 judge_flag timelapse_record_flag\nM622 J1\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM991 S0 P-1 ;end timelapse at safe pos\nM623\n{endif}\n\nM140 S0 ; turn off bed\nM106 S0 ; turn off fan\nM106 P2 S0 ; turn off remote part cooling fan\nM106 P3 S0 ; turn off chamber cooling fan\n\n;G1 X27 F15000 ; wipe\n\n; pull back filament to AMS\nM620 S255\nG1 X267 F15000\nT255\nG1 X-28.5 F18000\nG1 X-48.2 F3000\nG1 X-28.5 F18000\nG1 X-48.2 F3000\nM621 S255\n\nM104 S0 ; turn off hotend\n\nM400 ; wait all motion done\nM17 S\nM17 Z0.4 ; lower z motor current to reduce impact if there is something in the bottom\n{if (max_layer_z + 100.0) < 256}\n    G1 Z{max_layer_z + 100.0} F600\n    G1 Z{max_layer_z +98.0}\n{else}\n    G1 Z256 F600\n    G1 Z256\n{endif}\nM400 P100\nM17 R ; restore z current\n\nG90\nG1 X-48 Y180 F3600\n\nM220 S100  ; Reset feedrate magnitude\nM201.2 K1.0 ; Reset acc magnitude\nM73.2   R1.0 ;Reset left time magnitude\nM1002 set_gcode_claim_speed_level : 0\n\n;=====printer finish  sound=========\nM17\nM400 S1\nM1006 S1\nM1006 A0 B20 L100 C37 D20 M40 E42 F20 N60\nM1006 A0 B10 L100 C44 D10 M60 E44 F10 N60\nM1006 A0 B10 L100 C46 D10 M80 E46 F10 N80\nM1006 A44 B20 L100 C39 D20 M60 E48 F20 N60\nM1006 A0 B10 L100 C44 D10 M60 E44 F10 N60\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N60\nM1006 A0 B10 L100 C39 D10 M60 E39 F10 N60\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N60\nM1006 A0 B10 L100 C44 D10 M60 E44 F10 N60\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N60\nM1006 A0 B10 L100 C39 D10 M60 E39 F10 N60\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N60\nM1006 A0 B10 L100 C48 D10 M60 E44 F10 N80\nM1006 A0 B10 L100 C0 D10 M60 E0 F10  N80\nM1006 A44 B20 L100 C49 D20 M80 E41 F20 N80\nM1006 A0 B20 L100 C0 D20 M60 E0 F20 N80\nM1006 A0 B20 L100 C37 D20 M30 E37 F20 N60\nM1006 W\n;=====printer finish  sound=========\n\n;M17 X0.8 Y0.8 Z0.5 ; lower motor current to 45% power\nM400\nM18 X Y Z\n\n";
+/* ---------- direct G-code: "fast wall" (FullControl-style toolpath, staff test) ----------
+   The shade prints as ONE wide line: the holder (ledge, cup, 4 arms) and the cable arch in flat layers,
+   then a continuous spiral with no seam, travel or retraction up to the top.
+   Start/end G-code is Bambu Studio's own A1 machine G-code (2026-05 profile) filled in here. */
+const GC_DEF = {lw:0.75, lh:0.28, speed:90, firstSpeed:30, holderSpeed:80, holderLW:0.45, temp:220, plate:'textured', brim:0, fan:90, minLayerT:5, format:'3mf'};
+const GC_PLATES = {
+  textured:{name:'Textured PEI Plate', bed:65, label:'Textured PEI (65 °C)'},
+  smooth:  {name:'High Temp Plate',    bed:65, label:'Smooth PEI / High Temp (65 °C)'},
+  cool:    {name:'Cool Plate',         bed:35, label:'Cool Plate (35 °C)'}
+};
+const GC_FIL = {dia:1.75, density:1.26, flow:0.98, maxVol:21};
+function gcArea(w,h){ return Math.max(0.01,(w-h)*h + PI*h*h/4); }           // cross-section of one squashed line, mm²
+function gcFlowVol(o){ return gcArea(o.lw,o.lh)*o.speed; }                 // mm³/s on the spiral
+
+function gcSampleR(m, j, z){                                              // outer radius of the design at column j, height z (null inside the cable arch)
+  const seg=m.seg, nz=m.nz, a=m.Z[j], top=m.Z[nz*seg+j];
+  if(z<a-1e-6) return null;
+  const fi=Math.max(0,Math.min(nz,(z-a)/Math.max(1e-6,top-a)*nz)); const i=Math.min(nz-1,Math.floor(fi)), u=fi-i;
+  return m.R[i*seg+j]*(1-u)+m.R[(i+1)*seg+j]*u;
+}
+
+function gcPlan(pIn, oIn){
+  const o={...GC_DEF, ...oIn};
+  const p=lockFixed({...pIn, lh:o.lh});
+  const m=buildMesh(p,{dz:o.lh, maxRings:5000, seg:720, segMax:720, perRib:24});
+  const hd=buildHolder(p,m);
+  const seg=m.seg, H=m.H, w=o.lw, hw=o.holderLW;
+  const slotW=Math.max(4,+p.slotW||10), topZ=hd.ledge+hd.hs, bt=Math.min(Math.max(0,+p.slotBridge||0), hd.hs-3);
+  let archTop=0; for(let j=0;j<seg;j++) archTop=Math.max(archTop,m.Z[j]);
+  const flatUntil=Math.max(topZ, hd.ha, archTop+o.lh);
+  const j0=Math.floor(seg/2);                                             // seam / spiral start at the back (opposite the cable slot)
+  const fl=0.2;                                                           // first layer height
+  const layers=[];
+  const P2=(r,a)=>[r*Math.cos(a), r*Math.sin(a)];
+  // ---- flat layers
+  let z=fl, n=0;
+  while(true){
+    const h = n===0 ? fl : o.lh, zs=z-h/2, first=n===0;
+    const paths=[];
+    const sp1 = first ? o.firstSpeed : null;
+    // ledge / cup band as arcs, zig-zag, with a gap at the cable slot (full circle where the bridge closes it)
+    const band = zs<hd.ledge ? [hd.ledgeR, hd.rsO] : (zs<topZ ? [hd.rsI, hd.rsO] : null);
+    if(band){
+      const bridge = zs>=topZ-bt && zs<topZ && zs>=hd.ledge, firstBridge = bridge && (zs-o.lh)<topZ-bt;
+      const nL=Math.max(2,Math.round((band[1]-band[0])/hw)), spc=(band[1]-band[0])/nL;
+      const pts=[];
+      for(let k=0;k<nL;k++){
+        const r=band[0]+spc*(k+0.5);
+        const g = bridge ? 0 : Math.asin(Math.min(0.95,(slotW/2+spc/2)/r));
+        const a0 = bridge ? (k&1 ? TAU : 0) : (k&1 ? TAU-g : g), a1 = bridge ? (k&1 ? 0 : TAU) : (k&1 ? g : TAU-g);
+        const nA=Math.max(12,Math.ceil(Math.abs(a1-a0)*r/0.6));
+        for(let s=0;s<=nA;s++){ const a=a0+(a1-a0)*s/nA; pts.push(P2(r,a)); }
+      }
+      paths.push({pts, w:spc, h, speed: sp1 || (firstBridge?15:o.holderSpeed), feature: bridge?'Bridge':'Inner wall', fanMax:firstBridge});
+    }
+    // arms: straight lines, cup to the middle of the shade wall
+    if(zs<hd.ha){
+      const nArm=Math.max(3,Math.round(p.holderArms)), aw=HOLDER.armW;
+      for(let k=0;k<nArm;k++){
+        const a=PI/nArm+k*TAU/nArm, ux=Math.cos(a), uy=Math.sin(a), vx=-uy, vy=ux;
+        const nL=Math.max(2,Math.round(aw/hw)), spc=aw/nL, pts=[];
+        for(let i=0;i<nL;i++){
+          const off=-aw/2+spc*(i+0.5);
+          const j=((Math.round((a+off/60)/TAU*seg)%seg)+seg)%seg; const R=gcSampleR(m,j,zs); if(R==null) continue;
+          const r0=hd.rsO-0.4, r1=R-w/2;
+          const A=[r0*ux+off*vx, r0*uy+off*vy], B=[r1*ux+off*vx, r1*uy+off*vy];
+          if(i&1) pts.push(B,A); else pts.push(A,B);
+        }
+        if(pts.length) paths.push({pts, w:spc, h, speed: sp1 || o.holderSpeed, feature:'Inner wall'});
+      }
+    }
+    // shade wall: one wide line; open around the cable arch
+    const valid=[]; for(let j=0;j<seg;j++) valid.push(gcSampleR(m,j,zs)!=null);
+    const allValid=valid.every(v=>v);
+    let order=[];
+    if(allValid){ for(let s=0;s<=seg;s++) order.push((j0+s)%seg); }
+    else { let g=0; while(valid[g]) g++; let e=g; while(!valid[e%seg]) e++; for(let s=0;s<seg;s++){ const j=(e+s)%seg; if(!valid[j]) break; order.push(j); } }
+    const wallPts=order.map(j=>{ const R=gcSampleR(m,j,zs)-w/2, a=TAU*j/seg; return P2(R,a); });
+    if(first && o.brim>0){                                                // brim: loops outside the wall, first layer only
+      for(let b=o.brim;b>=1;b--){ const pts=[]; for(let s=0;s<=seg;s+=2){ const j=(j0+s)%seg; const R=(gcSampleR(m,j,0)??m.R[j])-w/2+b*w*0.95; pts.push(P2(R,TAU*j/seg)); } paths.push({pts, w, h, speed:o.firstSpeed, feature:'Brim'}); }
+    }
+    paths.push({pts:wallPts, w, h, speed: sp1 || o.speed, feature:'Outer wall'});
+    layers.push({z, h, paths, flat:true});
+    n++;
+    if(z-h >= flatUntil - 1e-6 || z>=H-1e-6) break;
+    z = +(z+o.lh).toFixed(4);
+  }
+  // ---- spiral
+  const zF=layers[layers.length-1].z;
+  const tipStop = w*0.75;
+  let done=false, k=0;
+  while(!done && zF<H-1e-6){
+    const pts=[], zz=[], ef=[];
+    for(let s=0;s<=seg;s++){
+      let zN=zF+(k+s/seg)*o.lh, last=false;
+      if(zN>=H){ zN=H; last=true; }
+      const j=(j0+s)%seg, R=gcSampleR(m,j,Math.max(0,zN-o.lh/2));
+      const r=R-w/2;
+      if(r<tipStop){ done=true; break; }
+      pts.push(P2(r,TAU*j/seg)); zz.push(zN); ef.push(k===0 ? s/seg : 1);
+      if(last && s===seg){ done=true; }
+    }
+    if(pts.length>1) layers.push({z:zz[zz.length-1], h:o.lh, paths:[{pts, zz, ef, w, h:o.lh, speed:o.speed, feature:'Outer wall', spiral:true}], flat:false});
+    if(zz.length && zz[zz.length-1]>=H-1e-6) done=true;
+    k++;
+    if(k>5000) break;
+  }
+  // final flat lap at the top rim, tapering the flow to zero (open tops only)
+  if(!m.pointed){
+    const pts=[], zz=[], ef=[];
+    for(let s=0;s<=seg;s++){ const j=(j0+s)%seg; const R=gcSampleR(m,j,H-o.lh/2)-w/2; pts.push(P2(R,TAU*j/seg)); zz.push(H); ef.push(1-s/seg); }
+    layers.push({z:H, h:o.lh, paths:[{pts, zz, ef, w, h:o.lh, speed:o.speed, feature:'Outer wall', spiral:true}], flat:false});
+  }
+  // ---- stats (time, filament) with minimum layer time
+  const ePerMm3=1/(PI*(GC_FIL.dia/2)**2)*GC_FIL.flow;
+  let vol=0, tPrint=0, travel=0, minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9, prev=null;
+  for(const L of layers){
+    let Llen=0;
+    for(const pa of L.paths){ let len=0; for(let i=1;i<pa.pts.length;i++) len+=Math.hypot(pa.pts[i][0]-pa.pts[i-1][0],pa.pts[i][1]-pa.pts[i-1][1]); pa.len=len; Llen+=len; }
+    // slow down small layers so each one gets time to cool
+    let tL=0; for(const pa of L.paths) tL+=pa.len/pa.speed;
+    const slow = tL<o.minLayerT ? tL/o.minLayerT : 1;
+    L.slow=slow;
+    for(const pa of L.paths){
+      const efAvg = pa.ef ? pa.ef.reduce((a,b)=>a+b,0)/pa.ef.length : 1;
+      vol += pa.len*gcArea(pa.w,pa.h)*efAvg;
+      tPrint += pa.len/Math.max(5,pa.speed*slow);
+      if(prev){ const d=Math.hypot(pa.pts[0][0]-prev[0],pa.pts[0][1]-prev[1]); if(d>0.5){ travel+=d; tPrint+=d/200+ (d>2?0.8:0); } }
+      prev=pa.pts[pa.pts.length-1];
+    }
+    if(L===layers[0]) for(const pa of L.paths) for(const [x,y] of pa.pts){ minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y); }
+  }
+  const grams=vol/1000*GC_FIL.density, metres=vol*ePerMm3/1000/GC_FIL.flow;
+  const nFlat=layers.filter(L=>L.flat).length;
+  return {o, p, m, hd, layers, nFlat, nSpiral:layers.length-nFlat, H, vol, grams, metres, mins:tPrint/60, box:[minX,minY,maxX,maxY], flatUntil, volFlow:gcFlowVol(o), ePerMm3};
+}
+
+/* Bambu Studio placeholder language: [var], {expr}, {if}{else}{endif} */
+function gcTemplate(src, V){
+  const names=Object.keys(V), vals=names.map(k=>V[k]);
+  const ev=ex=>Function(...names,'"use strict";return ('+ex+');')(...vals);
+  const num=v=>typeof v==='number' ? String(Math.round(v*1000)/1000) : String(v);
+  let out='', last=0, mt; const st=[{on:true,taken:true,par:true}];
+  const re=/\{(if\s[^}]*|else|endif|[^{}]*)\}|\[([a-z_]+)\]/g;
+  while((mt=re.exec(src))){
+    const top=st[st.length-1];
+    if(top.on) out+=src.slice(last,mt.index);
+    last=re.lastIndex;
+    if(mt[2]!==undefined){ if(top.on){ const v=V[mt[2]]; out+=num(Array.isArray(v)?v[0]:v); } continue; }
+    const t=mt[1].trim();
+    if(t.startsWith('if ')){ const c=top.on && !!ev(t.slice(3)); st.push({on:c,taken:c,par:top.on}); }
+    else if(t==='else'){ top.on=top.par && !top.taken; top.taken=true; }
+    else if(t==='endif'){ if(st.length>1) st.pop(); }
+    else if(top.on){ out+=num(ev(t)); }
+  }
+  if(st[st.length-1].on) out+=src.slice(last);
+  return out;
+}
+
+function gcText(plan){
+  const {o, layers, H}=plan; const pl=GC_PLATES[o.plate]||GC_PLATES.textured;
+  const cx=128, cy=128;                                                   // A1 bed centre
+  const X=v=>(v+cx).toFixed(3), Y=v=>(v+cy).toFixed(3);
+  const ePer=plan.ePerMm3;
+  const [bx0,by0,bx1,by1]=plan.box;
+  const vol=Math.min(GC_FIL.maxVol, Math.max(6, plan.volFlow));
+  const V={bed_temperature_initial_layer_single:pl.bed, initial_no_support_extruder:0, initial_extruder:0, nozzle_diameter:0.4,
+    nozzle_temperature_initial_layer:[o.temp], nozzle_temperature:[o.temp], filament_type:['PLA'], curr_bed_type:pl.name,
+    first_layer_print_min:[bx0+cx-2, by0+cy-2], first_layer_print_size:[bx1-bx0+4, by1-by0+4], first_layer_center_no_wipe_tower:[cx,cy],
+    flush_temperatures:[o.temp], flush_volumetric_speeds:[12], outer_wall_volumetric_speed:vol, spiral_mode:true, print_sequence:'by layer', max_layer_z:H};
+  const total=layers.length, totMin=plan.mins+8;
+  const out=[];
+  out.push('; HEADER_BLOCK_START',
+    '; generated by SP FabLab Lampshade Generator, direct toolpath ("fast wall", FullControl-style)',
+    `; model printing time: ${fmtTime(plan.mins)}; total estimated time: ${fmtTime(totMin)}`,
+    `; total layer number: ${total}`,
+    `; total filament length [mm] : ${(plan.metres*1000).toFixed(2)}`,
+    `; total filament volume [cm^3] : ${(plan.vol/1000).toFixed(2)}`,
+    `; total filament weight [g] : ${plan.grams.toFixed(2)}`,
+    `; filament_density: ${GC_FIL.density}`, `; filament_diameter: ${GC_FIL.dia}`, `; max_z_height: ${H.toFixed(2)}`,
+    '; HEADER_BLOCK_END','',
+    '; CONFIG_BLOCK_START', '; printer_model = Bambu Lab A1', '; nozzle_diameter = 0.4', '; filament_type = PLA', `; curr_bed_type = ${pl.name}`,
+    `; layer_height = ${o.lh}`, `; initial_layer_print_height = 0.2`, `; line_width = ${o.lw}`, `; outer_wall_speed = ${o.speed}`, `; nozzle_temperature = ${o.temp}`,
+    `; textured_plate_temp = ${pl.bed}`, '; spiral_mode = 1', `; design = ${describe(plan.p)} · seed ${plan.p.seed}`,
+    '; CONFIG_BLOCK_END','', '; EXECUTABLE_BLOCK_START');
+  out.push(gcTemplate(GC_A1_START, V));
+  out.push('; ===== lampshade toolpath =====','M83','M204 S5000','G90','M106 P1 S0');
+  let eOn=true, cur=null, curZ=0.2, tDone=0, lastFan=-1, retracted=false;
+  const fanSet=v=>{ const s=Math.round(Math.max(0,Math.min(100,v))*2.55); if(s!==lastFan){ out.push(`M106 P1 S${s}`); lastFan=s; } };
+  const retract=()=>{ if(!retracted){ out.push('G1 E-0.8 F1800'); retracted=true; } };
+  const unretract=()=>{ if(retracted){ out.push('G1 E0.8 F1800'); retracted=false; } };
+  const travel=(x,y,z)=>{
+    const d=cur?Math.hypot(x-cur[0],y-cur[1]):99;
+    if(d<0.05 && Math.abs(z-curZ)<1e-4) return;
+    if(d>2){ retract(); out.push(`G1 Z${(Math.max(z,curZ)+0.4).toFixed(3)} F1200`); out.push(`G1 X${X(x)} Y${Y(y)} F18000`); out.push(`G1 Z${z.toFixed(3)} F1200`); unretract(); }
+    else { out.push(`G1 X${X(x)} Y${Y(y)}${Math.abs(z-curZ)>1e-4?' Z'+z.toFixed(3):''} F12000`); }
+    cur=[x,y]; curZ=z;
+  };
+  layers.forEach((L,li)=>{
+    out.push('; CHANGE_LAYER',`; Z_HEIGHT: ${L.z.toFixed(3)}`,`; LAYER_HEIGHT: ${L.h.toFixed(3)}`,
+      `; layer num/total_layer_count: ${li+1}/${total}`, `M73 L${li+1}`, `M991 S0 P${li}`);
+    const pct=Math.min(99,Math.floor(tDone/Math.max(1e-6,plan.mins)*100)); out.push(`M73 P${pct} R${Math.max(0,Math.round(plan.mins-tDone))}`);
+    if(li===0) fanSet(0); else if(li===1) fanSet(o.fan*0.5); else fanSet(o.fan);
+    for(const pa of L.paths){
+      out.push(`; FEATURE: ${pa.feature}`,`; LINE_WIDTH: ${pa.w.toFixed(3)}`);
+      if(pa.fanMax) fanSet(100);
+      const f=Math.round(Math.max(5,pa.speed*L.slow)*60), eLin=gcArea(pa.w,pa.h)*ePer;
+      const z0 = pa.zz ? pa.zz[0] : L.z;
+      travel(pa.pts[0][0], pa.pts[0][1], z0);
+      unretract();
+      let first=true;
+      for(let i=1;i<pa.pts.length;i++){
+        const [x0,y0]=pa.pts[i-1], [x,y]=pa.pts[i]; const d=Math.hypot(x-x0,y-y0); if(d<1e-4) continue;
+        const e=d*eLin*(pa.ef?pa.ef[i]:1);
+        const zPart = pa.zz ? ` Z${pa.zz[i].toFixed(3)}` : '';
+        out.push(`G1 X${X(x)} Y${Y(y)}${zPart} E${e.toFixed(5)}${first?' F'+f:''}`); first=false;
+        cur=[x,y]; if(pa.zz) curZ=pa.zz[i];
+        tDone+=d/Math.max(5,pa.speed*L.slow)/60;
+      }
+      if(pa.fanMax) fanSet(o.fan);
+    }
+  });
+  retract(); out.push(`G1 Z${(curZ+2).toFixed(3)} F1200`);
+  out.push('; ===== end of lampshade toolpath =====');
+  out.push(gcTemplate(GC_A1_END, V));
+  out.push('; EXECUTABLE_BLOCK_END','');
+  return out.join('\n');
+}
+
+/* MD5 (for the .gcode.md5 inside Bambu's .gcode.3mf) */
+function md5hex(u8){
+  const K=new Uint32Array(64), S=[7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+  for(let i=0;i<64;i++) K[i]=Math.floor(Math.abs(Math.sin(i+1))*4294967296)>>>0;
+  const n=u8.length, total=((n+8>>>6)+1)*64, buf=new Uint8Array(total); buf.set(u8); buf[n]=0x80;
+  const bits=n*8; const dv=new DataView(buf.buffer); dv.setUint32(total-8,bits>>>0,true); dv.setUint32(total-4,Math.floor(bits/4294967296),true);
+  let a0=0x67452301,b0=0xefcdab89,c0=0x98badcfe,d0=0x10325476; const M=new Uint32Array(16);
+  for(let off=0;off<total;off+=64){
+    for(let i=0;i<16;i++) M[i]=dv.getUint32(off+i*4,true);
+    let A=a0,B=b0,C=c0,D=d0;
+    for(let i=0;i<64;i++){
+      let F,g;
+      if(i<16){F=(B&C)|(~B&D);g=i;} else if(i<32){F=(D&B)|(~D&C);g=(5*i+1)%16;} else if(i<48){F=B^C^D;g=(3*i+5)%16;} else {F=C^(B|~D);g=(7*i)%16;}
+      F=(F+A+K[i]+M[g])>>>0; A=D; D=C; C=B; B=(B+((F<<S[i])|(F>>>(32-S[i]))))>>>0;
+    }
+    a0=(a0+A)>>>0; b0=(b0+B)>>>0; c0=(c0+C)>>>0; d0=(d0+D)>>>0;
+  }
+  const hex=v=>[v&255,v>>>8&255,v>>>16&255,v>>>24].map(x=>x.toString(16).padStart(2,'0')).join('');
+  return (hex(a0)+hex(b0)+hex(c0)+hex(d0)).toUpperCase();
+}
+
+async function gcPackage(plan, text){
+  const enc=new TextEncoder(); const g=enc.encode(text);
+  const base=`${fileBase(plan.p)}-fastwall-${plan.o.lw}w`;
+  if(plan.o.format==='gcode') return {blob:new Blob([g],{type:'text/x.gcode'}), name:base+'.gcode'};
+  const secs=Math.round((plan.mins+8)*60);
+  const ct='<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/><Default Extension="gcode" ContentType="text/x.gcode"/><Default Extension="config" ContentType="text/xml"/><Default Extension="md5" ContentType="text/plain"/></Types>';
+  const rels='<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>';
+  const model='<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021">\n<metadata name="Application">BambuStudio-02.01.01.52</metadata>\n<metadata name="BambuStudio:3mfVersion">1</metadata>\n<metadata name="Title">'+xmlEsc(base)+'</metadata>\n<resources/>\n<build/>\n</model>\n';
+  const slice=`<?xml version="1.0" encoding="UTF-8"?>
+<config>
+  <header>
+    <header_item key="X-BBL-Client-Type" value="slicer"/>
+    <header_item key="X-BBL-Client-Version" value="02.01.01.52"/>
+  </header>
+  <plate>
+    <metadata key="index" value="1"/>
+    <metadata key="printer_model_id" value="N2S"/>
+    <metadata key="nozzle_diameters" value="0.4"/>
+    <metadata key="timelapse_type" value="0"/>
+    <metadata key="prediction" value="${secs}"/>
+    <metadata key="weight" value="${plan.grams.toFixed(2)}"/>
+    <metadata key="outside" value="false"/>
+    <metadata key="support_used" value="false"/>
+    <metadata key="label_object_enabled" value="false"/>
+    <filament id="1" tray_info_idx="GFA00" type="PLA" color="${xmlEsc(plan.p.color||'#FFFFFF')}" used_m="${plan.metres.toFixed(2)}" used_g="${plan.grams.toFixed(2)}"/>
+  </plate>
+</config>
+`;
+  const settings=`<?xml version="1.0" encoding="UTF-8"?>
+<config>
+  <plate>
+    <metadata key="plater_id" value="1"/>
+    <metadata key="plater_name" value="${xmlEsc(base)}"/>
+    <metadata key="locked" value="false"/>
+    <metadata key="gcode_file" value="Metadata/plate_1.gcode"/>
+  </plate>
+</config>
+`;
+  const blob=await makeZip([
+    {name:'[Content_Types].xml',data:enc.encode(ct)},{name:'_rels/.rels',data:enc.encode(rels)},{name:'3D/3dmodel.model',data:enc.encode(model)},
+    {name:'Metadata/plate_1.gcode',data:g},{name:'Metadata/plate_1.gcode.md5',data:enc.encode(md5hex(g))},
+    {name:'Metadata/slice_info.config',data:enc.encode(slice)},{name:'Metadata/model_settings.config',data:enc.encode(settings)}]);
+  return {blob, name:base+'.gcode.3mf'};
+}
+
+/* toolpath picture: first layer from above (holder, arms, wall) + the side outline */
+function gcDraw(cv, plan){
+  const {x,w,h}=prepCanvas(cv);
+  x.clearRect(0,0,w,h);
+  const dark=matchMedia('(prefers-color-scheme: dark)').matches;
+  x.fillStyle=dark?'#111317':'#f3f1ec'; x.fillRect(0,0,w,h);
+  const half=w*0.5, L0=plan.layers[0], Lh=plan.layers.find(L=>L.flat && L.z>=6) || L0;
+  const R=Math.max(...[plan.box[2],plan.box[3],-plan.box[0],-plan.box[1]])+4, sc=Math.min(half-20,h-40)/(2*R), cx=half/2, cy=h/2+8;
+  const col={'Outer wall':'#e8742a','Inner wall':'#3b82c4','Bridge':'#9a5bd0','Brim':'#8a8f98'};
+  const drawL=(L,alpha)=>{ for(const pa of L.paths){ x.strokeStyle=col[pa.feature]||'#888'; x.globalAlpha=alpha; x.lineWidth=Math.max(0.8,pa.w*sc); x.lineJoin='round'; x.beginPath(); pa.pts.forEach(([px,py],i)=>{ const X=cx+px*sc, Y=cy-py*sc; i?x.lineTo(X,Y):x.moveTo(X,Y); }); x.stroke(); } x.globalAlpha=1; };
+  drawL(Lh,0.35); drawL(L0,1);
+  x.fillStyle=dark?'#c9ccd2':'#44484f'; x.font='600 12px system-ui,sans-serif'; x.fillText('Layer 1 from above',10,16);
+  // side: radius of the path at the seam side vs height
+  const sx0=half+30, sx1=w-14, sy0=h-24, sy1=24; const maxR=plan.m.maxR+2;
+  x.fillText('Side view',half+10,16);
+  x.strokeStyle=dark?'#3a3f47':'#d9d5cc'; x.lineWidth=1; x.beginPath(); x.moveTo(sx0,sy0); x.lineTo(sx1,sy0); x.stroke();
+  const zy=z=>sy0-(z/plan.H)*(sy0-sy1), rx=r=>sx0+(r/maxR)*(sx1-sx0);
+  x.fillStyle='rgba(59,130,196,.18)'; x.fillRect(sx0, zy(plan.flatUntil), sx1-sx0, zy(0)-zy(plan.flatUntil));
+  x.strokeStyle='#e8742a'; x.lineWidth=2; x.beginPath(); let first=true;
+  for(const L of plan.layers){ const pa=L.paths[L.paths.length-1]; const [px,py]=pa.pts[0]; const r=Math.hypot(px,py); const X=rx(r), Y=zy(pa.zz?pa.zz[0]:L.z); first?x.moveTo(X,Y):x.lineTo(X,Y); first=false; }
+  x.stroke();
+  x.fillStyle=dark?'#c9ccd2':'#44484f'; x.font='11px system-ui,sans-serif';
+  x.fillText(`flat to ${plan.flatUntil.toFixed(1)} mm (holder, arch)`, sx0+4, zy(plan.flatUntil)-4);
+  x.fillText(`${plan.H.toFixed(0)} mm`, sx0+4, sy1+10);
+}
+
+let gcLast=null, gcTimer=0;
+function gcOpts(){ const v=id=>$('#'+id).value; return {lw:+v('gcLw'), lh:+v('gcLh'), speed:+v('gcSpeed'), temp:+v('gcTemp'), plate:v('gcPlate'), brim:+v('gcBrim'), format:v('gcFmt')}; }
+function gcSaveOpts(o){ setPref('gcOpts', JSON.stringify(o)); }
+function gcLoadOpts(){ try{ return {...GC_DEF, lh:+P.lh||0.28, ...(JSON.parse(getPref('gcOpts')||'{}'))}; }catch(e){ return {...GC_DEF}; } }
+function gcRefresh(){
+  const o=gcOpts(); gcSaveOpts(o);
+  $('#gcLwO').textContent=o.lw.toFixed(2)+' mm'; $('#gcSpeedO').textContent=o.speed+' mm/s';
+  const volF=gcFlowVol(o);
+  $('#gcFlow').innerHTML = `Flow on the wall: <b>${volF.toFixed(1)} mm³/s</b>` + (volF>GC_FIL.maxVol ? ` <span class="pill bad">over the A1's ${GC_FIL.maxVol} mm³/s for PLA, slow down</span>` : volF>19 ? ' <span class="pill warn">near the limit</span>' : ' <span class="pill ok">ok</span>');
+  clearTimeout(gcTimer);
+  gcTimer=setTimeout(()=>{
+    try{
+      const plan=gcPlan(P,o); gcLast=plan;
+      const slicer=meshStats(buildMesh({...P},Q_THUMB),P);
+      $('#gcStats').innerHTML=`<div class="kv"><span>Print time</span><span><b>≈${fmtTime(plan.mins)}</b> + ~8 min printer prep (the normal 3-wall 3MF, rough guess: ≈${fmtTime(slicer.mins)})</span>
+        <span>Filament</span><span>${plan.grams.toFixed(0)} g · ${plan.metres.toFixed(1)} m</span>
+        <span>Layers</span><span>${plan.nFlat} flat (holder and cable arch, to ${plan.flatUntil.toFixed(1)} mm) + ${plan.nSpiral} spiral</span>
+        <span>Wall</span><span>one ${o.lw.toFixed(2)} mm line${plan.m.pointed?' · pointed top closes to a small hole':''}</span></div>`;
+      gcDraw($('#gcCanvas'), plan);
+      $('#gcGo').disabled=false;
+    }catch(e){ console.error(e); $('#gcStats').textContent='Could not plan this design: '+(e.message||e); $('#gcGo').disabled=true; }
+  }, 250);
+}
+function openGcodePanel(){
+  const o=gcLoadOpts();
+  const optList=(list,cur)=>list.map(([v,l])=>`<option value="${v}"${String(v)===String(cur)?' selected':''}>${l}</option>`).join('');
+  const sel='style="width:100%;font-size:16px;min-height:44px"';
+  const notA1 = P.printer!=='a1' ? `<p class="hint" style="color:var(--bad)">Start and end G-code are the Bambu Lab A1's. The current printer is ${xmlEsc(PRINTERS[P.printer].name)}: only use this file on an A1.</p>` : '';
+  modal('Fast wall G-code (test)', `
+    <p class="hint" style="margin:0">Prints the shade as one wide line: the holder and cable arch in flat layers, then a continuous spiral with no seam or retractions. It skips the slicer, so check the first layer closely. Built from Bambu's own A1 start and end G-code.</p>
+    ${notA1}
+    <div class="row2">
+      <label class="field"><span class="lbl">Wall line width <output id="gcLwO"></output></span><input type="range" id="gcLw" min="0.5" max="1" step="0.05" value="${o.lw}"></label>
+      <label class="field"><span class="lbl">Wall speed <output id="gcSpeedO"></output></span><input type="range" id="gcSpeed" min="30" max="150" step="5" value="${o.speed}"></label>
+    </div>
+    <div class="row2">
+      <label class="field"><span class="lbl">Layer height</span><select id="gcLh" ${sel}>${optList([[0.2,'0.20 mm'],[0.24,'0.24 mm'],[0.28,'0.28 mm'],[0.32,'0.32 mm']],o.lh)}</select></label>
+      <label class="field"><span class="lbl">Build plate</span><select id="gcPlate" ${sel}>${optList(Object.entries(GC_PLATES).map(([k,v])=>[k,v.label]),o.plate)}</select></label>
+    </div>
+    <div class="row2">
+      <label class="field"><span class="lbl">Nozzle temperature</span><select id="gcTemp" ${sel}>${optList([[210,'210 °C'],[215,'215 °C'],[220,'220 °C (Bambu PLA)'],[225,'225 °C'],[230,'230 °C'],[235,'235 °C']],o.temp)}</select></label>
+      <label class="field"><span class="lbl">Brim</span><select id="gcBrim" ${sel}>${optList([[0,'None'],[2,'2 loops'],[4,'4 loops']],o.brim)}</select></label>
+    </div>
+    <label class="field"><span class="lbl">File</span><select id="gcFmt" ${sel}>${optList([['3mf','.gcode.3mf (A1: microSD card or Bambu Studio)'],['gcode','.gcode (plain, for checking in a G-code viewer)']],o.format)}</select></label>
+    <div class="hint" id="gcFlow"></div>
+    <canvas id="gcCanvas" style="width:100%;height:200px;border-radius:10px;border:1px solid var(--line)"></canvas>
+    <div class="md-body" id="gcStats">Planning…</div>`,
+    [['Cancel','',closeModal],['Download','primary',gcDownload]]);
+  const go=$('#mdActions').lastChild; go.id='gcGo'; go.disabled=true;
+  ['gcLw','gcSpeed'].forEach(id=>$('#'+id).addEventListener('input',gcRefresh));
+  ['gcLh','gcPlate','gcTemp','gcBrim','gcFmt'].forEach(id=>$('#'+id).addEventListener('change',gcRefresh));
+  gcRefresh();
+}
+async function gcDownload(){
+  const go=$('#gcGo'); if(go) go.disabled=true; $('#busy').hidden=false;
+  await new Promise(r=>setTimeout(r,30));
+  try{
+    const plan=gcLast && JSON.stringify(gcLast.o)===JSON.stringify({...GC_DEF,...gcOpts()}) ? gcLast : gcPlan(P,gcOpts());
+    const text=gcText(plan);
+    const {blob,name}=await gcPackage(plan,text);
+    $('#busy').hidden=true; closeModal();
+    await offerFile(name, blob);
+  }catch(e){ console.error(e); toast('G-code failed: '+(e&&e.message||e)); }
+  finally{ $('#busy').hidden=true; if(go) go.disabled=false; }
+}
+function openFablabMenu(){
+  modal('Staff downloads', `<p class="hint" style="margin:0">For testing on the lab printers. Visitors don't see this.</p>`,
+    [['Cancel','',closeModal],['Fast wall G-code (test)','',()=>{ closeModal(); setTimeout(openGcodePanel,60); }],['Download 3MF','primary',()=>{ closeModal(); doExport(); }]]);
+}
+
+window.__lamp = {P, buildMesh, buildHolder, build3mf, meshStats, gcPlan, gcText, gcPackage, gcTemplate, md5hex}; // exposed for testing
 
 /* ---------- quality presets ---------- */
 const Q_PREVIEW={dz:0.8, maxRings:320, seg:200, segMax:320, perRib:8, shell:true};
@@ -911,6 +1328,7 @@ function describe(p){
   let s=b;
   if(p.pattern!=='smooth'){ s+=' · '+pt.name; if(pt.uses.includes('count')&&p.count>0) s+=' × '+Math.round(p.count); if(pt.uses.includes('twist')&&p.twist) s+=` · ${p.twist>0?'+':''}${p.twist}° twist`; }
   if(p.layer!=='none') s+=` · ${LAYERPATS[p.layer].name} / ${p.bandN} layers`;
+  if(p.body==='pagoda' && p.tip) s+=' · pointed top';
   return s;
 }
 
@@ -921,7 +1339,7 @@ function randomDesign(seed, base){
   q.body=pick(Object.keys(BODIES));
   const Hm=maxHeight(q);
   q.H=Math.round(rr(Math.min(110,Hm*0.6),Hm));
-  const cap=Math.min(210,bedMaxD(q));
+  const cap=bedMaxD(q);
   const minD=LIGHTS[q.light].d+2*wallT(q)+12;
   q.Db=Math.round(rr(Math.max(minD,85),cap*0.8));
   q.Dt=Math.round(rr(40,cap*0.75));
@@ -940,6 +1358,7 @@ function randomDesign(seed, base){
   q.bandN=pick([4,6,8,10,12,16,20,24,32,40]);
   if(q.layer!=='none' && q.bandN*q.lh<0.8) q.bandN=Math.ceil(0.8/q.lh);
   q.layerOff=Math.round(rr(0.4,1.4)*20)/20;
+  q.tip = q.body==='pagoda' && r()<0.35;
   return fitToBed(q);
 }
 function fitToBed(q){
@@ -954,7 +1373,7 @@ function fitToBed(q){
 function mutate(p){
   const r=rng(newSeed()), jit=(v,amt,lo,hi,st=1)=>{ const x=v*(1+(r()*2-1)*amt); return Math.min(hi,Math.max(lo,Math.round(x/st)*st)); };
   const q={...p, edited:true};
-  q.H=jit(q.H,0.12,60,maxHeight(q)); q.Db=jit(q.Db,0.12,70,230); q.Dt=jit(q.Dt,0.18,30,230); q.bulge=jit(q.bulge+2,0.35,0,60);
+  q.H=jit(q.H,0.12,60,maxHeight(q)); q.Db=jit(q.Db,0.12,70,MAX_D); q.Dt=jit(q.Dt,0.18,30,MAX_D); q.bulge=jit(q.bulge+2,0.35,0,60);
   q.depth=jit(q.depth,0.3,0.5,10,0.1); q.count=Math.max(q.pattern==='facets'?3:0,jit(q.count,0.2,0,48));
   q.twist=Math.max(-360,Math.min(360,Math.round((q.twist+(r()*2-1)*45)/5)*5)); q.freq=jit(q.freq,0.25,1,30);
   if(r()<0.25) q.profile=['round','pointed','square','scallop'][Math.floor(r()*4)];
@@ -1011,7 +1430,7 @@ function buildLayerSeg(){
 
 const fmt = {
   H:v=>v+' mm', Db:v=>v+' mm', Dt:v=>v+' mm', bulge:v=>v+' mm', count:v=>v, depth:v=>(+v).toFixed(1)+' mm', freq:v=>v,
-  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>v+'°', holderH:v=>(+v).toFixed(1)+' mm', cupD:v=>{ const g=(v-LIGHTS[P.light].d)/2; return `${(+v).toFixed(1)} mm (gap ${g>=0?'+':''}${g.toFixed(2)})`; }, slotBridge:v=>{ if(+v<=0) return 'off'; const hs=Math.max(4,LIGHTS[P.light].h+(+P.cupExtra||0)); return `${(+v).toFixed(1)} mm (opening ${Math.max(0,hs-v).toFixed(1)} mm tall)`; }, slotW:v=>(+v).toFixed(1)+' mm', cupExtra:v=>(+v===0?'flush':(v>0?'+':'')+(+v).toFixed(1)+' mm'), wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm'
+  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>{ const e=effMaxA({...P,maxA:+v}); return e<+v ? `${v}° (${e}° at ${(+P.lh).toFixed(2)} mm layers)` : v+'°'; }, holderH:v=>(+v).toFixed(1)+' mm', cupD:v=>{ const g=(v-LIGHTS[P.light].d)/2; return `${(+v).toFixed(1)} mm (gap ${g>=0?'+':''}${g.toFixed(2)})`; }, slotBridge:v=>{ if(+v<=0) return 'off'; const hs=Math.max(4,LIGHTS[P.light].h+(+P.cupExtra||0)); return `${(+v).toFixed(1)} mm (opening ${Math.max(0,hs-v).toFixed(1)} mm tall)`; }, slotW:v=>(+v).toFixed(1)+' mm', cupExtra:v=>(+v===0?'flush':(v>0?'+':'')+(+v).toFixed(1)+' mm'), wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm'
 };
 function syncUI(){
   // segmented + chips
@@ -1024,13 +1443,14 @@ function syncUI(){
     else if(el.type==='range'){ el.value=P[key]; const out=document.getElementById(key+'o'); if(out) out.textContent=fmt[key]?fmt[key](P[key]):P[key]; }
   });
   $$('.swatch').forEach(s=>s.setAttribute('aria-pressed',String(s.dataset.c===P.color)));
-  $('#H').max=maxHeight(P);
+  $('#H').max=maxHeight(P); $('#Db').max=$('#Dt').max=Math.floor(bedMaxD(P));
   const pt=PATTERNS[P.pattern];
   $$('[data-pat]').forEach(el=>el.hidden=!pt.uses.includes(el.dataset.pat));
   $('#countLbl').firstChild.textContent=(pt.count||'Count')+' ';
   $('#freqLbl').firstChild.textContent=(pt.freq||'Rows')+' ';
   $('#count').min = P.pattern==='facets'?3:(P.pattern==='waves'?0:2);
   $('#bulgeLbl').firstChild.textContent=BODIES[P.body].bulge+' ';
+  $('#tipRow').hidden = P.body!=='pagoda';
   const lp=LAYERPATS[P.layer];
   $$('[data-lay]').forEach(el=>el.hidden=!(lp.uses||[]).includes(el.dataset.lay));
   $('#layerHint').textContent=lp.hint||'Plain layers. Pick a layer pattern to add texture that follows your layer height.';
@@ -1215,7 +1635,7 @@ function updateAnalysis(m){
   const st=meshStats(m,P);
   const L=LIGHTS[P.light], pr=PRINTERS[P.printer];
   const maxD=m.maxR*2, bedOk=maxD<=Math.min(pr.x,pr.y)-4 && m.H<=pr.z;
-  const ang=m.angle, angClass=ang<=P.maxA+0.5?'ok':(ang<=55?'warn':'bad');
+  const ang=m.angle, angClass=ang<=m.effA+0.5?'ok':(ang<=55?'warn':'bad');
   const clearance = (m.vase ? minRadBottom(m)-m.t : (m.ring ? m.rc : minRadBottom(m)-m.t)) - L.d/2;
   const hd=P.holder?currentHolder:null;
   $('#stats').innerHTML=[
@@ -1224,7 +1644,7 @@ function updateAnalysis(m){
     ['Layers',`${st.layers}`],
     ['Filament',`${st.grams.toFixed(0)}<small> g · ${st.metres.toFixed(1)} m</small>`],
     ['Print time',`≈${fmtTime(st.mins)}`],
-    ['Top opening',`Ø${(topRad(m)*2).toFixed(0)}<small> mm</small>`]
+    ['Top opening', m.pointed?'closed':`Ø${(topRad(m)*2).toFixed(0)}<small> mm</small>`]
   ].map(([k,v])=>`<div class="stat"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
   const rows=[];
   rows.push(['Fits the '+pr.name.replace('Bambu Lab ',''), bedOk?'<span class="pill ok">fits</span>':'<span class="pill bad">too big</span>']);
@@ -1233,11 +1653,15 @@ function updateAnalysis(m){
     rows.push([`${hd.arms.length} arms · ≈${hd.grams.toFixed(0)} g`, hd.integrated?'<span class="pill ok">built in</span>':'<span class="pill ok">separate insert</span>']);
     if(hd.arms.length<Math.round(P.holderArms)) rows.push(['Some arms','<span class="pill warn">no room, skipped</span>']);
   } else rows.push([`Sits over ${L.name} (Ø${L.d})`, clearance>=0.3?`<span class="pill ok">+${clearance.toFixed(1)} mm</span>`:'<span class="pill bad">too tight</span>']);
-  rows.push([P.fix&&m.rawAngle>P.maxA+0.5?`Overhang (fixed from ${m.rawAngle.toFixed(0)}°)`:'Steepest overhang', `<span class="pill ${angClass}">${ang.toFixed(0)}°</span>`]);
+  rows.push([P.fix&&m.rawAngle>m.effA+0.5?`Overhang (angled from ${m.rawAngle.toFixed(0)}° to ${m.effA}°)`:'Steepest overhang', `<span class="pill ${angClass}">${ang.toFixed(0)}°</span>`]);
   if(P.mode==='vase' && P.layer!=='none' && ['bands','shingles'].includes(P.layer) && P.layerOff>P.vaseLW*0.9 && !P.fix) rows.push(['Layer offset vs wall','<span class="pill warn">steps wider than wall</span>']);
-  if(m.closed) rows.push([`Closed top spans Ø${(m.capR*2).toFixed(0)} mm`, m.capR*2>25?'<span class="pill warn">needs supports</span>':'<span class="pill ok">bridges</span>']);
+  if(m.pointed) rows.push(['Pointed top', '<span class="pill ok">closes as a cone, no supports</span>']);
+  else if(m.closed) rows.push([`Closed top spans Ø${(m.capR*2).toFixed(0)} mm`, m.capR*2>25?'<span class="pill warn">needs supports</span>':'<span class="pill ok">bridges</span>']);
   if(P.mode==='vase' && P.vaseLW>parseFloat(P.nozzle)*2) rows.push(['Line width vs nozzle','<span class="pill warn">over 2× nozzle</span>']);
   $('#checks').innerHTML=rows.map(([a,b])=>`<div><span>${a}</span>${b}</div>`).join('');
+  const sn=$('#shapeNote');
+  if(P.fix && m.rawAngle>m.effA+1){ sn.hidden=false; sn.textContent=`Steep curves are angled to ${m.effA}° so they print cleanly without supports. The preview shows the angled shape.`; }
+  else sn.hidden=true;
   drawProfile(m); drawLens(m);
   $('#sheet').textContent=settingsText(m,st);
   $('#sheetTitle').textContent=isPrusa(P)?'PrusaSlicer settings':'Bambu Studio settings';
@@ -1466,8 +1890,20 @@ function setParam(key,val,live){
   if(key==='mode' && val==='vase' && P.top==='closed'){ P.top='open'; toast('Top set to Open. Spiral vase can only print an open top.'); }
   if(key==='pattern' && val==='facets' && P.count<3) P.count=6;
   if(key==='pattern' && val==='facets' && P.count>16) P.count=8;
-  if(live){ refresh(Q_DRAG); clearTimeout(dragTimer); dragTimer=setTimeout(()=>refresh(),260); }
-  else refresh();
+  if(live){ refresh(Q_DRAG); clearTimeout(dragTimer); dragTimer=setTimeout(()=>{ keepWidth(key); refresh(); },260); }
+  else { keepWidth(key); refresh(); }
+}
+/* keep the widest point within MAX_D (180 mm): pull back the value that was just changed, else shrink the whole shape */
+function keepWidth(key){
+  const lim=bedMaxD(P)-0.5, wid=()=>buildMesh(P,Q_THUMB).maxR*2;
+  if(!DESIGN_KEYS.includes(key) || wid()<=lim) return;
+  if(['bulge','Db','Dt','depth'].includes(key)){
+    let lo={bulge:0,depth:0.5,Db:70,Dt:30}[key], hi=+P[key];
+    for(let i=0;i<12;i++){ const mid=(lo+hi)/2; P[key]=mid; if(wid()<=lim) lo=mid; else hi=mid; }
+    P[key]= key==='depth' ? Math.floor(lo*10)/10 : Math.floor(lo);
+  }
+  if(wid()>lim) fitToBed(P);
+  toast(`Kept within ${Math.round(bedMaxD(P))} mm wide`);
 }
 function wire(){
   document.addEventListener('click',e=>{
@@ -1485,6 +1921,7 @@ function wire(){
   $('#btnExport').addEventListener('click',()=>doExport());
   $('#btnIdeas').addEventListener('click',makeIdeas);
   $('#btnHolderOnly').addEventListener('click',()=>doExport('holder'));
+  $('#btnGcode').addEventListener('click',openGcodePanel);
   $('#btnHolderView').addEventListener('click',toggleHolderView);
   $('#seedIn').addEventListener('change',e=>{ const v=e.target.value.trim().toUpperCase(); if(v) doRandom(v); });
   $('#tLit').addEventListener('click',()=>setLit(true));
@@ -1548,7 +1985,7 @@ function setupTitleSwitch(mode){
   $('#btnTitle').title = mode==='kiosk' ? 'Staff: tap to leave kiosk mode' : 'Tap to switch to kiosk mode';
   $('#btnTitle').addEventListener('click',()=>{ if(mode==='kiosk') askPassword(); else switchUi('kiosk'); });
   $('#btnBrand').addEventListener('click',()=>{ if(mode==='kiosk') askPassword(openMachinePanel,'Printer setup (staff)'); });
-  $('#btnFablab').addEventListener('click',()=>{ if(mode==='kiosk') doExport(); });   // hidden: kiosk 3MF download
+  $('#btnFablab').addEventListener('click',()=>{ if(mode==='kiosk') openFablabMenu(); });   // hidden: kiosk 3MF / test G-code download
 }
 let pwOk=null;
 function askPassword(onOk, title){
@@ -1563,7 +2000,7 @@ function checkPassword(){
   else { $('#pwMsg').textContent='Wrong password'; $('#pwIn').select(); }
 }
 function hideBooth(el){ if(el) el.classList.add('boothHide'); }
-const KIOSK_DEFAULTS={printer:'a1', nozzle:'0.4', lh:0.28, modes:['wall'], wall:1.2, holderArms:4, maxH:200, maxD:150, colorName:'PLA'};
+const KIOSK_DEFAULTS={printer:'a1', nozzle:'0.4', lh:0.28, modes:['wall'], wall:1.2, holderArms:4, maxH:180, maxD:180, colorName:'PLA'};
 const STEPS=[
   ['secLight',  'Light source',    'This is the LED light that goes inside your lamp. A built-in holder with 4 arms keeps it in the middle.'],
   ['secBody',   'Shape',           'Choose the overall shape, then set how tall and wide your lamp is.'],
@@ -1782,7 +2219,7 @@ function setupIdle(){
 }
 
 /* ---------- per-step reset ---------- */
-const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge'],
+const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge','tip'],
   secPattern:['pattern','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW']};
 const STEP_NAMES={secLight:'Light source', secBody:'Shape', secPattern:'Surface pattern', secLayer:'Layer pattern', secHolder:'Light holder'};
 function resetStep(id){
@@ -1809,7 +2246,7 @@ function addNormalResets(){ for(const id in STEP_KEYS){ const h2=$('#'+id+' > h2
    or in SHARE_URL below for a standalone copy. */
 const SHARE_URL='';
 const SHARE_TEXT='My lamp, designed at the SP FabLab lamp booth #SPFabLab #3Dprinting';
-const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color'];
+const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color'];
 function encodeDesign(p){
   return '1~'+SHARE_FIELDS.map(k=>{ let v=p[k]; if(typeof v==='boolean') v=v?1:0; if(k==='color') v=String(v).replace('#',''); return encodeURIComponent(String(v)); }).join('~');
 }
