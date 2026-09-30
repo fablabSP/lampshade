@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0D0F12">
 <title>FabLab Lampshade Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,6 +43,46 @@ button,input,select{font:inherit;color:inherit}
 header.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
 .brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;min-width:0}
 .brand h1{font:700 20px/1.1 var(--f-display);letter-spacing:-.01em;margin:0}
+.titlebtn{all:unset;cursor:pointer;border-radius:6px;padding:2px 4px;margin:-2px -4px;-webkit-user-select:none;user-select:none}
+.titlebtn:hover{background:var(--chip)}
+.titlebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.modebadge{font:600 10.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);align-self:center}
+.brandbtn{all:unset;cursor:default}
+.booth .brandbtn{cursor:pointer}
+.booth .panel.left{display:flex;flex-direction:column}
+.stephead{display:flex;gap:12px;align-items:flex-start}
+.stepnum{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:700 19px/38px var(--f-display);text-align:center}
+.booth .sec h2.steptitle{margin:0;font:700 21px/1.2 var(--f-display);letter-spacing:0;text-transform:none;color:var(--ink);display:block}
+.stepdesc{margin:4px 0 0;font-size:14.5px;color:var(--muted);line-height:1.45}
+#secSend .btn{width:100%;justify-content:center;min-height:60px;font-size:18px}
+#secSend{border-bottom:0;padding-bottom:28px}
+.resetbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:99px;padding:3px 10px;font:500 12px var(--f-body);cursor:pointer;text-transform:none;letter-spacing:0;margin-left:auto}
+.resetbtn svg{width:13px;height:13px}
+.resetbtn:hover{color:var(--ink);border-color:var(--muted)}
+.touch .resetbtn{min-height:40px;padding:6px 14px;font-size:14px}
+.touch .resetbtn svg{width:16px;height:16px}
+.stepbody{flex:1;min-width:0}
+.stepline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.stepline .resetbtn{flex:0 0 auto}
+.sec > h2{gap:8px}
+#btnTakeHome{width:100%;justify-content:center;margin-top:2px}
+.sharegrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:center}
+.sharepic{width:100%;border-radius:12px;display:block;background:#0B0C0E}
+.sharepic.land{max-height:52vh;object-fit:contain}
+.shareside{display:grid;gap:10px;font-size:15px}
+.shareside p{margin:0}
+.qrbox{background:#fff;border-radius:12px;padding:10px;justify-self:center;width:min(260px,100%)}
+.qrbox svg{width:100%;height:auto;display:block}
+.md-card:has(.sharegrid){width:min(760px,100%)}
+@media (max-width:640px){ .sharegrid{grid-template-columns:1fr} }
+.lightpic{margin:0;display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:12px;align-items:center}
+.lightpic img{width:100%;height:auto;border-radius:10px;border:1px solid var(--line);display:block;background:#EEE}
+.lightpic figcaption{display:grid;gap:3px;font-size:13px;color:var(--muted)}
+.lightpic figcaption strong{color:var(--ink);font-size:14px}
+.touch .lightpic{grid-template-columns:minmax(0,190px) minmax(0,1fr)}
+.touch .lightpic figcaption{font-size:14.5px}
+.touch .lightpic figcaption strong{font-size:16px}
+.booth .modebadge{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .brand .tag{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:500;white-space:nowrap}
 .btn:hover{border-color:var(--muted)}
@@ -81,7 +128,7 @@ select{width:100%;border:1px solid var(--line);background:var(--bg);border-radiu
 .stage .hud{position:absolute;left:14px;right:14px;top:12px;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
 .hud .name{font:700 17px/1.2 var(--f-display);color:#F2F3F5;text-wrap:balance}
 .hud .sub{font:500 11.5px var(--f-mono);color:var(--stage-muted);margin-top:3px}
-.stage .navhint{position:absolute;left:14px;bottom:52px;font:500 11px var(--f-mono);color:var(--stage-muted);pointer-events:none}
+.stage .navhint{position:absolute;left:14px;right:250px;bottom:52px;font:500 11px var(--f-mono);color:var(--stage-muted);pointer-events:none}
 .stage .tools{position:absolute;left:12px;bottom:12px;display:flex;gap:6px;flex-wrap:wrap}
 .stage .tools button{border:1px solid #2C3138;background:rgba(18,20,24,.85);color:var(--stage-ink);border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer}
 .stage .tools button[aria-pressed="true"]{border-color:var(--accent);color:#FFE3B0}
@@ -126,11 +173,102 @@ canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);b
   .brand h1{font-size:18px}
 }
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+
+/* ---- touch mode (Prism+ Roam and other touch screens) ---- */
+html{-webkit-tap-highlight-color:transparent}
+body{touch-action:manipulation}
+button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.rangeRow{display:flex;align-items:center;gap:8px}
+.rangeRow input[type=range]{flex:1;min-width:0}
+.stepper{display:none;flex:0 0 auto;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font:600 22px/1 var(--f-mono);color:var(--ink);cursor:pointer;align-items:center;justify-content:center;padding:0}
+.stepper:active{background:var(--chip)}
+.touch .stepper{display:inline-flex}
+.touch body{font-size:16px}
+.touch .work{grid-template-columns:400px minmax(0,1fr) 330px}
+.touch header.top{padding:10px 18px;gap:10px}
+.touch .btn{min-height:48px;padding:10px 16px;border-radius:10px;font-size:15px}
+.touch .btn svg{width:20px;height:20px}
+.touch .seedbox input{height:44px;width:110px;font-size:15px}
+.touch .sec{padding:16px 18px 20px;gap:14px}
+.touch .sec h2{font-size:12px}
+.touch .field > label,.touch .lbl,.touch .toggle{font-size:15px}
+.touch .field output,.touch .val{font-size:14px}
+.touch .seg{padding:4px;gap:4px;border-radius:10px}
+.touch .seg button{min-height:48px;font-size:14px;border-radius:8px}
+.touch .seg button small{font-size:11px}
+.touch .chips{gap:8px}
+.touch .chip{min-height:78px;font-size:13px;border-radius:10px}
+.touch .chip svg{width:40px;height:40px}
+.touch .swatch{width:44px;height:44px}
+.touch .swatches{gap:12px}
+.touch .toggle input{width:28px;height:28px}
+.touch select{min-height:48px;font-size:15px}
+.touch .stage .tools{gap:8px;left:14px;bottom:14px}
+.touch .stage .tools button{min-height:48px;padding:10px 16px;font-size:14px;border-radius:10px}
+.touch .stage .navhint{bottom:72px}
+.touch .ideas{gap:10px}
+.touch .row2{grid-template-columns:1fr}
+.touch .toast{font-size:16px;padding:14px 18px}
+.touch input[type=range]{-webkit-appearance:none;appearance:none;height:44px;background:transparent;touch-action:pan-y}
+.touch input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:var(--chip)}
+.touch input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;border-radius:50%;background:var(--accent);margin-top:-13px;border:3px solid var(--panel);box-shadow:0 1px 5px rgba(0,0,0,.35)}
+.touch input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:var(--chip)}
+.touch input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--accent);border:3px solid var(--panel)}
+#btnShare,#btnFull{display:none}
+/* ---- vending booth mode ---- */
+.btn.big{min-height:52px;padding:10px 22px;font-size:16px;font-weight:600}
+.btn.big svg{width:22px;height:22px}
+.booth .boothHide{display:none!important}
+.boothbar{position:absolute;right:14px;top:12px;min-width:240px;max-width:min(360px,60%);background:rgba(14,16,19,.88);border:1px solid #2C3138;border-radius:12px;padding:10px 14px;color:#EDEFF2;display:grid;gap:6px;backdrop-filter:blur(4px)}
+.bb-top{display:flex;align-items:center;gap:8px;font:600 14px var(--f-body)}
+.bb-dot{width:10px;height:10px;border-radius:50%;background:#7E8591;flex:0 0 auto}
+.bb-dot.ok{background:#4CB67A}.bb-dot.busy{background:#F0AE38}.bb-dot.bad{background:#E36A62}
+.bb-prog{height:8px;border-radius:4px;background:#2A2F36;overflow:hidden}
+.bb-fill{height:100%;width:0;background:#F0AE38;transition:width .6s}
+.bb-sub{font:500 12px var(--f-mono);color:#AEB4BE}
+.pickup,.idle{position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,9,11,.62);padding:16px}
+.pk-card{background:var(--panel);color:var(--ink);border-radius:16px;padding:24px 28px;max-width:440px;display:grid;gap:12px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.pk-card h3{margin:0;font:700 26px/1.15 var(--f-display)}
+.pk-card ol{margin:0;padding-left:22px;font-size:16px;display:grid;gap:6px}
+.pk-num{font:600 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong)}
+.pk-note{margin:0;font-size:13px;color:var(--muted)}
+.idle{background:rgba(8,9,11,.25);align-items:end;padding-bottom:90px;pointer-events:none}
+.idle div{background:var(--accent);color:var(--accent-ink);font:700 22px var(--f-display);padding:14px 26px;border-radius:40px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.modal{position:fixed;inset:0;background:rgba(8,9,11,.6);display:grid;place-items:center;z-index:20;padding:16px}
+.md-card{background:var(--panel);color:var(--ink);border-radius:16px;padding:22px 24px;width:min(520px,100%);display:grid;gap:14px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.md-card h3{margin:0;font:700 24px/1.2 var(--f-display);text-wrap:balance}
+.md-body{font-size:15px;display:grid;gap:8px}
+.md-body .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}
+.md-body .kv span:nth-child(odd){color:var(--muted)}
+.md-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.platebox{background:color-mix(in srgb,var(--accent) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:12px;padding:12px 14px;font-size:15px}
+.plate{display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid var(--line);border-radius:12px;font-size:17px;font-weight:600;cursor:pointer;min-height:60px}
+.plate input{width:30px;height:30px;accent-color:var(--accent);flex:0 0 auto}
+.plate:has(input:checked){border-color:var(--ok)}
+.btn[disabled].primary{opacity:.45}
+.holdable{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+.brand{position:relative}
+.holdbar{position:absolute;left:0;bottom:-6px;height:4px;width:0;border-radius:2px;background:var(--accent);pointer-events:none}
+#btnShare.on,#btnFull.on{display:inline-flex}
+@media (max-width:1180px){ .touch .work{grid-template-columns:360px minmax(0,1fr)} }
+
+/* portrait screens (the Roam rotated): viewer on top, both panels side by side below */
+@media (orientation: portrait) and (min-width: 700px){
+  html,body{height:100%}
+  .app{height:100%}
+  .work,.touch .work{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,46%) minmax(0,1fr)}
+  .stage{grid-column:1 / -1;grid-row:1;min-height:0;height:auto;order:0}
+  .panel.left{grid-row:2;grid-column:1;border-right:1px solid var(--line)}
+  .panel.right{grid-row:2;grid-column:2;display:block;border-top:0;border-left:0}
+  .stage .scale{display:none}
+}
 </style>
 
+</head>
+<body>
 <div class="app">
   <header class="top">
-    <div class="brand"><h1>Lampshade Generator</h1><span class="tag">SP FabLab · Bambu Lab</span></div>
+    <div class="brand"><h1><button class="titlebtn" id="btnTitle" type="button" title="Switch between staff and kiosk mode">Lampshade Generator</button></h1><span class="modebadge" id="modeBadge">Staff</span><span class="tag"><button class="brandbtn" id="btnFablab" type="button">SP FabLab</button> · <button class="brandbtn" id="btnBrand" type="button">Bambu Lab</button></span></div>
     <div class="seedbox"><label for="seedIn">Seed</label><input id="seedIn" maxlength="8" spellcheck="false" autocomplete="off"></div>
     <button class="btn" id="btnPrev" title="Go back to the previous design" disabled>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3 5 8l5 5"/></svg>Back</button>
@@ -138,6 +276,14 @@ canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);b
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c2-6 4 2 6-3s4 1 6-3"/></svg>Mutate</button>
     <button class="btn" id="btnRandom" title="Random design (R)">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="12" height="12" rx="2.5"/><circle cx="5.5" cy="5.5" r="1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8" cy="8" r="1" fill="currentColor"/></svg>Randomise</button>
+    <button class="btn" id="btnTouch" title="Bigger buttons and sliders for touch screens" aria-pressed="false">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 8V3.2a1.2 1.2 0 0 1 2.4 0V7l3.3.6c.8.2 1.3.9 1.2 1.7L12.4 13H6.6L4 10.3a1.1 1.1 0 0 1 1.6-1.5L6 9.2"/></svg>Touch</button>
+    <button class="btn" id="btnFull" title="Full screen">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>Full screen</button>
+    <button class="btn" id="btnShare" title="Send the 3MF to another app, e.g. Drive, email or Nearby Share">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="3.5" r="1.8"/><circle cx="4" cy="8" r="1.8"/><circle cx="12" cy="12.5" r="1.8"/><path d="M5.6 7.1 10.4 4.4M5.6 8.9l4.8 2.7"/></svg>Share 3MF</button>
+    <button class="btn primary big" id="btnPrint" hidden>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2" width="10" height="4" rx="1"/><path d="M2 6h12v6H2zM5 12h6v2H5z"/></svg><span>Send to printer</span></button>
     <button class="btn primary" id="btnExport">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg>Export 3MF</button>
   </header>
@@ -145,16 +291,20 @@ canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);b
   <div class="work">
     <!-- LEFT: controls -->
     <aside class="panel left" id="controls">
-      <section class="sec">
+      <section class="sec" id="secLight">
         <h2>Light source</h2>
         <div class="seg" data-key="light">
           <button data-v="strimsav">STRIMSÄV<small>Ø60 × 10 mm · 115 lm</small></button>
-          <button data-v="mittled">MITTLED<small>Ø83 × 11 mm · 150 lm</small></button>
+          <button data-v="mittled" hidden>MITTLED<small>Ø83 × 11 mm · 150 lm</small></button>
         </div>
+        <figure class="lightpic" id="lightPic">
+          <img src="data:image/jpeg;base64,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" alt="IKEA STRIMSÄV LED spotlight: a flat, round white light with the cable plugging into its side" width="476" height="366">
+          <figcaption><strong>IKEA STRIMSÄV</strong><span>Ø60 × 10 mm LED spotlight. The cable plugs into its side, so the holder has a slot for it.</span></figcaption>
+        </figure>
         <p class="hint" id="lightHint"></p>
       </section>
 
-      <section class="sec">
+      <section class="sec" id="secPrint">
         <h2>Printer &amp; slicing</h2>
         <div class="row2">
           <div class="field"><label for="printer">Printer</label>
@@ -163,6 +313,8 @@ canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);b
               <option value="a1">A1 · 256³</option>
               <option value="p1">P1S / P1P / X1C / P2S · 256³</option>
               <option value="h2d">H2D · 325×320×325</option>
+              <option value="mk4">Prusa MK4 / MK4S · 250×210×220</option>
+              <option value="mk35">Prusa MK3.5 · 250×210×210</option>
             </select></div>
           <div class="field"><label for="nozzle">Nozzle</label>
             <select id="nozzle" data-key="nozzle">
@@ -174,48 +326,37 @@ canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);b
         </div>
         <div class="field"><span class="lbl">Layer height <span class="val" id="lhVal"></span></span>
           <div class="seg" id="lhSeg" data-key="lh"></div></div>
-        <div class="field"><span class="lbl">Print mode</span>
-          <div class="seg" data-key="mode">
-            <button data-v="vase">Spiral vase<small>single wall, max glow</small></button>
-            <button data-v="wall">Solid wall<small>thicker, cable arch</small></button>
-          </div></div>
-        <div class="field" data-show="vase"><label for="vaseLW">Vase wall (line width) <output id="vaseLWo"></output></label>
-          <input type="range" id="vaseLW" data-key="vaseLW" min="0.3" max="1.2" step="0.02"></div>
         <div class="field" data-show="wall"><label for="wall">Wall thickness <output id="wallo"></output></label>
           <input type="range" id="wall" data-key="wall" min="0.8" max="3" step="0.1"></div>
-        <div class="field" data-show="wall" data-noholder><span class="lbl">Base</span>
-          <div class="seg" data-key="base">
-            <button data-v="ring">Weighted ring<small>centres on the light</small></button>
-            <button data-v="open">Open<small>wall only</small></button>
-          </div></div>
         <label class="toggle" data-show="wall" for="arch">Cable arch at the base <input type="checkbox" id="arch" data-key="arch"></label>
-        <div class="field"><span class="lbl">Top</span>
-          <div class="seg" data-key="top">
-            <button data-v="open">Open<small>light spills up</small></button>
-            <button data-v="closed">Closed cap<small>solid wall only</small></button>
-          </div>
-          <p class="hint" id="topHint"></p></div>
       </section>
 
-      <section class="sec">
+      <section class="sec" id="secHolder">
         <h2>Light holder</h2>
-        <label class="toggle" for="holder">Print a holder for the light <input type="checkbox" id="holder" data-key="holder"></label>
-        <div class="field" data-hold><span class="lbl">Arms</span>
-          <div class="seg" data-key="holderArms">
-            <button data-v="3">3</button><button data-v="4">4 · cross</button><button data-v="5">5</button><button data-v="6">6</button>
-          </div></div>
         <div class="field" data-hold><label for="holderH">Arm height <output id="holderHo"></output></label>
           <input type="range" id="holderH" data-key="holderH" min="2" max="8" step="0.5"></div>
+        <div class="field" data-hold><label for="cupD">Cup inside Ø <output id="cupDo"></output></label>
+          <input type="range" id="cupD" data-key="cupD" min="58" max="64" step="0.1"></div>
+        <div class="field" data-hold><label for="slotBridge">Bridge over cable slot <output id="slotBridgeo"></output></label>
+          <input type="range" id="slotBridge" data-key="slotBridge" min="0" max="4" step="0.2"></div>
+        <div class="field" data-hold><label for="slotW">Cable slot width <output id="slotWo"></output></label>
+          <input type="range" id="slotW" data-key="slotW" min="6" max="16" step="0.5"></div>
+        <div class="field" data-hold><label for="cupExtra">Cup wall vs top of light <output id="cupExtrao"></output></label>
+          <input type="range" id="cupExtra" data-key="cupExtra" min="-5" max="3" step="0.5"></div>
         <p class="hint" id="holderHint"></p>
-        <button class="btn" id="btnHolder" data-holdvase style="justify-self:start">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg>Export insert 3MF</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" id="btnHolderView" type="button" aria-pressed="false">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg><span>Preview holder</span></button>
+        <button class="btn" id="btnHolderOnly" type="button" style="justify-self:start">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg>Download holder only (3MF)</button>
+        </div>
       </section>
 
-      <section class="sec">
+      <section class="sec" id="secBody">
         <h2>Body</h2>
         <div class="chips" id="bodyChips" data-key="body"></div>
         <div class="field"><label for="H">Height <output id="Ho"></output></label>
-          <input type="range" id="H" data-key="H" min="60" max="250" step="1"></div>
+          <input type="range" id="H" data-key="H" min="60" max="200" step="1"></div>
         <div class="row2">
           <div class="field"><label for="Db">Base Ø <output id="Dbo"></output></label>
             <input type="range" id="Db" data-key="Db" min="70" max="230" step="1"></div>
@@ -226,7 +367,7 @@ canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);b
           <input type="range" id="bulge" data-key="bulge" min="0" max="60" step="1"></div>
       </section>
 
-      <section class="sec">
+      <section class="sec" id="secPattern">
         <h2>Surface pattern</h2>
         <div class="chips four" id="patChips" data-key="pattern"></div>
         <div class="field" data-pat="count"><label for="count" id="countLbl">Count <output id="counto"></output></label>
@@ -247,7 +388,7 @@ canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);b
           </select></div>
       </section>
 
-      <section class="sec">
+      <section class="sec" id="secLayer">
         <h2>Layer pattern <span class="val" id="bandMm"></span></h2>
         <div class="chips" id="layerChips" data-key="layer"></div>
         <div class="field" data-lay="band"><label for="bandN">Band size <output id="bandNo"></output></label>
@@ -257,13 +398,18 @@ canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);b
         <p class="hint" id="layerHint"></p>
       </section>
 
-      <section class="sec">
+      <section class="sec" id="secFix">
         <h2>Printability</h2>
         <label class="toggle" for="fix">Auto-fix overhangs <input type="checkbox" id="fix" data-key="fix"></label>
         <div class="field"><label for="maxA">Max overhang angle <output id="maxAo"></output></label>
           <input type="range" id="maxA" data-key="maxA" min="30" max="65" step="1"></div>
         <div class="field"><span class="lbl">Filament colour (preview)</span>
           <div class="swatches" id="swatches"></div></div>
+      </section>
+      <section class="sec" id="secSend" hidden>
+        <p class="hint" id="sendSummary"></p>
+        <button class="btn primary big" id="btnPrint2" type="button"><span>Send to printer</span></button>
+        <button class="btn" id="btnTakeHome" type="button">Take it home: picture and QR code</button>
       </section>
     </aside>
 
@@ -277,39 +423,65 @@ canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);b
         <button id="tSpin" aria-pressed="true">Spin</button>
         <button id="tShade" aria-pressed="true">Shade</button>
         <button id="tReset">Reset view</button>
+        <button id="tShareQR">Share</button>
       </div>
       <div class="scale" id="scaleTxt"></div>
-      <div class="navhint">Drag to rotate · Middle-drag, right-drag or Shift-drag to pan · Scroll to zoom</div>
+      <div class="navhint" id="navhint">Drag to rotate · Middle-drag, right-drag or Shift-drag to pan · Scroll to zoom</div>
       <div class="busy" id="busy" hidden>Building 3MF…</div>
+      <div class="boothbar" id="boothBar" hidden>
+        <div class="bb-top"><span class="bb-dot" id="bbDot"></span><span id="bbText">Connecting to the printer…</span></div>
+        <div class="bb-prog" id="bbProgWrap" hidden><div class="bb-fill" id="bbFill"></div></div>
+        <div class="bb-sub" id="bbSub"></div>
+      </div>
+      <div class="pickup" id="pickup" hidden>
+        <div class="pk-card">
+          <div class="pk-num" id="pkNum">Lamp #1</div>
+          <h3>Your lamp is ready</h3>
+          <ol><li>Open the door below the screen.</li><li>Lift your lamp off the plate. It may still be a little warm.</li><li>Close the door.</li></ol>
+          <p class="pk-note" id="pkNote"></p>
+          <button class="btn primary big" id="btnCollected">I've got my lamp</button>
+        </div>
+      </div>
+      <div class="idle" id="idleCard" hidden><div>Tap anywhere to design your own lamp</div></div>
     </main>
 
     <!-- RIGHT: analysis -->
     <aside class="panel right">
-      <section class="sec">
+      <section class="sec" id="secCheck">
         <h2>Print check</h2>
         <div class="stats" id="stats"></div>
         <div class="checks" id="checks"></div>
       </section>
       <section class="sec">
-        <h2>Section <span class="val">cut through the cable side</span></h2>
+        <h2>Section <span class="val">cable side</span></h2>
         <canvas id="profile"></canvas>
         <canvas id="lens"></canvas>
       </section>
-      <section class="sec">
-        <h2>Bambu Studio settings <button class="btn" id="btnCopy" style="padding:3px 9px;font-size:12px">Copy</button></h2>
+      <section class="sec" id="secSheet">
+        <h2><span id="sheetTitle">Bambu Studio settings</span> <button class="btn" id="btnCopy" style="padding:3px 9px;font-size:12px">Copy</button></h2>
         <pre class="sheet" id="sheet"></pre>
       </section>
       <section class="sec">
         <h2>Ideas <button class="btn" id="btnIdeas" style="padding:3px 9px;font-size:12px">New set</button></h2>
         <div class="ideas" id="ideas"></div>
-        <p class="hint">Click one to load it. Your light, printer, nozzle, layer height and print mode stay as they are.</p>
+        <p class="hint" id="ideasHint">Click one to load it. Your light, printer, nozzle, layer height and print mode stay as they are.</p>
       </section>
     </aside>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
+<div class="modal" id="modal" hidden>
+  <div class="md-card" role="dialog" aria-modal="true" aria-labelledby="mdTitle">
+    <h3 id="mdTitle"></h3>
+    <div class="md-body" id="mdBody"></div>
+    <div class="md-actions" id="mdActions"></div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>/*! qrcode-generator 1.4.4 | (c) 2009 Kazuhiko Arase | MIT License */
+var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1})},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
+</script>
 <script>
 (function(){
 'use strict';
@@ -326,8 +498,17 @@ const PRINTERS = {
   a1mini:{name:'Bambu Lab A1 mini', x:180, y:180, z:180},
   a1:    {name:'Bambu Lab A1',      x:256, y:256, z:256},
   p1:    {name:'Bambu Lab P1S / P1P / X1C / P2S', x:256, y:256, z:256},
-  h2d:   {name:'Bambu Lab H2D',     x:325, y:320, z:325}
+  h2d:   {name:'Bambu Lab H2D',     x:325, y:320, z:325},
+  mk4:   {name:'Prusa MK4 / MK4S',  x:250, y:210, z:220, brand:'prusa'},
+  mk35:  {name:'Prusa MK3.5',       x:250, y:210, z:210, brand:'prusa'}
 };
+const LAYERS_PRUSA = {
+  '0.2':[[0.07,'Ultra detail'],[0.10,'Detail'],[0.15,'Quality']],
+  '0.4':[[0.10,'Detail'],[0.15,'Quality'],[0.20,'Speed'],[0.25,'Speed'],[0.28,'Draft'],[0.32,'Draft']],
+  '0.6':[[0.15,'Detail'],[0.20,'Quality'],[0.25,'Speed'],[0.32,'Speed'],[0.40,'Draft']],
+  '0.8':[[0.30,'Quality'],[0.40,'Speed'],[0.55,'Draft']]
+};
+const isPrusa = p => PRINTERS[p.printer].brand==='prusa';
 const LAYERS = {
   '0.2':[[0.06,'Extra fine'],[0.08,'Fine'],[0.10,'Optimal'],[0.12,'Standard'],[0.14,'Draft']],
   '0.4':[[0.08,'Extra fine'],[0.12,'Fine'],[0.16,'Optimal'],[0.20,'Standard'],[0.24,'Draft'],[0.28,'Extra draft']],
@@ -338,7 +519,7 @@ const COLORS = [
   ['Cool white','#EEF1F4'],['Ivory','#EDE4D0'],['Sand','#D6BF95'],['Sage','#A6B79C'],
   ['Blush','#E7B3A8'],['Sky','#A3C1DE'],['Lilac','#BBAED6'],['Charcoal','#3A3D43']
 ];
-const MAX_H = 250;
+const MAX_H = 200;   // tallest lamp, mm
 
 /* ---------- body shapes: r(t) with t = 0 bottom .. 1 top ---------- */
 const lin = (t,a,b)=>a+(b-a)*t;
@@ -395,21 +576,25 @@ function fbm(x,y,z,s){ return vnoise(x,y,z,s)*0.6+vnoise(x*2.1,y*2.1,z*2.1,s+7)*
 
 /* ---------- state ---------- */
 const P = {
-  light:'strimsav', printer:'p1', nozzle:'0.4', lh:0.2, mode:'vase', vaseLW:0.6, wall:1.6, base:'ring', arch:true,
+  light:'strimsav', printer:'p1', nozzle:'0.4', lh:0.28, mode:'wall', vaseLW:0.6, wall:1.2, base:'open', arch:true,
   body:'barrel', H:180, Db:130, Dt:95, bulge:18,
   pattern:'ribs', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
   layer:'none', bandN:12, layerOff:0.8,
-  fix:true, maxA:45, top:'open', holder:false, holderArms:4, holderH:4, color:'#EDE4D0', seed:'FABLAB', edited:false
+  fix:true, maxA:45, top:'open', holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.6, slotBridge:1.6, color:'#EDE4D0', seed:'FABLAB', edited:false
 };
+const DEFAULT_P = JSON.parse(JSON.stringify(P));   // starting values, used by the step Reset buttons
 const DESIGN_KEYS = ['body','H','Db','Dt','bulge','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
 const history = [];
 
-function maxHeight(p){ return Math.min(MAX_H, PRINTERS[p.printer].z - 5); }
-function bedMaxD(p){ const pr=PRINTERS[p.printer]; return Math.min(pr.x, pr.y) - 12; }
+let BOOTH=null, lastStats=null;
+function maxHeight(p){ return Math.min(MAX_H, PRINTERS[p.printer].z - 5, (BOOTH&&BOOTH.maxH)||999); }
+function bedMaxD(p){ const pr=PRINTERS[p.printer]; return Math.min(pr.x - 12, pr.y - 12, (BOOTH&&BOOTH.maxD)||999); }
 function wallT(p){ return p.mode==='vase' ? p.vaseLW : p.wall; }
 
 /* ---------- geometry ---------- */
+function lockFixed(p){ p.mode='wall'; p.top='open'; p.base='open'; p.holder=true; p.holderArms=4; return p; }
 function buildMesh(p, Q){
+  lockFixed(p);
   const Lt=LIGHTS[p.light], puckR=Lt.d/2, puckH=Lt.h;
   const H=Math.min(p.H, maxHeight(p));
   const lh=+p.lh, vase=p.mode==='vase', t=wallT(p);
@@ -427,7 +612,7 @@ function buildMesh(p, Q){
   const rc=puckR+0.5, collarH=puckH+2;
   const ic=Math.min(nz-3, Math.ceil(collarH/dz));
   let needR = vase ? puckR+2+t : (ring ? rc+1.2+t : puckR+2+t);
-  if(p.holder) needR=Math.max(needR, puckR+HOLDER.grip+HOLDER.ring+HOLDER.gap+t);
+  if(p.holder) needR=Math.max(needR, cupInnerR(p)+HOLDER.ring+HOLDER.gap+t);
   const needZ = ring ? (ic+1)*dz : puckH+3;
   const tanA=Math.tan(p.maxA*PI/180);
   const sN=hashStr(p.seed||'x')%100000;
@@ -559,11 +744,19 @@ function meshStats(m, p){
 /* ---------- light holder: a cup for the light + a cross of arms to the shade wall ----------
    Solid wall: printed as part of the shade.  Spiral vase: exported as a drop-in insert.
    The cup and its ledge have a slot at the cable side (0°); arms sit between, clear of it. */
+const HIDDEN_LIGHTS = ['mittled'];   // not offered for now: no power adapter included
+function cupInnerR(p){ const d=LIGHTS[p.light].d; const c=+p.cupD; return (c>=d-2 && c<=d+6 ? c : d+2*HOLDER.grip)/2; }   // cup inside radius
 const HOLDER = {grip:0.3, ring:1.6, ledge:1.2, ledgeIn:2.5, slot:6, armW:3, gap:3, seg:160};
 function polyCRing(ri, ro, w, n){
   const go=Math.asin(Math.min(0.99,(w/2)/ro)), gi=Math.asin(Math.min(0.99,(w/2)/ri)); const pts=[];
   for(let k=0;k<=n;k++){ const a=go+(TAU-2*go)*k/n; pts.push([ro*Math.cos(a),ro*Math.sin(a)]); }
   for(let k=0;k<=n;k++){ const a=(TAU-gi)-(TAU-2*gi)*k/n; pts.push([ri*Math.cos(a),ri*Math.sin(a)]); }
+  return pts;
+}
+function polyArcBand(ri, ro, halfW, n){      // short curved band centred on 0°, following the cup's inner and outer circles
+  const ao=Math.asin(Math.min(0.99,halfW/ro)), ai=Math.asin(Math.min(0.99,halfW/ri)); const pts=[];
+  for(let k=0;k<=n;k++){ const a=-ao+2*ao*k/n; pts.push([ro*Math.cos(a),ro*Math.sin(a)]); }
+  for(let k=0;k<=n;k++){ const a=ai-2*ai*k/n; pts.push([ri*Math.cos(a),ri*Math.sin(a)]); }
   return pts;
 }
 function polyArm(a, r0, r1, w){
@@ -586,12 +779,15 @@ function extrude(pts, z0, z1, acc){
 function buildHolder(p, m){
   const Lt=LIGHTS[p.light], puckR=Lt.d/2, puckH=Lt.h, H0=HOLDER;
   const integrated=!m.vase;
-  const rsI=puckR+H0.grip, rsO=rsI+H0.ring;
-  const hs=Math.max(4, puckH-2);                 // cup wall height above the ledge
+  const slotW=Math.max(4,+p.slotW||10);          // cable slot through cup + ledge
+  const rsI=cupInnerR(p), rsO=rsI+H0.ring;
+  const hs=Math.max(4, puckH+(+p.cupExtra||0));   // cup wall above the ledge: flush with the top of the light by default
   const ha=Math.min(p.holderH, H0.ledge+hs);     // arm height
   const acc={pos:[],idx:[]};
-  extrude(polyCRing(puckR-H0.ledgeIn, rsI+0.3, H0.slot, H0.seg), 0, H0.ledge, acc);  // ledge the light rests on
-  extrude(polyCRing(rsI, rsO, H0.slot, H0.seg), 0, H0.ledge+hs, acc);              // cup wall
+  extrude(polyCRing(puckR-H0.ledgeIn, rsI+0.3, slotW, H0.seg), 0, H0.ledge, acc);  // ledge the light rests on
+  extrude(polyCRing(rsI, rsO, slotW, H0.seg), 0, H0.ledge+hs, acc);              // cup wall
+  const topZ=H0.ledge+hs, bt=Math.min(Math.max(0,+p.slotBridge||0), hs-3);
+  if(bt>0) extrude(polyArcBand(rsI, rsO, slotW/2+1, 16), topZ-bt, topZ, acc);      // bridge over the cable slot: closes the rim into a full circle
   const n=Math.max(3,Math.round(p.holderArms)), arms=[];
   for(let k=0;k<n;k++){
     const a=PI/n + k*TAU/n;                      // offset so no arm sits on the cable slot at 0°
@@ -657,7 +853,7 @@ function modelXml(m, p, title, descOverride){
   s+='</vertices>\n<triangles>\n';
   const nt=idx.length/3;
   for(let i=0;i<nt;i++){ s+=`<triangle v1="${idx[i*3]}" v2="${idx[i*3+1]}" v3="${idx[i*3+2]}"/>\n`; if((i&8191)===8191){parts.push(s);s='';} }
-  s+='</triangles>\n</mesh>\n</object>\n</resources>\n<build>\n<item objectid="1"/>\n</build>\n</model>\n';
+  s+=`</triangles>\n</mesh>\n</object>\n</resources>\n<build>\n<item objectid="1" transform="1 0 0 0 1 0 0 0 1 ${(PRINTERS[p.printer].x/2).toFixed(1)} ${(PRINTERS[p.printer].y/2).toFixed(1)} 0"/>\n</build>\n</model>\n`;
   parts.push(s);
   return parts;
 }
@@ -665,8 +861,8 @@ async function build3mf(p, what){
   const m=buildMesh(p, Q_EXPORT);
   let title=fileBase(p), obj=m, desc=null;
   if(what==='holder'){
-    obj=buildHolder(p, m); title=`holder-insert-${LIGHTS[p.light].name.toLowerCase().replace('ä','a')}-${p.seed}`.toLowerCase();
-    desc=`Cross holder insert for ${LIGHTS[p.light].name} (Ø${LIGHTS[p.light].d} mm), drops into lampshade ${fileBase(p)}. Print in normal mode, not spiral vase.`;
+    obj=buildHolder(p, m); title=`holder-${LIGHTS[p.light].name.toLowerCase().replace('ä','a')}-${p.seed}`.toLowerCase();
+    desc=`Light holder only (cup + 4 arms) for ${LIGHTS[p.light].name} Ø${LIGHTS[p.light].d} mm: cup inside Ø${(cupInnerR(p)*2).toFixed(1)} mm, cable slot ${(+p.slotW||10).toFixed(1)} mm${(+p.slotBridge>0)?` with a ${(+p.slotBridge).toFixed(1)} mm bridge over it`:''}. Arms sized for lampshade ${fileBase(p)}. For test-fitting the light.`;
   } else if(p.holder && !m.vase){
     const hd=buildHolder(p, m); const mm=mergeMeshes(m, hd); obj={...m, pos:mm.pos, idx:mm.idx};
   }
@@ -786,14 +982,14 @@ function buildChips(){
   $('#swatches').innerHTML=COLORS.map(([n,c])=>`<button class="swatch" data-c="${c}" title="${n}" aria-label="${n}" aria-pressed="false" style="background:${c}"></button>`).join('');
 }
 function buildLayerSeg(){
-  const list=LAYERS[P.nozzle];
-  if(!list.some(([v])=>Math.abs(v-P.lh)<1e-6)){ P.lh=list[Math.min(3,list.length-1)][0]; if(P.nozzle==='0.4') P.lh=0.2; }
+  const list=(isPrusa(P)?LAYERS_PRUSA:LAYERS)[P.nozzle];
+  if(!list.some(([v])=>Math.abs(v-P.lh)<1e-6)){ P.lh=list[Math.min(3,list.length-1)][0]; if(P.nozzle==='0.4') P.lh=0.28; }
   $('#lhSeg').innerHTML=list.map(([v,n])=>`<button data-v="${v}">${v.toFixed(2)}<small>${n}</small></button>`).join('');
 }
 
 const fmt = {
   H:v=>v+' mm', Db:v=>v+' mm', Dt:v=>v+' mm', bulge:v=>v+' mm', count:v=>v, depth:v=>(+v).toFixed(1)+' mm', freq:v=>v,
-  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>v+'°', holderH:v=>(+v).toFixed(1)+' mm', wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm'
+  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>v+'°', holderH:v=>(+v).toFixed(1)+' mm', cupD:v=>{ const g=(v-LIGHTS[P.light].d)/2; return `${(+v).toFixed(1)} mm (gap ${g>=0?'+':''}${g.toFixed(2)})`; }, slotBridge:v=>{ if(+v<=0) return 'off'; const hs=Math.max(4,LIGHTS[P.light].h+(+P.cupExtra||0)); return `${(+v).toFixed(1)} mm (opening ${Math.max(0,hs-v).toFixed(1)} mm tall)`; }, slotW:v=>(+v).toFixed(1)+' mm', cupExtra:v=>(+v===0?'flush':(v>0?'+':'')+(+v).toFixed(1)+' mm'), wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm'
 };
 function syncUI(){
   // segmented + chips
@@ -825,7 +1021,7 @@ function syncUI(){
       ? `A cup holds the ${LIGHTS[P.light].name} on a small ledge, with arms out to the shade wall. Spiral vase cannot print it inside the shade, so it exports as a separate insert that drops in from below. The cord leaves through the slot in the cup.`
       : `A cup holds the ${LIGHTS[P.light].name} on a small ledge, with arms out to the shade wall. It prints as part of the shade, no supports. The cord leaves through the slot in the cup and out under the cable arch.`;
   $('#lightHint').textContent=LIGHTS[P.light].note;
-  $('#topHint').textContent = P.mode==='vase' ? 'Spiral vase is always open at the top. Picking Closed cap switches to Solid wall.' : (P.top==='closed' ? `Cap is ${P.wall.toFixed(1)} mm thick and prints as a flat ceiling, so it needs supports unless the top narrows in.` : 'Open top lets light and heat out.');
+  $('#lightPic').hidden = P.light!=='strimsav';
   $('#seedIn').value=P.seed;
   $('#seedIn').title=P.edited?'Design has been edited since this seed':'';
   $('#btnPrev').disabled=history.length===0;
@@ -908,7 +1104,32 @@ canvas.addEventListener('pointermove',e=>{ if(!ptrs.has(e.pointerId)) return; co
     pinch0=d; pinchMid=mid;
   }
   updateCam(); needsRender=true; });
-const endPtr=e=>{ ptrs.delete(e.pointerId); pinch0=0; pinchMid=null; if(!ptrs.size) dragMode='orbit'; canvas.style.cursor='grab'; };
+let tapT=0, tapX=0, tapY=0, downAt=null;
+canvas.addEventListener('pointerdown',e=>{ if(ptrs.size===1) downAt={x:e.clientX,y:e.clientY,t:performance.now()}; else downAt=null; });
+let holderView=false;
+function toggleHolderView(){
+  holderView=!holderView;
+  const b=$('#btnHolderView'); b.setAttribute('aria-pressed',String(holderView)); b.querySelector('span').textContent=holderView?'Back to lamp':'Preview holder';
+  spin=false; $('#tSpin').setAttribute('aria-pressed','false');
+  if(holderView){
+    shade.visible=false; $('#tShade').setAttribute('aria-pressed','false');
+    const r=LIGHTS[P.light].d/2; orbit.target.set(r*0.55,0,5); orbit.dist=r*5.2; orbit.el=0.42; orbit.az=-0.5;   // looking at the cable slot side
+  } else {
+    shade.visible=true; $('#tShade').setAttribute('aria-pressed','true');
+    orbit.az=-0.9; orbit.el=0.32; if(current) fitView(current);
+  }
+  updateCam(); needsRender=true;
+}
+function resetView(){ orbit.az=-0.9; orbit.el=0.32; if(current) fitView(current); needsRender=true; }
+const endPtr=e=>{
+  if(downAt && ptrs.size===1 && e.type==='pointerup'){
+    const moved=Math.hypot(e.clientX-downAt.x,e.clientY-downAt.y), now=performance.now();
+    if(moved<12 && now-downAt.t<300){
+      if(now-tapT<350 && Math.hypot(e.clientX-tapX,e.clientY-tapY)<40){ resetView(); tapT=0; }
+      else { tapT=now; tapX=e.clientX; tapY=e.clientY; }
+    }
+  }
+  ptrs.delete(e.pointerId); pinch0=0; pinchMid=null; if(!ptrs.size){ dragMode='orbit'; downAt=null; } canvas.style.cursor='grab'; };
 canvas.addEventListener('pointerup',endPtr); canvas.addEventListener('pointercancel',endPtr);
 canvas.addEventListener('wheel',e=>{ e.preventDefault(); orbit.dist=Math.max(60,Math.min(3000,orbit.dist*Math.exp(e.deltaY*0.001))); updateCam(); needsRender=true; },{passive:false});
 
@@ -954,6 +1175,7 @@ function refresh(quality){
   if(fk!==lastFitKey){ fitView(m); lastFitKey=fk; }
   needsRender=true;
   $('#hudName').textContent=describe(P);
+  $('#btnBrand').textContent=isPrusa(P)?'Prusa':'Bambu Lab';
   $('#hudSub').textContent=`${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm max · ${(+P.lh).toFixed(2)} mm layers · ${P.mode==='vase'?'spiral vase':'solid wall'}${P.holder?' · + holder':''}`;
   $('#scaleTxt').textContent=`${PRINTERS[P.printer].name}\nbed ${PRINTERS[P.printer].x} × ${PRINTERS[P.printer].y} mm`;
   if(q!==Q_DRAG){ updateAnalysis(m); }
@@ -996,6 +1218,8 @@ function updateAnalysis(m){
   $('#checks').innerHTML=rows.map(([a,b])=>`<div><span>${a}</span>${b}</div>`).join('');
   drawProfile(m); drawLens(m);
   $('#sheet').textContent=settingsText(m,st);
+  $('#sheetTitle').textContent=isPrusa(P)?'PrusaSlicer settings':'Bambu Studio settings';
+  lastStats=st; checkPrintable(m, bedOk, clearance, hd);
 }
 function minRadBottom(m){ let r=1e9; const lim=m.puckH+1; for(let j=0;j<m.seg;j++) for(let i=0;i<=m.nz;i++){ const q=i*m.seg+j; if(m.Z[q]>lim) break; if(m.R[q]<r) r=m.R[q]; } return r; }
 function topRad(m){ let r=1e9; for(let j=0;j<m.seg;j++){ const v=m.R[m.nz*m.seg+j]-(m.vase?m.t:m.t); if(v<r) r=v; } return r; }
@@ -1004,21 +1228,22 @@ function settingsText(m,st){
   const pr=PRINTERS[P.printer]; const lh=(+P.lh).toFixed(2);
   const lines=[`Printer   ${pr.name}, ${P.nozzle} mm nozzle`,`Layer     ${lh} mm  (${st.layers} layers)`];
   if(!m.vase) lines.push(`Top       ${m.closed?'Closed cap '+P.wall.toFixed(1)+' mm':'Open'}`);
+  const pru=isPrusa(P);
   if(P.mode==='vase'){
-    lines.push('Mode      Others > Spiral vase: ON');
-    lines.push(`Wall      Quality > Line width > Outer wall: ${(+P.vaseLW).toFixed(2)} mm`);
-    lines.push('Base      Strength > Bottom shell layers: 0');
+    lines.push(pru?'Mode      Print > Layers and perimeters > Spiral vase: ON':'Mode      Others > Spiral vase: ON');
+    lines.push(pru?`Wall      Print > Advanced > Extrusion width > External perimeters: ${(+P.vaseLW).toFixed(2)} mm`:`Wall      Quality > Line width > Outer wall: ${(+P.vaseLW).toFixed(2)} mm`);
+    lines.push(pru?'Base      Print > Layers and perimeters > Bottom solid layers: 0':'Base      Strength > Bottom shell layers: 0');
     lines.push('          (open base so it sits over the light)');
   } else {
     const lw=Math.round(parseFloat(P.nozzle)*1.05*100)/100; const loops=Math.max(1,Math.round(P.wall/lw));
-    lines.push(`Walls     Strength > Wall loops: ${loops}  (${loops} × ${lw.toFixed(2)} ≈ ${P.wall.toFixed(1)} mm)`);
+    lines.push(pru?`Walls     Print > Layers and perimeters > Perimeters: ${loops}  (≈ ${P.wall.toFixed(1)} mm)`:`Walls     Strength > Wall loops: ${loops}  (${loops} × ${lw.toFixed(2)} ≈ ${P.wall.toFixed(1)} mm)`);
     lines.push('Infill    Sparse infill 15% (only the base ring uses it)');
     lines.push('Top/bot   Keep defaults');
   }
   if(m.closed && m.capR*2>25) lines.push(`Support   On, Tree (auto), for the Ø${(m.capR*2).toFixed(0)} mm closed top`);
   else lines.push(`Support   Off  (steepest overhang ${m.angle.toFixed(0)}°)`);
   lines.push(m.H>150||m.maxR*2>170?'Adhesion  Brim: Outer brim only, 5 mm':'Adhesion  No brim needed on a clean plate');
-  lines.push('Filament  White or light PLA Basic / Matte glows best');
+  lines.push(pru?'Filament  White or light Prusament PLA glows best':'Filament  White or light PLA Basic / Matte glows best');
   if(P.holder && P.mode==='vase'){
     lines.push('');
     lines.push('INSERT (separate 3MF, print separately)');
@@ -1029,7 +1254,7 @@ function settingsText(m,st){
     lines.push('Holder    Cross is built in, prints with the shade');
   }
   lines.push('');
-  lines.push('Bambu Studio loads this 3MF as geometry only,');
+  lines.push(pru?'PrusaSlicer loads this 3MF as geometry only,':'Bambu Studio loads this 3MF as geometry only,');
   lines.push('so set the layer height above before slicing.');
   return lines.join('\n');
 }
@@ -1184,13 +1409,22 @@ async function offerFile(name, blob){
   const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
   toast('Downloaded '+name);
 }
-async function doExport(what){
-  const btn=what==='holder'?$('#btnHolder'):$('#btnExport'); btn.disabled=true; $('#busy').hidden=false;
+const IN_VIEWER = !!(window.claude && typeof window.claude.use==='function');
+function canShareFiles(){
+  try{ return !IN_VIEWER && !!navigator.canShare && navigator.canShare({files:[new File(['x'],'t.3mf',{type:'model/3mf'})]}); }catch(e){ return false; }
+}
+async function shareFile(name, blob){
+  const file=new File([blob], name, {type:'model/3mf'});
+  try{ await navigator.share({files:[file], title:name, text:'Lampshade for Bambu Studio'}); toast('Shared '+name); }
+  catch(e){ if(e && e.name==='AbortError'){ toast('Share cancelled'); return; } toast('Sharing failed here, so the file was downloaded instead.'); await offerFile(name, blob); }
+}
+async function doExport(what, via){
+  const btn=via==='share'?$('#btnShare'):(what==='holder'?$('#btnHolderOnly'):$('#btnExport')); btn.disabled=true; $('#busy').hidden=false;
   await new Promise(r=>setTimeout(r,30));
   try{
     const {blob,name}=await build3mf(P, what);
     $('#busy').hidden=true;
-    await offerFile(name, blob);
+    if(via==='share') await shareFile(name, blob); else await offerFile(name, blob);
   }catch(e){ console.error(e); toast('Export failed: '+(e&&e.message||e)); }
   finally{ btn.disabled=false; $('#busy').hidden=true; }
 }
@@ -1198,13 +1432,13 @@ async function doExport(what){
 /* ---------- wiring ---------- */
 let dragTimer=0;
 function setParam(key,val,live){
-  const num=['holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
+  const num=['slotBridge','cupD','slotW','cupExtra','holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
   if(num.includes(key)) val=parseFloat(val);
   if(P[key]===val && !live) return;
   P[key]=val;
   if(DESIGN_KEYS.includes(key)) P.edited=true;
   if(key==='nozzle'){ buildLayerSeg(); P.vaseLW=Math.round(parseFloat(val)*1.5*100)/100; P.wall=Math.max(P.wall, parseFloat(val)*2); }
-  if(key==='printer'){ buildBed(); P.H=Math.min(P.H,maxHeight(P)); }
+  if(key==='printer'){ buildBed(); buildLayerSeg(); P.H=Math.min(P.H,maxHeight(P)); }
   if(key==='light'){ buildPuck(); }
   if(key==='top' && val==='closed' && P.mode==='vase'){ P.mode='wall'; toast('Switched to Solid wall. Spiral vase can only print an open top.'); }
   if(key==='mode' && val==='vase' && P.top==='closed'){ P.top='open'; toast('Top set to Open. Spiral vase can only print an open top.'); }
@@ -1227,14 +1461,15 @@ function wire(){
   $('#btnMutate').addEventListener('click',doMutate);
   $('#btnPrev').addEventListener('click',doBack);
   $('#btnExport').addEventListener('click',()=>doExport());
-  $('#btnHolder').addEventListener('click',()=>doExport('holder'));
   $('#btnIdeas').addEventListener('click',makeIdeas);
+  $('#btnHolderOnly').addEventListener('click',()=>doExport('holder'));
+  $('#btnHolderView').addEventListener('click',toggleHolderView);
   $('#seedIn').addEventListener('change',e=>{ const v=e.target.value.trim().toUpperCase(); if(v) doRandom(v); });
   $('#tLit').addEventListener('click',()=>setLit(true));
   $('#tStudio').addEventListener('click',()=>setLit(false));
   $('#tSpin').addEventListener('click',()=>{ spin=!spin; $('#tSpin').setAttribute('aria-pressed',String(spin)); });
   $('#tShade').addEventListener('click',()=>{ shade.visible=!shade.visible; $('#tShade').setAttribute('aria-pressed',String(shade.visible)); needsRender=true; });
-  $('#tReset').addEventListener('click',()=>{ orbit.az=-0.9; orbit.el=0.32; if(current) fitView(current); needsRender=true; });
+  $('#tReset').addEventListener('click',resetView);
   $('#btnCopy').addEventListener('click',()=>{
     const txt=$('#sheet').textContent;
     try{ navigator.clipboard.writeText(txt).then(()=>toast('Settings copied'),()=>selectSheet()); }catch(e){ selectSheet(); }
@@ -1245,11 +1480,461 @@ function wire(){
 }
 function selectSheet(){ const r=document.createRange(); r.selectNodeContents($('#sheet')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Press Ctrl+C to copy'); }
 
+/* ---------- vending booth mode ----------
+   Turns on when this page is served by the Lamp Booth bridge (it answers api/state).
+   The bridge holds the one-job lock; this page only mirrors it. */
+let boothState=null, printable={ok:true,why:''}, myJob=null, es=null;
+function checkPrintable(m, bedOk, clearance, hd){
+  let ok=true, why='';
+  if(!bedOk){ ok=false; why='Too big for the printer'; }
+  else if(BOOTH && BOOTH.maxD && m.maxR*2>BOOTH.maxD+0.5){ ok=false; why=`Make it narrower (max Ø${BOOTH.maxD} mm)`; }
+  else if(BOOTH && BOOTH.maxH && m.H>BOOTH.maxH+0.5){ ok=false; why=`Make it shorter (max ${BOOTH.maxH} mm)`; }
+  else if(!hd && clearance<0.3){ ok=false; why='Base is too tight for the light'; }
+  else if(m.closed && m.capR*2>25){ ok=false; why='Open the top to print here'; }
+  printable={ok,why};
+  if(BOOTH){
+    updatePrintButton();
+    const st=lastStats; const sm=$('#sendSummary');
+    if(sm && st) sm.textContent=`${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm · about ${fmtTime(st.mins)} to print · ${st.grams.toFixed(0)} g of ${BOOTH.colorName||'PLA'} · ${PRINTERS[P.printer].name}, ${(+P.lh).toFixed(2)} mm layers`;
+  }
+}
+/* Two modes:
+   kiosk  - public booth screen: design + "Send to printer" only (asks for an empty print bed first)
+   normal - internal FabLab tool: everything, including Export 3MF
+   Pick with the address: .../#kiosk or .../#normal. With no tag, a page served by the
+   booth PC opens in the booth's default (kiosk) and a page opened any other way is normal. */
+const UI_HASH=(location.hash||'').replace('#','').toLowerCase();
+let BRIDGE_OK=false;
+async function detectBooth(){
+  let s=null;
+  if(!IN_VIEWER && /^https?:$/.test(location.protocol)){
+    try{
+      const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),2500);
+      const r=await fetch('api/state',{cache:'no-store',signal:ctl.signal}); clearTimeout(t);
+      if(r.ok){ const j=await r.json(); if(j && j.booth){ s=j; BRIDGE_OK=true; } }
+    }catch(e){}
+  }
+  const saved=getPref('lampUiMode');
+  const want = SHARED_LANDING ? 'normal' : (UI_HASH==='kiosk'||UI_HASH==='normal') ? UI_HASH : (saved==='kiosk'||saved==='normal') ? saved : (s ? (s.booth.default_ui||'kiosk') : 'normal');
+  setupTitleSwitch(want);
+  if(want==='kiosk') enterBooth(s || {state:'offline', link:false, booth:{}});
+}
+const KIOSK_PASSWORD='s3cr3t';   // password to leave kiosk mode
+function switchUi(mode){ setPref('lampUiMode',mode); location.hash=mode; location.reload(); }
+function setupTitleSwitch(mode){
+  $('#modeBadge').textContent = mode==='kiosk' ? 'Kiosk' : 'Staff';
+  $('#btnTitle').title = mode==='kiosk' ? 'Staff: tap to leave kiosk mode' : 'Tap to switch to kiosk mode';
+  $('#btnTitle').addEventListener('click',()=>{ if(mode==='kiosk') askPassword(); else switchUi('kiosk'); });
+  $('#btnBrand').addEventListener('click',()=>{ if(mode==='kiosk') askPassword(openMachinePanel,'Printer setup (staff)'); });
+  $('#btnFablab').addEventListener('click',()=>{ if(mode==='kiosk') doExport(); });   // hidden: kiosk 3MF download
+}
+let pwOk=null;
+function askPassword(onOk, title){
+  pwOk=onOk||(()=>switchUi('normal'));
+  modal(title||'Leave kiosk mode', '<label class="field" for="pwIn"><span class="lbl">Staff password</span><input id="pwIn" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" style="font-size:22px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)"></label><div class="hint" id="pwMsg" style="color:var(--bad)"></div>',
+    [['Cancel','',closeModal],['Unlock','primary',checkPassword]]);
+  const inp=$('#pwIn'); inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); checkPassword(); } });
+  setTimeout(()=>inp.focus(),50);
+}
+function checkPassword(){
+  if($('#pwIn').value===KIOSK_PASSWORD){ const f=pwOk; closeModal(); setTimeout(f,60); }
+  else { $('#pwMsg').textContent='Wrong password'; $('#pwIn').select(); }
+}
+function hideBooth(el){ if(el) el.classList.add('boothHide'); }
+const KIOSK_DEFAULTS={printer:'a1', nozzle:'0.4', lh:0.28, modes:['wall'], wall:1.2, holderArms:4, maxH:200, maxD:150, colorName:'PLA'};
+const STEPS=[
+  ['secLight',  'Light source',    'This is the LED light that goes inside your lamp. A built-in holder with 4 arms keeps it in the middle.'],
+  ['secBody',   'Shape',           'Choose the overall shape, then set how tall and wide your lamp is.'],
+  ['secPattern','Surface pattern', 'Add texture to the outside. Light shines through the thinner parts, so patterns glow.'],
+  ['secLayer',  'Layer pattern',   'The printer builds your lamp one thin layer at a time. These patterns use the layers to add rings, bands and steps.'],
+  ['secSend',   'Send to printer', 'Happy with your lamp? Check the printer is empty, then send it.']
+];
+function kioskMachine(){ try{ return JSON.parse(getPref('kioskMachine')||'null'); }catch(e){ return null; } }
+function applyMachine(){
+  const o=kioskMachine()||{};
+  const pr=o.printer||BOOTH.printer||'a1';
+  P.printer=PRINTERS[pr]?pr:'a1'; buildBed();
+  P.nozzle=String(o.nozzle||BOOTH.nozzle||'0.4'); buildLayerSeg();
+  P.lh=+(o.lh||BOOTH.lh||0.28);
+  P.H=Math.min(P.H,maxHeight(P));
+  $('#Db').max=$('#Dt').max=Math.floor(bedMaxD(P));
+}
+function buildSteps(){
+  STEPS.forEach(([id,title,desc],k)=>{
+    const sec=$('#'+id); if(!sec) return;
+    sec.hidden=false; sec.style.order=k+1;
+    const h2=sec.querySelector(':scope > h2'); if(h2) h2.classList.add('boothHide');
+    const head=document.createElement('div'); head.className='stephead';
+    head.innerHTML=`<span class="stepnum">${k+1}</span><div class="stepbody"><div class="stepline"><h2 class="steptitle">Step ${k+1}: ${title}</h2></div><p class="stepdesc">${desc}</p></div>`;
+    sec.prepend(head);
+    if(STEP_KEYS[id]) head.querySelector('.stepline').appendChild(makeResetBtn(id));
+  });
+}
+function enterBooth(s){
+  BOOTH={...KIOSK_DEFAULTS, ...(s.booth||{})};
+  document.documentElement.classList.add('booth');
+  applyMachine();
+  // kiosk lamps: solid wall with the holder cross built in, printability handled automatically
+  P.mode='wall'; P.wall=+BOOTH.wall||1.2; P.holder=true; P.holderH=4; P.cupExtra=+BOOTH.cupExtra||0; P.slotW=+BOOTH.slotW||10; P.slotBridge=(BOOTH.slotBridge!=null?+BOOTH.slotBridge:1.6); P.cupD=+BOOTH.cupD||60.6; P.top='open'; P.arch=true; P.base='open';
+  P.fix=true; P.maxA=45;
+  if(BOOTH.color) P.color=BOOTH.color;
+  ['#secPrint','#secFix','#secCheck','#secSheet'].forEach(q=>hideBooth($(q)));
+  hideBooth($('#secHolder'));
+  hideBooth($('#btnExport')); hideBooth($('#btnShare')); hideBooth($('#btnTouch'));
+  buildSteps();
+  $('#ideasHint').textContent='Need inspiration? Tap one to start from it.';
+  setTouch(true);
+  $('#btnPrint').hidden=false; $('#boothBar').hidden=false;
+  fitToBed(P);
+  lastFitKey=''; refresh();
+  boothUpdate(s);
+  connectEvents();
+  $('#btnPrint').addEventListener('click',startPrintFlow);
+  $('#btnPrint2').addEventListener('click',startPrintFlow);
+  $('#btnTakeHome').addEventListener('click',openShare);
+  $('#btnCollected').addEventListener('click',async()=>{ $('#btnCollected').disabled=true; try{ await fetch('api/collected',{method:'POST'}); }catch(e){} $('#btnCollected').disabled=false; });
+  setupIdle();
+}
+function openMachinePanel(){
+  const opt=(list,cur)=>list.map(([v,l])=>`<option value="${v}"${String(v)===String(cur)?' selected':''}>${l}</option>`).join('');
+  const sel='style="width:100%;font-size:17px;min-height:48px"';
+  modal('Printer setup (staff)', `
+    <label class="field"><span class="lbl">Printer</span><select id="mcPrinter" ${sel}>${opt(Object.entries(PRINTERS).map(([k,v])=>[k,v.name]),P.printer)}</select></label>
+    <label class="field"><span class="lbl">Nozzle</span><select id="mcNozzle" ${sel}>${opt([['0.2','0.2 mm'],['0.4','0.4 mm'],['0.6','0.6 mm'],['0.8','0.8 mm']],P.nozzle)}</select></label>
+    <label class="field"><span class="lbl">Layer height</span><select id="mcLh" ${sel}></select></label>
+    <div class="hint" id="mcNote"></div>`,
+    [['Booth default','',()=>{ setPref('kioskMachine',''); applyMachine(); fitToBed(P); refresh(); closeModal(); toast('Printer set back to the booth default'); }],
+     ['Cancel','',closeModal],
+     ['Save','primary',()=>{
+        const o={printer:$('#mcPrinter').value, nozzle:$('#mcNozzle').value, lh:+$('#mcLh').value};
+        setPref('kioskMachine',JSON.stringify(o)); applyMachine(); fitToBed(P); refresh(); closeModal();
+        toast(`Now printing on ${PRINTERS[P.printer].name}, ${P.nozzle} mm nozzle, ${(+P.lh).toFixed(2)} mm layers`);
+     }]]);
+  const fillLh=()=>{
+    const pr=$('#mcPrinter').value, nz=$('#mcNozzle').value;
+    const list=(PRINTERS[pr].brand==='prusa'?LAYERS_PRUSA:LAYERS)[nz]||[];
+    const cur=+P.lh; const best=list.reduce((a,b)=>Math.abs(b[0]-cur)<Math.abs(a[0]-cur)?b:a,list[0]||[0.2]);
+    $('#mcLh').innerHTML=list.map(([v,n])=>`<option value="${v}"${v===best[0]?' selected':''}>${v.toFixed(2)} mm · ${n}</option>`).join('');
+    const booth=BOOTH&&BOOTH.printer;
+    $('#mcNote').textContent = (BRIDGE_OK && booth && pr!==booth) ? `The booth PC is set up for ${PRINTERS[booth]?PRINTERS[booth].name:booth}. Change its config file too, or it will refuse these prints.` : 'Saved on this screen only. Visitors keep their design.';
+  };
+  $('#mcPrinter').addEventListener('change',fillLh); $('#mcNozzle').addEventListener('change',fillLh); fillLh();
+}
+function connectEvents(){
+  try{ if(es) es.close(); es=new EventSource('api/events'); }catch(e){ return; }
+  es.onmessage=ev=>{ try{ boothUpdate(JSON.parse(ev.data)); }catch(e){} };
+  es.onerror=()=>{ boothUpdate({...(boothState||{}), state:'offline', link:false}); };
+}
+const STATE_TEXT={
+  ready:['ok','Ready to print'], slicing:['busy','Preparing a lamp for the printer'], sending:['busy','Sending to the printer'],
+  printing:['busy','Printing'], pickup:['ok','A lamp is ready to collect'], error:['bad','The booth needs a staff member'], offline:['bad','Printer offline']
+};
+function boothUpdate(s){
+  boothState=s; const st=s.state||'offline'; const j=s.job||null;
+  const [cls,txt]=STATE_TEXT[st]||['bad',st];
+  $('#bbDot').className='bb-dot '+cls;
+  let head=txt, sub='';
+  if(st==='printing' && j){
+    const pr=s.printer||{};
+    if(pr.state==='preparing'||!j.progress){ head=`Lamp #${j.id} · warming up`; sub='Levelling the bed and heating up'; }
+    else head=`Lamp #${j.id} · ${j.progress}%`;
+    if(pr.state==='paused') { head=`Lamp #${j.id} · paused`; sub='A staff member has been told'; }
+    else if(j.remaining_min!=null && j.progress) sub=`About ${fmtTime(j.remaining_min)} left`;
+  } else if(st==='slicing'||st==='sending'){ head=`Lamp #${j?j.id:''} · ${txt.toLowerCase()}`; sub='This takes up to a minute'; }
+  else if(st==='pickup' && j){ head=`Lamp #${j.id} is ready to collect`; }
+  else if(st==='error'){ sub=s.message||'Your design is safe. Please ask FabLab staff.'; }
+  else if(st==='offline'){ sub=s.link===false?'Lost contact with the booth':'Check the printer is on'; }
+  else if(st==='ready' && s.last_job && (Date.now()/1000 - s.last_job.at) < 3*3600){
+    sub = s.last_job.result==='finished' ? `Lamp #${s.last_job.id} finished. Collect it from the door.` : `Lamp #${s.last_job.id} was cancelled.`;
+  }
+  $('#bbText').textContent=head; $('#bbSub').textContent=sub;
+  const showProg=st==='printing' && j && j.progress>0;
+  $('#bbProgWrap').hidden=!showProg; if(showProg) $('#bbFill').style.width=Math.min(100,j.progress)+'%';
+  // pickup overlay
+  const pk=st==='pickup';
+  $('#pickup').hidden=!pk;
+  if(pk && j){ $('#pkNum').textContent=`Lamp #${j.id}`; $('#pkNote').textContent = s.door_sensor ? 'The screen unlocks by itself once the door is closed.' : 'Then tap the button so the next lamp can print.'; }
+  updatePrintButton();
+}
+function updatePrintButton(){
+  const b=$('#btnPrint'); if(!b) return; const lab=b.querySelector('span');
+  const s=boothState||{}; const st=s.state||'offline';
+  let dis=true, text='Send to printer';
+  if(st==='ready' && s.can_print){ if(printable.ok){ dis=false; } else text=printable.why; }
+  else if(st==='ready') text='Printer not ready';
+  else if(st==='printing'||st==='slicing'||st==='sending') text=`Printer busy${s.job&&s.job.progress?` · ${s.job.progress}%`:''}`;
+  else if(st==='pickup') text='Collect the last lamp first';
+  else if(st==='error') text='Booth needs staff';
+  else text='Printer offline';
+  b.disabled=dis; lab.textContent=text;
+  const b2=$('#btnPrint2'); if(b2){ b2.disabled=dis; b2.querySelector('span').textContent=text; }
+}
+function modal(title, bodyHtml, actions){
+  $('#mdTitle').textContent=title; $('#mdBody').innerHTML=bodyHtml; const a=$('#mdActions'); a.innerHTML='';
+  for(const [label,cls,fn] of actions){ const b=document.createElement('button'); b.className='btn '+(cls||''); b.textContent=label; b.addEventListener('click',fn); a.appendChild(b); }
+  $('#modal').hidden=false; const first=a.querySelector('.primary')||a.lastChild; if(first) first.focus();
+}
+function closeModal(){ $('#modal').hidden=true; }
+function startPrintFlow(){
+  if($('#btnPrint').disabled) return;
+  const m=current, st=lastStats;
+  const esc=t=>String(t).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  modal('Before we print', `<div>${esc(describe(P))}</div><div class="kv">
+    <span>Size</span><span>${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm</span>
+    <span>Print time</span><span>about ${fmtTime(st?st.mins:0)}</span>
+    <span>Material</span><span>${esc(BOOTH.colorName||'PLA')} · ${st?st.grams.toFixed(0):'?'} g</span></div>
+    <div class="platebox"><strong>Look through the printer door.</strong> The print bed must be completely empty. If a lamp or anything else is on it, take it out first or ask FabLab staff.</div>
+    <label class="plate" for="plateOk"><input type="checkbox" id="plateOk"><span>I checked. The print bed is empty.</span></label>`,
+    [['Back to designing','',closeModal],['Send to printer','primary big',sendPrint]]);
+  const go=$('#mdActions .primary'); go.disabled=true;
+  $('#plateOk').addEventListener('change',e=>{ go.disabled=!e.target.checked; });
+}
+async function sendPrint(){
+  if(!$('#plateOk')||!$('#plateOk').checked) return;
+  modal('Sending your lamp…','<div>Building the file and handing it to the printer.</div>',[]);
+  try{
+    const {blob,name}=await build3mf(P);
+    const r=await fetch('api/print',{method:'POST',body:blob,headers:{'Content-Type':'application/vnd.ms-package.3dmanufacturing-3dmodel+xml','X-Job-Name':name,'X-Mode':P.mode,'X-Desc':encodeURIComponent(describe(P)),'X-Est-Min':String(Math.round(lastStats?lastStats.mins:0)),'X-Plate-Clear':'1','X-Printer':P.printer,'X-Layer':String(P.lh)}});
+    let js={}; try{ js=await r.json(); }catch(e){}
+    if(r.status===202){
+      myJob=js.job&&js.job.id;
+      modal(`Lamp #${myJob} is on its way`, `<div>The printer starts in a moment. It takes about ${fmtTime(lastStats?lastStats.mins:0)}.</div><div class="hint">Watch the progress at the top right. Carry on designing if you like. When it finishes, collect it from the door.</div>`,[['Take it home (QR)','',openShare],['OK','primary big',closeModal]]);
+    } else if(r.status===409){
+      modal('The printer is busy', `<div>${js.message||'Another lamp is printing. Try again when it has finished.'}</div>`,[['OK','primary',closeModal]]);
+    } else {
+      modal('That did not work', `<div>${js.message||('The booth answered '+r.status)}</div><div class="hint">Your design is still here. Please ask FabLab staff.</div>`,[['OK','primary',closeModal]]);
+    }
+  }catch(e){
+    modal('Could not reach the printer', '<div>Your design is still here. Please ask FabLab staff.</div>',[['OK','primary',closeModal]]);
+  }
+}
+let lastInteract=Date.now(), idleOn=false, idleCycle=0;
+function setupIdle(){
+  const wake=()=>{ lastInteract=Date.now(); if(idleOn){ idleOn=false; $('#idleCard').hidden=true; spin=false; $('#tSpin').setAttribute('aria-pressed','false'); } };
+  ['pointerdown','keydown','wheel'].forEach(ev=>window.addEventListener(ev,wake,{capture:true,passive:true}));
+  const limit=(BOOTH.idleResetSec||180)*1000;
+  setInterval(()=>{
+    const st=boothState&&boothState.state;
+    if(st==='pickup' || !$('#modal').hidden) return;
+    const idle=Date.now()-lastInteract;
+    if(!idleOn && idle>limit){
+      idleOn=true; idleCycle=Date.now(); history.length=0; doRandom(); history.length=0;
+      spin=true; $('#tSpin').setAttribute('aria-pressed','true'); $('#idleCard').hidden=false; closeModal();
+    } else if(idleOn && Date.now()-idleCycle>12000){ idleCycle=Date.now(); doRandom(); history.length=0; }
+  },2000);
+}
+
+/* ---------- per-step reset ---------- */
+const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge'],
+  secPattern:['pattern','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW']};
+const STEP_NAMES={secLight:'Light source', secBody:'Shape', secPattern:'Surface pattern', secLayer:'Layer pattern', secHolder:'Light holder'};
+function resetStep(id){
+  pushHistory();
+  for(const k of STEP_KEYS[id]) P[k]=DEFAULT_P[k];
+  if(id==='secLight') buildPuck();
+  P.H=Math.min(P.H,maxHeight(P)); P.edited=true;
+  fitToBed(P); refresh();
+  toast(`${STEP_NAMES[id]} reset`);
+}
+function makeResetBtn(id){
+  const b=document.createElement('button'); b.type='button'; b.className='resetbtn';
+  b.setAttribute('aria-label',`Reset ${STEP_NAMES[id]}`);
+  b.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.5-3.6"/><path d="M3 2.5V5h2.5"/></svg>Reset';
+  b.addEventListener('click',e=>{ e.stopPropagation(); resetStep(id); });
+  return b;
+}
+function addNormalResets(){ for(const id in STEP_KEYS){ const h2=$('#'+id+' > h2'); if(h2) h2.appendChild(makeResetBtn(id)); } }
+
+/* ---------- share: QR to take the lamp home ----------
+   The QR holds the whole design (about 120 characters) in a link to a public copy of this page.
+   Scanning it opens the lamp on the visitor's phone with: save picture, share (Instagram etc.), download 3MF.
+   Nothing is uploaded, so the booth needs no internet. Set the public address in the booth config (booth.share_url)
+   or in SHARE_URL below for a standalone copy. */
+const SHARE_URL='';
+const SHARE_TEXT='My lamp, designed at the SP FabLab lamp booth #SPFabLab #3Dprinting';
+const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color'];
+function encodeDesign(p){
+  return '1~'+SHARE_FIELDS.map(k=>{ let v=p[k]; if(typeof v==='boolean') v=v?1:0; if(k==='color') v=String(v).replace('#',''); return encodeURIComponent(String(v)); }).join('~');
+}
+function decodeDesign(code){
+  const parts=String(code).split('~'); if(parts[0]!=='1') return null;
+  const ok={light:Object.fromEntries(Object.keys(LIGHTS).filter(k=>!HIDDEN_LIGHTS.includes(k)).map(k=>[k,1])), body:BODIES, pattern:PATTERNS, layer:LAYERPATS, profile:WAVES, env:ENVS, mode:{vase:1,wall:1}};
+  const out={};
+  SHARE_FIELDS.forEach((k,i)=>{
+    let v; try{ v=decodeURIComponent(parts[i+1]==null?'':parts[i+1]); }catch(e){ return; }
+    if(v==='') return;
+    if(ok[k]){ if(ok[k][v]) out[k]=v; return; }
+    if(k==='color'){ if(/^[0-9a-f]{6}$/i.test(v)) out[k]='#'+v; return; }
+    if(k==='holder'){ out[k]=v==='1'; return; }
+    if(k==='seed'){ out[k]=v.replace(/[^A-Za-z0-9]/g,'').slice(0,8)||DEFAULT_P.seed; return; }
+    let n=parseFloat(v); if(!isFinite(n)) return;
+    const el=document.getElementById(k);
+    if(el && el.type==='range'){ n=Math.min(parseFloat(el.max),Math.max(parseFloat(el.min),n)); }
+    out[k]=n;
+  });
+  return out;
+}
+function shareBase(){
+  if(BOOTH && BOOTH.share_url) return BOOTH.share_url;
+  if(SHARE_URL) return SHARE_URL;
+  if(location.protocol==='https:' && !IN_VIEWER) return location.origin+location.pathname;
+  return '';
+}
+function shareLink(){ const b=shareBase(); return b ? b.split('#')[0]+'#d='+encodeDesign(P) : ''; }
+let SHARED_LANDING=false;
+function applySharedFromHash(){
+  const h=location.hash||''; if(!h.startsWith('#d=')) return;
+  const d=decodeDesign(h.slice(3)); if(!d) return;
+  Object.assign(P,d); lockFixed(P); P.edited=false; SHARED_LANDING=true;
+  buildPuck(); P.H=Math.min(P.H,maxHeight(P));
+}
+// Instagram-sized picture card (1080 x 1350)
+let cardR=null, cardScene, cardCam, cardMesh;
+function ensureCardRenderer(){
+  if(cardR) return;
+  const cv=document.createElement('canvas'); cv.width=1080; cv.height=1080;
+  cardR=new THREE.WebGLRenderer({canvas:cv, antialias:true, preserveDrawingBuffer:true, alpha:true});
+  cardR.outputEncoding=THREE.sRGBEncoding; cardR.setClearColor(0x000000,0);
+  cardScene=new THREE.Scene();
+  cardScene.add(new THREE.HemisphereLight(0xffffff,0x2a2d33,0.6));
+  const k=new THREE.DirectionalLight(0xffffff,0.9); k.position.set(260,-340,420); cardScene.add(k);
+  const r=new THREE.DirectionalLight(0xffc98a,0.55); r.position.set(-320,260,140); cardScene.add(r);
+  cardCam=new THREE.PerspectiveCamera(28,1,1,6000); cardCam.up.set(0,0,1);
+  cardMesh=new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({roughness:0.55}));
+  cardScene.add(cardMesh);
+}
+async function renderCard(){
+  ensureCardRenderer();
+  const m=buildMesh(P,Q_PREVIEW);
+  cardMesh.geometry.dispose(); cardMesh.geometry=toGeometry(m); cardMesh.material.color.set(P.color);
+  const dist=Math.max(m.H*1.15,m.maxR*2.3)*2.25, az=-0.9, el=0.22;
+  cardCam.position.set(dist*Math.cos(el)*Math.cos(az), dist*Math.cos(el)*Math.sin(az), m.H*0.47+dist*Math.sin(el));
+  cardCam.lookAt(0,0,m.H*0.47);
+  cardR.render(cardScene,cardCam);
+  const W=1080,H=1350, c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+  const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#14171B'); bg.addColorStop(1,'#07080A'); x.fillStyle=bg; x.fillRect(0,0,W,H);
+  const glow=x.createRadialGradient(W/2,H*0.5,40,W/2,H*0.5,560); glow.addColorStop(0,'rgba(255,190,100,.28)'); glow.addColorStop(1,'rgba(255,190,100,0)'); x.fillStyle=glow; x.fillRect(0,0,W,H);
+  x.drawImage(cardR.domElement,(W-940)/2,120,940,940);
+  const disp='"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif', mono='"IBM Plex Mono", ui-monospace, monospace';
+  x.fillStyle='#F0AE38'; x.font=`600 30px ${mono}`; x.textAlign='left'; x.fillText('DESIGNED AT SP FABLAB',72,100);
+  x.fillStyle='#F4F5F7'; x.font=`700 54px ${disp}`;
+  const words=describe(P).split(' '); const lines=['']; for(const w of words){ const tryL=(lines[lines.length-1]+' '+w).trim(); if(x.measureText(tryL).width>W-144 && lines[lines.length-1]) lines.push(w); else lines[lines.length-1]=tryL; }
+  const shown=lines.slice(0,2); if(lines.length>2) shown[1]=shown[1].replace(/\s*\S*$/,'')+'…';
+  shown.forEach((l,i)=>x.fillText(l,72,H-150-(shown.length-1-i)*62));
+  x.fillStyle='#AEB4BE'; x.font=`500 30px ${mono}`;
+  x.fillText(`${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm · ${LIGHTS[P.light].name} · #${P.seed}`,72,H-92);
+  x.fillStyle='#6E7581'; x.font=`500 26px ${mono}`; x.fillText('Lampshade Generator · #SPFabLab',72,H-46);
+  return await new Promise(res=>c.toBlob(res,'image/png'));
+}
+function saveBlob(blob,name){
+  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+async function openShare(){
+  const url=shareLink(); const kiosk=!!BOOTH;
+  modal('Take your lamp home', '<div class="hint">Making your picture…</div>', []);
+  const blob=await renderCard(); const img=URL.createObjectURL(blob);
+  let qrHtml='';
+  if(url){
+    const q=qrcode(0,'M'); q.addData(url); q.make();
+    qrHtml=`<div class="qrbox">${q.createSvgTag(6,2)}</div>`;
+  }
+  const body=`<div class="sharegrid">
+      <img class="sharepic" src="${img}" alt="Picture of your lamp">
+      <div class="shareside">${url
+        ? `${qrHtml}<p><strong>Scan with your phone camera.</strong> You get your lamp in 3D, a picture to post on Instagram, and the 3MF file to print it again.</p>`
+        : `<p><strong>Sharing is not set up yet.</strong></p><p class="hint">Staff: put the public address of this page in <code>booth.share_url</code> on the booth PC (or <code>SHARE_URL</code> in the page) to show a QR code here.</p>`}
+      </div></div>`;
+  const acts=[];
+  if(!kiosk){
+    acts.push(['Save picture','',()=>saveBlob(blob,`lamp-${P.seed}.png`)]);
+    if(url) acts.push(['Copy link','',()=>{ try{ navigator.clipboard.writeText(url).then(()=>toast('Link copied'),()=>toast(url,8000)); }catch(e){ toast(url,8000); } }]);
+  }
+  acts.push(['Done','primary',closeModal]);
+  modal('Take your lamp home', body, acts);
+}
+async function openLanding(){
+  const blob=await renderCard(); const img=URL.createObjectURL(blob);
+  const file=new File([blob],`lamp-${P.seed}.png`,{type:'image/png'});
+  let canShare=false; try{ canShare=!!(navigator.canShare && navigator.canShare({files:[file]})); }catch(e){}
+  const acts=[['Save picture','',()=>saveBlob(blob,`lamp-${P.seed}.png`)]];
+  if(canShare) acts.push(['Share','',async()=>{ try{ await navigator.share({files:[file], text:SHARE_TEXT}); }catch(e){} }]);
+  acts.push(['Download 3MF','',()=>{ closeModal(); doExport(); }]);
+  acts.push(['Explore in 3D','primary',closeModal]);
+  modal('Your lamp from the SP FabLab booth', `<img class="sharepic land" src="${img}" alt="Picture of your lamp">
+    <div class="hint">${canShare?'Tap Share and pick Instagram to post it, or':'Tap'} Save picture to keep it. Download 3MF gets the file to print it again.</div>`, acts);
+}
+
+/* ---------- touch support ---------- */
+const IS_ANDROID=/Android/i.test(navigator.userAgent||'');
+const TOUCH_DEFAULT = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || (navigator.maxTouchPoints||0)>=5;
+function getPref(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function setPref(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function setTouch(on){
+  document.documentElement.classList.toggle('touch',on);
+  $('#btnTouch').setAttribute('aria-pressed',String(on));
+  $('#navhint').textContent = on ? 'One finger rotates · Two fingers pinch to zoom and drag to pan · Double-tap resets the view'
+                                 : 'Drag to rotate · Middle-drag, right-drag or Shift-drag to pan · Scroll to zoom';
+  setTimeout(()=>{ resize(); if(current){ drawProfile(current); drawLens(current);} },60);
+}
+function addSteppers(){
+  $$('input[type=range][data-key]').forEach(el=>{
+    const row=document.createElement('div'); row.className='rangeRow';
+    el.parentNode.insertBefore(row, el);
+    const mk=(sign,label)=>{ const b=document.createElement('button'); b.type='button'; b.className='stepper'; b.textContent=sign>0?'+':'−'; b.setAttribute('aria-label',label+' '+(el.labels&&el.labels[0]?el.labels[0].firstChild.textContent.trim():el.id)); b.dataset.sign=sign; return b; };
+    const minus=mk(-1,'Decrease'), plus=mk(1,'Increase');
+    row.append(minus, el, plus);
+    for(const b of [minus,plus]){
+      let hold=0, rep=0;
+      const bump=()=>{ const st=parseFloat(el.step)||1, v=parseFloat(el.value)+st*(+b.dataset.sign); const cl=Math.min(parseFloat(el.max),Math.max(parseFloat(el.min),v)); const dec=(String(el.step).split('.')[1]||'').length; el.value=cl.toFixed(dec); setParam(el.dataset.key, el.value, true); };
+      const stop=()=>{ clearTimeout(hold); clearInterval(rep); };
+      b.addEventListener('pointerdown',e=>{ e.preventDefault(); bump(); hold=setTimeout(()=>{ rep=setInterval(bump,70); },380); });
+      ['pointerup','pointerleave','pointercancel'].forEach(t=>b.addEventListener(t,stop));
+      b.addEventListener('click',e=>e.preventDefault());
+    }
+  });
+}
+function setupFullscreen(){
+  const b=$('#btnFull'), el=document.documentElement;
+  const can = document.fullscreenEnabled || document.webkitFullscreenEnabled;
+  if(!can) return;
+  b.classList.add('on');
+  const sync=()=>{ const on=!!(document.fullscreenElement||document.webkitFullscreenElement); b.lastChild.textContent=on?'Exit full screen':'Full screen'; setTimeout(resize,80); };
+  b.addEventListener('click',async()=>{
+    try{
+      if(document.fullscreenElement||document.webkitFullscreenElement){ await (document.exitFullscreen||document.webkitExitFullscreen).call(document); }
+      else { await (el.requestFullscreen||el.webkitRequestFullscreen).call(el,{navigationUI:'hide'}); }
+    }catch(e){ toast('Full screen is not allowed here. Open the standalone file in Chrome to use it.'); }
+  });
+  document.addEventListener('fullscreenchange',sync); document.addEventListener('webkitfullscreenchange',sync);
+}
+function tuneForDevice(){
+  // Android panels like the Roam have a mid-range GPU: lighter preview mesh and render size.
+  if(IS_ANDROID || TOUCH_DEFAULT){
+    Object.assign(Q_PREVIEW,{dz:1.1, maxRings:240, seg:160, segMax:260, perRib:7});
+    Object.assign(Q_DRAG,{dz:2.2, maxRings:110, seg:96, segMax:160, perRib:5});
+    renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio||1));
+  }
+  if(IS_ANDROID) Object.assign(Q_EXPORT,{segMax:320, maxRings:700});
+}
+window.addEventListener('orientationchange',()=>setTimeout(()=>{ resize(); if(current){ drawProfile(current); drawLens(current);} },250));
+
 /* ---------- boot ---------- */
-buildChips(); buildLayerSeg(); buildBed(); buildPuck(); wire();
+buildChips(); buildLayerSeg(); buildBed(); buildPuck(); addSteppers(); wire();
+tuneForDevice(); setupFullscreen();
+{ const pref=getPref('lampTouch'); setTouch(pref===null ? TOUCH_DEFAULT : pref==='1'); }
+$('#btnTouch').addEventListener('click',()=>{ const on=!document.documentElement.classList.contains('touch'); setTouch(on); setPref('lampTouch',on?'1':'0'); });
+applySharedFromHash();
+detectBooth();
+if(canShareFiles()){ $('#btnShare').classList.add('on'); $('#btnShare').addEventListener('click',()=>doExport(undefined,'share')); }
+addNormalResets();
+$('#tShareQR').addEventListener('click',openShare);
 resize(); refresh();
 fitView(current);
+if(SHARED_LANDING) setTimeout(openLanding,400);
 requestAnimationFrame(frame);
 setTimeout(makeIdeas, 60);
 })();
 </script>
+
+</body>
+</html>
