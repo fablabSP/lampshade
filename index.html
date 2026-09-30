@@ -1,10 +1,4 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0D0F12">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>FabLab Lampshade Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -262,10 +256,38 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
   .panel.right{grid-row:2;grid-column:2;display:block;border-top:0;border-left:0}
   .stage .scale{display:none}
 }
+
+/* ---- kiosk in portrait (Roam rotated): lamp on top, one step at a time ---- */
+.steptabs,.stepnav{display:none}
+@media (orientation: portrait){
+  html.booth .work{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,50%) auto minmax(0,1fr) auto}
+  html.booth .stage{grid-column:1;grid-row:1}
+  html.booth .steptabs{display:flex;grid-row:2;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel);overflow-x:auto;scrollbar-width:none}
+  html.booth .steptabs button{flex:1 1 0;min-width:0;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font:600 15px var(--f-body);cursor:pointer;padding:6px 4px}
+  html.booth .steptabs button .n{width:28px;height:28px;border-radius:50%;background:var(--chip);font:700 15px/28px var(--f-display);text-align:center}
+  html.booth .steptabs button.done .n{background:color-mix(in srgb,var(--accent) 35%,var(--chip))}
+  html.booth .steptabs button[aria-current="step"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  html.booth .steptabs button[aria-current="step"] .n{background:var(--accent-ink);color:var(--accent)}
+  html.booth .panel.left{grid-row:3;grid-column:1;border-right:0;overflow-y:auto;display:block}
+  html.booth .panel.left .sec{display:none}
+  html.booth .panel.left .sec.cur{display:grid}
+  html.booth .panel.right{display:none}
+  html.booth .stepnav{display:flex;grid-row:4;gap:12px;align-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--panel)}
+  html.booth .stepnav .btn{min-height:64px;font-size:18px;padding:10px 26px;border-radius:14px}
+  html.booth .stepnav .where{flex:1;text-align:center;font:600 14px var(--f-mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  html.booth .stepnav .btn[hidden]{display:inline-flex!important;visibility:hidden}
+  html.booth .chips{grid-template-columns:repeat(5,1fr)}
+  html.booth .ideas{grid-template-columns:repeat(3,1fr)}
+  html.booth #btnPrint2{min-height:96px;font-size:24px;border-radius:16px}
+  html.booth #btnTakeHome{min-height:64px;font-size:18px}
+  html.booth .seedbox,html.booth #btnPrint,html.booth #btnFull{display:none!important}
+  html.booth header.top{flex-wrap:nowrap}
+  html.booth .sec{padding:20px 24px 26px}
+  html.booth .steptitle{font-size:26px}
+  html.booth .stepdesc{font-size:17px}
+}
 </style>
 
-</head>
-<body>
 <div class="app">
   <header class="top">
     <div class="brand"><h1><button class="titlebtn" id="btnTitle" type="button" title="Switch between staff and kiosk mode">Lampshade Generator</button></h1><span class="modebadge" id="modeBadge">Staff</span><span class="tag"><button class="brandbtn" id="btnFablab" type="button">SP FabLab</button> · <button class="brandbtn" id="btnBrand" type="button">Bambu Lab</button></span></div>
@@ -1374,7 +1396,7 @@ function makeIdeas(){
     thumbR.render(thumbScene,thumbCam);
     const b=document.createElement('button'); b.className='idea'; b.title=describe(d)+' · seed '+d.seed; b.setAttribute('aria-label','Load idea: '+describe(d));
     const img=new Image(); img.alt=''; img.src=thumbR.domElement.toDataURL('image/png'); b.appendChild(img);
-    b.addEventListener('click',()=>{ pushHistory(); DESIGN_KEYS.forEach(k=>P[k]=d[k]); P.seed=d.seed; P.edited=false; lastFitKey=''; refresh(); });
+    b.addEventListener('click',()=>{ pushHistory(); DESIGN_KEYS.forEach(k=>P[k]=d[k]); P.seed=d.seed; P.edited=false; lastFitKey=''; refresh(); if(PORTRAIT_TABS.length && curStep===PORTRAIT_TABS.length-1) goStep(1); });
     host.appendChild(b);
   }
 }
@@ -1570,6 +1592,40 @@ function buildSteps(){
     if(STEP_KEYS[id]) head.querySelector('.stepline').appendChild(makeResetBtn(id));
   });
 }
+
+/* portrait kiosk: step tabs + back/next (layout only; hidden in landscape by CSS) */
+let curStep=0; const seen=new Set([0]);
+function setupPortraitSteps(){
+  const ideasSec=$('#btnIdeas').closest('section'); ideasSec.id='secIdeas';
+  const pv=$('#btnPrev'); const tn=[...pv.childNodes].reverse().find(n=>n.nodeType===3&&n.textContent.trim()); if(tn) tn.textContent='Undo'; pv.title='Undo your last change';
+  const ideasHead=document.createElement('div'); ideasHead.className='stephead portraitOnly';
+  const tabs=[...STEPS.map(([id,t])=>[id,t]),['secIdeas','Ideas']];
+  const bar=document.createElement('nav'); bar.className='steptabs'; bar.setAttribute('aria-label','Steps');
+  tabs.forEach(([id,t],k)=>{ const b=document.createElement('button'); b.type='button'; b.dataset.k=k;
+    b.innerHTML=`<span class="n">${k<STEPS.length?k+1:'★'}</span><span>${t.replace('Surface pattern','Pattern').replace('Layer pattern','Layers').replace('Send to printer','Send').replace('Light source','Light')}</span>`;
+    b.addEventListener('click',()=>goStep(k)); bar.appendChild(b); });
+  const nav=document.createElement('div'); nav.className='stepnav';
+  nav.innerHTML='<button class="btn" type="button" id="stepBack">‹ Back</button><span class="where" id="stepWhere"></span><button class="btn primary" type="button" id="stepNext">Next ›</button>';
+  const work=$('.work'); work.insertBefore(bar,$('#controls')); work.appendChild(nav);
+  $('#stepBack').addEventListener('click',()=>goStep(curStep-1));
+  $('#stepNext').addEventListener('click',()=>goStep(curStep+1));
+  const mq=matchMedia('(orientation: portrait)');
+  const place=()=>{ if(mq.matches) $('#controls').appendChild(ideasSec); else document.querySelector('.panel.right').appendChild(ideasSec); };
+  mq.addEventListener('change',place); place();
+  PORTRAIT_TABS=tabs; goStep(0);
+}
+let PORTRAIT_TABS=[];
+function goStep(k){
+  const n=PORTRAIT_TABS.length; k=Math.max(0,Math.min(n-1,k)); curStep=k; seen.add(k);
+  PORTRAIT_TABS.forEach(([id],i)=>{ const sec=$('#'+id); if(sec) sec.classList.toggle('cur',i===k); });
+  document.querySelectorAll('.steptabs button').forEach((b,i)=>{ if(i===k) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); b.classList.toggle('done',seen.has(i)&&i!==k); });
+  const last=STEPS.length-1;
+  $('#stepBack').hidden=(k===0);
+  $('#stepNext').hidden=(k>=last);
+  $('#stepNext').textContent = k===last-1 ? 'Next: send ›' : 'Next ›';
+  $('#stepWhere').textContent = k<STEPS.length ? `Step ${k+1} of ${STEPS.length}` : 'Ideas';
+  $('#controls').scrollTop=0;
+}
 function enterBooth(s){
   BOOTH={...KIOSK_DEFAULTS, ...(s.booth||{})};
   document.documentElement.classList.add('booth');
@@ -1583,6 +1639,7 @@ function enterBooth(s){
   hideBooth($('#btnExport')); hideBooth($('#btnShare')); hideBooth($('#btnTouch'));
   buildSteps();
   $('#ideasHint').textContent='Need inspiration? Tap one to start from it.';
+  setupPortraitSteps();
   setTouch(true);
   $('#btnPrint').hidden=false; $('#boothBar').hidden=false;
   fitToBed(P);
@@ -1719,7 +1776,7 @@ function setupIdle(){
     const idle=Date.now()-lastInteract;
     if(!idleOn && idle>limit){
       idleOn=true; idleCycle=Date.now(); history.length=0; doRandom(); history.length=0;
-      spin=true; $('#tSpin').setAttribute('aria-pressed','true'); $('#idleCard').hidden=false; closeModal();
+      spin=true; $('#tSpin').setAttribute('aria-pressed','true'); $('#idleCard').hidden=false; closeModal(); if(PORTRAIT_TABS.length) goStep(0);
     } else if(idleOn && Date.now()-idleCycle>12000){ idleCycle=Date.now(); doRandom(); history.length=0; }
   },2000);
 }
@@ -1936,5 +1993,4 @@ setTimeout(makeIdeas, 60);
 })();
 </script>
 
-</body>
-</html>
+</body></html>
