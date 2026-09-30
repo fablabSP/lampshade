@@ -126,6 +126,7 @@ select{width:100%;border:1px solid var(--line);background:var(--bg);border-radiu
 .stage .tools{position:absolute;left:12px;bottom:12px;display:flex;gap:6px;flex-wrap:wrap}
 .stage .tools button{border:1px solid #2C3138;background:rgba(18,20,24,.85);color:var(--stage-ink);border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer}
 .stage .tools button[aria-pressed="true"]{border-color:var(--accent);color:#FFE3B0}
+.stage .tools #tReset.attn{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
 .stage .scale{position:absolute;right:14px;bottom:14px;font:500 11px var(--f-mono);color:var(--stage-muted);text-align:right;white-space:pre;pointer-events:none}
 #lhSeg button{flex:1 1 30%}
 
@@ -292,7 +293,7 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
 
 <div class="app">
   <header class="top">
-    <div class="brand"><h1><button class="titlebtn" id="btnTitle" type="button" title="Switch between staff and kiosk mode">Lampshade Generator</button></h1><span class="modebadge" id="modeBadge">Staff</span><span class="tag"><button class="brandbtn" id="btnFablab" type="button">SP FabLab</button> · <button class="brandbtn" id="btnBrand" type="button">Bambu Lab</button></span></div>
+    <div class="brand"><h1><button class="titlebtn" id="btnTitle" type="button" title="Switch between staff and kiosk mode">Lampshade Generator</button></h1><span class="modebadge" id="modeBadge">Staff</span><span class="tag"><button class="brandbtn" id="btnFablab" type="button">SP FabLab</button> · <button class="brandbtn" id="btnBrand" type="button">Prusa</button></span></div>
     <div class="seedbox"><label for="seedIn">Seed</label><input id="seedIn" maxlength="8" spellcheck="false" autocomplete="off"></div>
     <button class="btn" id="btnPrev" title="Go back to the previous design" disabled>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3 5 8l5 5"/></svg>Back</button>
@@ -367,6 +368,10 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
           <input type="range" id="slotBridge" data-key="slotBridge" min="0" max="4" step="0.2"></div>
         <div class="field" data-hold><label for="slotW">Cable slot width <output id="slotWo"></output></label>
           <input type="range" id="slotW" data-key="slotW" min="6" max="16" step="0.5"></div>
+        <div class="field" data-hold><label for="lipN">Snap clips on top <output id="lipNo"></output></label>
+          <select id="lipN" data-key="lipN"><option value="0">Off</option><option value="3">3 clips</option><option value="4">4 clips</option><option value="6">6 clips</option></select></div>
+        <div class="field" data-hold><label for="lip">Clip grip <output id="lipo"></output></label>
+          <input type="range" id="lip" data-key="lip" min="0.3" max="1.5" step="0.1"></div>
         <div class="field" data-hold><label for="cupExtra">Cup wall vs top of light <output id="cupExtrao"></output></label>
           <input type="range" id="cupExtra" data-key="cupExtra" min="-5" max="3" step="0.5"></div>
         <p class="hint" id="holderHint"></p>
@@ -450,11 +455,11 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
         <button id="tLit" aria-pressed="false">Light on</button>
         <button id="tSpin" aria-pressed="true">Spin</button>
         <button id="tShade" aria-pressed="true">Shade</button>
-        <button id="tReset">Reset view</button>
+        <button id="tReset" title="Put the view back to the start (or double-tap the lamp)"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" style="vertical-align:-2px;margin-right:5px" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5v2.8h2.8"/></svg>Reset view</button>
         <button id="tShareQR">Share</button>
       </div>
       <div class="scale" id="scaleTxt"></div>
-      <div class="navhint" id="navhint">Drag to rotate · Middle-drag, right-drag or Shift-drag to pan · Scroll to zoom</div>
+      <div class="navhint" id="navhint">Drag to rotate · Middle-drag, right-drag or Shift-drag to pan · Scroll to zoom · Double-click to reset</div>
       <div class="busy" id="busy" hidden>Building 3MF…</div>
       <div class="boothbar" id="boothBar" hidden>
         <div class="bb-top"><span class="bb-dot" id="bbDot"></span><span id="bbText">Connecting to the printer…</span></div>
@@ -605,11 +610,11 @@ function fbm(x,y,z,s){ return vnoise(x,y,z,s)*0.6+vnoise(x*2.1,y*2.1,z*2.1,s+7)*
 
 /* ---------- state ---------- */
 const P = {
-  light:'strimsav', printer:'p1', nozzle:'0.4', lh:0.28, mode:'wall', vaseLW:0.6, wall:1.2, base:'open', arch:true,
+  light:'strimsav', printer:'mk4', nozzle:'0.4', lh:0.28, mode:'wall', vaseLW:0.6, wall:1.2, base:'open', arch:true,
   body:'barrel', H:180, Db:130, Dt:95, bulge:18,
   pattern:'ribs', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
   layer:'none', bandN:12, layerOff:0.8,
-  fix:true, maxA:45, top:'open', tip:false, holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.6, slotBridge:1.6, color:'#EDE4D0', seed:'FABLAB', edited:false
+  fix:true, maxA:45, top:'open', tip:false, holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.6, slotBridge:1.6, lipN:3, lip:0.8, color:'#EDE4D0', seed:'FABLAB', edited:false
 };
 const DEFAULT_P = JSON.parse(JSON.stringify(P));   // starting values, used by the step Reset buttons
 const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
@@ -779,10 +784,10 @@ function meshStats(m, p){
     vol += (ax*(by*cz-bz*cy) - ay*(bx*cz-bz*cx) + az*(bx*cy-by*cx))/6;
     if(q/3<outerTris){ const ux=bx-ax,uy=by-ay,uz=bz-az,vx=cx-ax,vy=cy-ay,vz=cz-az; const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx; area+=0.5*Math.sqrt(nx*nx+ny*ny+nz*nz); }
   }
-  const plastic = m.vase ? area*p.vaseLW : vol*0.72; // wall mode: collar gets ~15% infill
+  const plastic = m.vase ? area*p.vaseLW : vol*0.97; // solid wall: the slicer fills it completely (checked against PrusaSlicer: 113.6 g vs 112.5 g + holder)
   const grams = plastic/1000*1.24;
   const metres = plastic/(PI*0.875*0.875)/1000;
-  const flow = m.vase ? 11 : 8; // mm³/s, rough real-world average incl. travel
+  const flow = m.vase ? 11 : (isPrusa(p) ? 6.7 : 8); // mm³/s average incl. travel (MK4 barrel: 91.6 cm³ in 3 h 48 m)
   const mins = plastic/flow/60 + 6;
   return {grams, metres, mins, layers:Math.ceil(m.H/p.lh)};
 }
@@ -805,11 +810,64 @@ function polyArcBand(ri, ro, halfW, n){      // short curved band centred on 0°
   for(let k=0;k<=n;k++){ const a=ai-2*ai*k/n; pts.push([ri*Math.cos(a),ri*Math.sin(a)]); }
   return pts;
 }
+function polyArcBandAt(ri, ro, halfW, n, a){  // same band, turned to angle a
+  const c=Math.cos(a), s=Math.sin(a); return polyArcBand(ri,ro,halfW,n).map(([x,y])=>[x*c-y*s, x*s+y*c]);
+}
+/* snap clips on the cup rim: short tabs that lean in over the top edge of the light so it can't be pushed up and out.
+   Profile from below: 45° chamfer in (holds the light), short flat, 45° lead-in back out (so the light snaps in from above). */
+function clipAngles(n){ return n===3?[60,180,300]:n===4?[45,135,225,315]:[30,90,150,210,270,330]; }
+function clipInnerR(c, rsI, zs){                // inner radius of a clip at height zs (null outside the clip)
+  if(zs<c.zBase || zs>=c.z1) return null;
+  if(zs<c.z0) return rsI;                        // riser up from a low cup wall
+  const u=zs-c.z0, L=c.lip, h=c.z1-c.z0;
+  return u<L ? rsI-u : (u<h-L ? rsI-L : rsI-(h-u));
+}
 function polyArm(a, r0, r1, w){
   const ux=Math.cos(a), uy=Math.sin(a), vx=-uy, vy=ux, h=w/2;
   return [[r0*ux-h*vx, r0*uy-h*vy],[r1*ux-h*vx, r1*uy-h*vy],[r1*ux+h*vx, r1*uy+h*vy],[r0*ux+h*vx, r0*uy+h*vy]];
 }
+/* ---- arm geometry, shared by the 3MF mesh and the direct G-code ---- */
+const ARM={w:3, footW:9, footL:6, gH:5, gL:8};
+function armGeom(p, m, a0, rsO, ha, endIn){
+  // wall radius (outer surface) at angle a, height z
+  const R=(a,z)=>{ const j=((Math.round(a/TAU*m.seg)%m.seg)+m.seg)%m.seg; return gcSampleR(m,j,Math.max(0,z)); };
+  // settle in the nearest valley / facet centre: lowest average wall radius within half a pattern period
+  const nP = (RIBBED.has(p.pattern) && +p.count>0) ? Math.round(+p.count) : 0;
+  const span = Math.min(nP ? PI/nP : 0.12, 0.35), steps=24; let best=a0, bestR=1e9;
+  for(let s=-steps;s<=steps;s++){ const a=a0+span*s/steps; let sum=0, c=0; for(let z=0.5;z<=ha+ARM.gH;z+=1.5){ const r=R(a,z); if(r!=null){ sum+=r; c++; } }
+    const avg=c?sum/c:1e9; if(avg<bestR-1e-6 || (Math.abs(avg-bestR)<1e-6 && Math.abs(a-a0)<Math.abs(best-a0))){ bestR=avg; best=a; } }
+  const a=best, r0=rsO-0.4;
+  const rEnd=(o,z)=>{ let r=bestR; for(let it=0;it<2;it++){ const rr=R(a+o/Math.max(10,r),z); if(rr!=null) r=rr; } return r-endIn; };
+  if(rEnd(0,ha/2)-r0 < ARM.footL+2) return null;
+  return {a, r0, w:ARM.w, footW:ARM.footW, footL:ARM.footL, ha, gH:ARM.gH, gL:ARM.gL, rEnd};
+}
+/* where the arm (or its brace) is at height z: inner edge start(o) and outer edge end(o) across the width o */
+function armSpan(g, z){
+  if(z<g.ha){
+    const hw=g.footW/2, rK=g.rEnd(0,z)-g.footL;
+    return {hw, start:o=>{ const ao=Math.abs(o); return ao<=g.w/2 ? g.r0 : rK+(ao-g.w/2)/(hw-g.w/2)*g.footL; }};
+  }
+  if(z<g.ha+g.gH){
+    const f=(z-g.ha)/g.gH, hw=(g.w/2)*(1-0.4*f)+((g.footW-g.w)/2)*(1-f)*0.5, L=Math.max(0.6,g.gL*(1-f));
+    const re=g.rEnd(0,z);
+    return {hw, start:o=>re-L};
+  }
+  return null;
+}
+function armSlice(g, z){
+  const sp=armSpan(g,z); if(!sp) return null;
+  const ux=Math.cos(g.a), uy=Math.sin(g.a), vx=-uy, vy=ux, P2=(r,o)=>[r*ux+o*vx, r*uy+o*vy];
+  const hw=sp.hw, pts=[], N=8;
+  if(z<g.ha){
+    const rK=g.rEnd(0,z)-g.footL;
+    pts.push(P2(g.r0,-g.w/2), P2(g.r0,g.w/2), P2(rK,g.w/2));
+  } else pts.push(P2(sp.start(0),-hw), P2(sp.start(0),hw));
+  for(let i=0;i<=N;i++){ const o=hw-2*hw*i/N; pts.push(P2(g.rEnd(o,z),o)); }
+  if(z<g.ha) pts.push(P2(g.rEnd(0,z)-g.footL,-g.w/2));
+  return pts;
+}
 function extrude(pts, z0, z1, acc){
+  { let ar=0; for(let i=0;i<pts.length;i++){ const [x0,y0]=pts[i], [x1,y1]=pts[(i+1)%pts.length]; ar+=x0*y1-x1*y0; } if(ar<0) pts=pts.slice().reverse(); }   // outline must run counter-clockwise
   const n=pts.length, base=acc.pos.length/3;
   for(const [x,y] of pts) acc.pos.push(x,y,z0);
   for(const [x,y] of pts) acc.pos.push(x,y,z1);
@@ -834,20 +892,33 @@ function buildHolder(p, m){
   extrude(polyCRing(rsI, rsO, slotW, H0.seg), 0, H0.ledge+hs, acc);              // cup wall
   const topZ=H0.ledge+hs, bt=Math.min(Math.max(0,+p.slotBridge||0), hs-3);
   if(bt>0) extrude(polyArcBand(rsI, rsO, slotW/2+1, 16), topZ-bt, topZ, acc);      // bridge over the cable slot: closes the rim into a full circle
+  // snap clips
+  const lipN=Math.round(+p.lipN||0), lip=Math.max(0,Math.min(1.5,+p.lip||0));
+  let clips=null;
+  if(lipN>0 && lip>0){
+    const z0=H0.ledge+puckH+0.2, hL=2*lip+0.4, z1=z0+hL, halfW=4, angs=clipAngles(lipN).map(d=>d*PI/180);
+    clips={n:lipN, lip, z0, z1, zBase:Math.min(z0,topZ), halfW, angs};
+    const steps=Math.max(4,Math.ceil(hL/0.2));
+    for(const a of angs){
+      if(z0>topZ) extrude(polyArcBandAt(rsI, rsO, halfW, 10, a), topZ-0.05, z0, acc);
+      for(let k=0;k<steps;k++){ const za=z0+hL*k/steps, zb=z0+hL*(k+1)/steps; const ri=clipInnerR(clips, rsI, (za+zb)/2);
+        extrude(polyArcBandAt(ri, rsO, halfW, 10, a), za-0.01, zb, acc); }
+    }
+  }
+  // arms: from the cup out into the shade wall. Each arm sits where the wall is closest (a rib valley or the
+  // middle of a facet), widens into a foot and has a small sloped brace up the wall, and its end follows the
+  // wall's curve and stops in the middle of the wall at every height, so it grows into the shade.
   const n=Math.max(3,Math.round(p.holderArms)), arms=[];
   for(let k=0;k<n;k++){
-    const a=PI/n + k*TAU/n;                      // offset so no arm sits on the cable slot at 0°
-    const j=Math.round(a/TAU*m.seg)%m.seg;
-    let minR=1e9, maxIn=-1e9;
-    for(let i=0;i<=m.nz;i++){ const q=i*m.seg+j; if(m.Z[q]>ha+0.5) break; if(m.R[q]<minR) minR=m.R[q]; if(m.R[q]-m.t>maxIn) maxIn=m.R[q]-m.t; }
-    const minIn=minR-m.t;
-    const r1 = integrated ? Math.min(minR-0.25, Math.max(maxIn+0.2, maxIn+m.t*0.6)) : minIn-0.3;
-    const r0 = rsO-0.4;
-    if(r1>r0+1){ extrude(polyArm(a,r0,r1,H0.armW), 0, ha, acc); arms.push({a,r0,r1}); }
+    const g=armGeom(p, m, PI/n + k*TAU/n, rsO, ha, m.t/2);
+    if(!g) continue;
+    const zs=[]; for(let z=0; z<g.ha+g.gH-1e-6; z+=0.3) zs.push(z);
+    for(const z0 of zs){ const z1=Math.min(g.ha+g.gH, z0+0.3); const poly=armSlice(g, (z0+z1)/2); if(poly) extrude(poly, z0-0.01, z1, acc); }
+    arms.push({a:g.a, r0:g.r0, r1:g.rEnd(0,ha/2)});
   }
   const pos=new Float32Array(acc.pos), idx=new Uint32Array(acc.idx);
   let vol=0; for(let t=0;t<idx.length;t+=3){const a=idx[t]*3,b=idx[t+1]*3,c=idx[t+2]*3; vol+=(pos[a]*(pos[b+1]*pos[c+2]-pos[b+2]*pos[c+1])-pos[a+1]*(pos[b]*pos[c+2]-pos[b+2]*pos[c])+pos[a+2]*(pos[b]*pos[c+1]-pos[b+1]*pos[c]))/6;}
-  return {pos, idx, integrated, ledge:H0.ledge, rsI, rsO, hs, ha, arms, ledgeR:puckR-H0.ledgeIn, grams:vol*0.9/1000*1.24};
+  return {pos, idx, integrated, ledge:H0.ledge, rsI, rsO, hs, ha, arms, clips, top:Math.max(topZ, clips?clips.z1:0), ledgeR:puckR-H0.ledgeIn, grams:vol*0.9/1000*1.24};
 }
 function mergeMeshes(a, b){
   const na=a.pos.length/3;
@@ -908,7 +979,7 @@ async function build3mf(p, what){
   let title=fileBase(p), obj=m, desc=null;
   if(what==='holder'){
     obj=buildHolder(p, m); title=`holder-${LIGHTS[p.light].name.toLowerCase().replace('ä','a')}-${p.seed}`.toLowerCase();
-    desc=`Light holder only (cup + 4 arms) for ${LIGHTS[p.light].name} Ø${LIGHTS[p.light].d} mm: cup inside Ø${(cupInnerR(p)*2).toFixed(1)} mm, cable slot ${(+p.slotW||10).toFixed(1)} mm${(+p.slotBridge>0)?` with a ${(+p.slotBridge).toFixed(1)} mm bridge over it`:''}. Arms sized for lampshade ${fileBase(p)}. For test-fitting the light.`;
+    desc=`Light holder only (cup + 4 arms) for ${LIGHTS[p.light].name} Ø${LIGHTS[p.light].d} mm: cup inside Ø${(cupInnerR(p)*2).toFixed(1)} mm, cable slot ${(+p.slotW||10).toFixed(1)} mm${(+p.slotBridge>0)?` with a ${(+p.slotBridge).toFixed(1)} mm bridge over it`:''}${(+p.lipN>0&&+p.lip>0)?`, ${p.lipN} snap clips gripping ${(+p.lip).toFixed(1)} mm over the light`:''}. Arms sized for lampshade ${fileBase(p)}. For test-fitting the light.`;
   } else if(p.holder && !m.vase){
     const hd=buildHolder(p, m); const mm=mergeMeshes(m, hd); obj={...m, pos:mm.pos, idx:mm.idx};
   }
@@ -952,7 +1023,8 @@ function gcPlan(pIn, oIn){
   const seg=m.seg, H=m.H, w=o.lw, hw=o.holderLW;
   const slotW=Math.max(4,+p.slotW||10), topZ=hd.ledge+hd.hs, bt=Math.min(Math.max(0,+p.slotBridge||0), hd.hs-3);
   let archTop=0; for(let j=0;j<seg;j++) archTop=Math.max(archTop,m.Z[j]);
-  const flatUntil=Math.max(topZ, hd.ha, archTop+o.lh);
+  const armGs=[]; { const nA=Math.max(3,Math.round(p.holderArms)); for(let k=0;k<nA;k++){ const g=armGeom(p,m,PI/nA+k*TAU/nA,hd.rsO,hd.ha,w/2); if(g) armGs.push(g); } }
+  const flatUntil=Math.max(hd.top||topZ, hd.ha+ARM.gH, archTop+o.lh);
   const j0=Math.floor(seg/2);                                             // seam / spiral start at the back (opposite the cable slot)
   const fl=0.2;                                                           // first layer height
   const layers=[];
@@ -978,21 +1050,29 @@ function gcPlan(pIn, oIn){
       }
       paths.push({pts, w:spc, h, speed: sp1 || (firstBridge?15:o.holderSpeed), feature: bridge?'Bridge':'Inner wall', fanMax:firstBridge});
     }
-    // arms: straight lines, cup to the middle of the shade wall
-    if(zs<hd.ha){
-      const nArm=Math.max(3,Math.round(p.holderArms)), aw=HOLDER.armW;
-      for(let k=0;k<nArm;k++){
-        const a=PI/nArm+k*TAU/nArm, ux=Math.cos(a), uy=Math.sin(a), vx=-uy, vy=ux;
-        const nL=Math.max(2,Math.round(aw/hw)), spc=aw/nL, pts=[];
-        for(let i=0;i<nL;i++){
-          const off=-aw/2+spc*(i+0.5);
-          const j=((Math.round((a+off/60)/TAU*seg)%seg)+seg)%seg; const R=gcSampleR(m,j,zs); if(R==null) continue;
-          const r0=hd.rsO-0.4, r1=R-w/2;
-          const A=[r0*ux+off*vx, r0*uy+off*vy], B=[r1*ux+off*vx, r1*uy+off*vy];
-          if(i&1) pts.push(B,A); else pts.push(A,B);
+    // snap clips: short arcs; below the cup top only the part that sticks in past the cup wall
+    if(hd.clips){
+      const ri=clipInnerR(hd.clips, hd.rsI, zs);
+      if(ri!=null){
+        const ro = zs<topZ ? hd.rsI+0.2 : hd.rsO;
+        if(ro-ri>0.15) for(const a of hd.clips.angs){
+          const nL=Math.max(1,Math.round((ro-ri)/hw)), spc=(ro-ri)/nL, pts=[];
+          for(let k=0;k<nL;k++){ const r=ri+spc*(k+0.5), g=hd.clips.halfW/r, a0=(k&1)?a+g:a-g, a1=(k&1)?a-g:a+g;
+            for(let t=0;t<=8;t++) pts.push(P2(r, a0+(a1-a0)*t/8)); }
+          paths.push({pts, w:Math.max(0.3,spc), h, speed: sp1 || o.holderSpeed*0.6, feature:'Inner wall'});
         }
-        if(pts.length) paths.push({pts, w:spc, h, speed: sp1 || o.holderSpeed, feature:'Inner wall'});
       }
+    }
+    // arms (with foot and brace): lines along each arm, from the cup (or the brace start) into the middle of the wall line
+    for(const g of armGs){
+      const sp=armSpan(g,zs); if(!sp) continue;
+      const nL=Math.max(2,Math.round(2*sp.hw/hw)), spc=2*sp.hw/nL, ux=Math.cos(g.a), uy=Math.sin(g.a), vx=-uy, vy=ux, pts=[];
+      for(let i=0;i<nL;i++){
+        const off=-sp.hw+spc*(i+0.5), r0=sp.start(off), r1=g.rEnd(off,zs); if(r1-r0<0.5) continue;
+        const A=[r0*ux+off*vx, r0*uy+off*vy], B=[r1*ux+off*vx, r1*uy+off*vy];
+        if(pts.length%4===2) pts.push(B,A); else pts.push(A,B);
+      }
+      if(pts.length) paths.push({pts, w:spc, h, speed: sp1 || o.holderSpeed, feature:'Inner wall'});
     }
     // shade wall: one wide line; open around the cable arch
     const valid=[]; for(let j=0;j<seg;j++) valid.push(gcSampleR(m,j,zs)!=null);
@@ -1430,7 +1510,7 @@ function buildLayerSeg(){
 
 const fmt = {
   H:v=>v+' mm', Db:v=>v+' mm', Dt:v=>v+' mm', bulge:v=>v+' mm', count:v=>v, depth:v=>(+v).toFixed(1)+' mm', freq:v=>v,
-  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>{ const e=effMaxA({...P,maxA:+v}); return e<+v ? `${v}° (${e}° at ${(+P.lh).toFixed(2)} mm layers)` : v+'°'; }, holderH:v=>(+v).toFixed(1)+' mm', cupD:v=>{ const g=(v-LIGHTS[P.light].d)/2; return `${(+v).toFixed(1)} mm (gap ${g>=0?'+':''}${g.toFixed(2)})`; }, slotBridge:v=>{ if(+v<=0) return 'off'; const hs=Math.max(4,LIGHTS[P.light].h+(+P.cupExtra||0)); return `${(+v).toFixed(1)} mm (opening ${Math.max(0,hs-v).toFixed(1)} mm tall)`; }, slotW:v=>(+v).toFixed(1)+' mm', cupExtra:v=>(+v===0?'flush':(v>0?'+':'')+(+v).toFixed(1)+' mm'), wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm'
+  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>{ const e=effMaxA({...P,maxA:+v}); return e<+v ? `${v}° (${e}° at ${(+P.lh).toFixed(2)} mm layers)` : v+'°'; }, holderH:v=>(+v).toFixed(1)+' mm', cupD:v=>{ const g=(v-LIGHTS[P.light].d)/2; return `${(+v).toFixed(1)} mm (gap ${g>=0?'+':''}${g.toFixed(2)})`; }, slotBridge:v=>{ if(+v<=0) return 'off'; const hs=Math.max(4,LIGHTS[P.light].h+(+P.cupExtra||0)); return `${(+v).toFixed(1)} mm (opening ${Math.max(0,hs-v).toFixed(1)} mm tall)`; }, slotW:v=>(+v).toFixed(1)+' mm', lip:v=>{ const d=cupInnerR(P)*2-2*v; return `${(+v).toFixed(1)} mm in (opening Ø${d.toFixed(1)} vs light Ø${LIGHTS[P.light].d})`; }, lipN:v=>'', cupExtra:v=>(+v===0?'flush':(v>0?'+':'')+(+v).toFixed(1)+' mm'), wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm'
 };
 function syncUI(){
   // segmented + chips
@@ -1457,11 +1537,12 @@ function syncUI(){
   $('#bandMm').textContent = P.layer!=='none' ? `${P.bandN} × ${(+P.lh).toFixed(2)} = ${(P.bandN*P.lh).toFixed(2)} mm` : '';
   $$('[data-show]').forEach(el=>el.hidden=(el.dataset.show!==P.mode) || (P.holder && el.hasAttribute('data-noholder')));
   $$('[data-hold]').forEach(el=>el.hidden=!P.holder);
+  $('#lip').closest('.field').hidden = !P.holder || !(+P.lipN>0);
   $$('[data-holdvase]').forEach(el=>el.hidden=!(P.holder && P.mode==='vase'));
   $('#holderHint').textContent = !P.holder ? 'Off: the light sits loose on the table under the shade.'
     : P.mode==='vase'
       ? `A cup holds the ${LIGHTS[P.light].name} on a small ledge, with arms out to the shade wall. Spiral vase cannot print it inside the shade, so it exports as a separate insert that drops in from below. The cord leaves through the slot in the cup.`
-      : `A cup holds the ${LIGHTS[P.light].name} on a small ledge, with arms out to the shade wall. It prints as part of the shade, no supports. The cord leaves through the slot in the cup and out under the cable arch.`;
+      : `A cup holds the ${LIGHTS[P.light].name} on a small ledge, with arms out to the shade wall. It prints as part of the shade, no supports. The cord leaves through the slot in the cup and out under the cable arch.${+P.lipN>0?` ${P.lipN} snap clips on the rim stop the light being pushed out when you press it to switch it on: tilt it in under one clip, then press the other side down until it clicks.`:''}`;
   $('#lightHint').textContent=LIGHTS[P.light].note;
   $('#lightPic').hidden = P.light!=='strimsav';
   $('#seedIn').value=P.seed;
@@ -1490,8 +1571,18 @@ const bedGroup=new THREE.Group(); scene.add(bedGroup);
 function buildBed(){
   bedGroup.clear();
   const pr=PRINTERS[P.printer];
-  const plate=new THREE.Mesh(new THREE.BoxGeometry(pr.x,pr.y,2), new THREE.MeshStandardMaterial({color:0x22252a, roughness:0.9}));
-  plate.position.z=-1.05; bedGroup.add(plate);
+  // build plate: 30% see-through so the underside of the lamp and the holder stay visible
+  const plate=new THREE.Mesh(new THREE.BoxGeometry(pr.x,pr.y,2), new THREE.MeshStandardMaterial({color:0x9aa3b2, roughness:0.85, transparent:true, opacity:0.3, depthWrite:false}));
+  plate.position.z=-1.05; plate.renderOrder=-1; bedGroup.add(plate);
+  // label printed on the front edge of the plate
+  const lc=document.createElement('canvas'); lc.width=1024; lc.height=128; const lx=lc.getContext('2d');
+  lx.fillStyle='rgba(233,236,241,0.92)'; lx.font='700 54px system-ui, sans-serif'; lx.textAlign='center'; lx.textBaseline='middle';
+  lx.fillText('3D PRINTER BUILD PLATE', 512, 46);
+  lx.font='500 34px system-ui, sans-serif'; lx.fillStyle='rgba(233,236,241,0.7)'; lx.fillText(`${pr.name} · ${pr.x} × ${pr.y} mm`, 512, 100);
+  const lt=new THREE.CanvasTexture(lc); lt.anisotropy=8; lt.encoding=THREE.sRGBEncoding;
+  const lw=Math.min(pr.x*0.8,200), lh=lw/8;
+  const label=new THREE.Mesh(new THREE.PlaneGeometry(lw,lh), new THREE.MeshBasicMaterial({map:lt, transparent:true, depthWrite:false, toneMapped:false}));
+  label.position.set(0,-pr.y/2+lh/2+4,0.06); bedGroup.add(label);
   const g=new THREE.GridHelper(Math.max(pr.x,pr.y), Math.round(Math.max(pr.x,pr.y)/20), 0x3a3f47, 0x2b2f35);
   g.rotation.x=PI/2; g.position.z=0.02; g.scale.set(pr.x/Math.max(pr.x,pr.y),1,pr.y/Math.max(pr.x,pr.y)); bedGroup.add(g);
 }
@@ -1519,6 +1610,7 @@ new ResizeObserver(resize).observe($('#stage'));
 const ptrs=new Map(); let pinch0=0, pinchMid=null, dragMode='orbit';
 const _rv=new THREE.Vector3(), _uv=new THREE.Vector3();
 function panBy(dx,dy){
+  markMoved();
   camera.updateMatrixWorld();
   _rv.setFromMatrixColumn(camera.matrixWorld,0); _uv.setFromMatrixColumn(camera.matrixWorld,1);
   const h=canvas.clientHeight||1; const k=2*orbit.dist*Math.tan(camera.fov*PI/360)/h;
@@ -1538,10 +1630,10 @@ canvas.addEventListener('pointerdown',e=>{
 canvas.addEventListener('pointermove',e=>{ if(!ptrs.has(e.pointerId)) return; const prev=ptrs.get(e.pointerId); const cur={x:e.clientX,y:e.clientY}; ptrs.set(e.pointerId,cur);
   if(ptrs.size===1){
     if(dragMode==='pan') panBy(cur.x-prev.x,cur.y-prev.y);
-    else { orbit.az-=(cur.x-prev.x)*0.008; orbit.el=Math.max(-0.25,Math.min(1.45,orbit.el+(cur.y-prev.y)*0.008)); }
+    else { orbit.az-=(cur.x-prev.x)*0.008; orbit.el=Math.max(-0.25,Math.min(1.45,orbit.el+(cur.y-prev.y)*0.008)); markMoved(); }
   } else if(ptrs.size===2){
     const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y), mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-    if(pinch0>0) orbit.dist=Math.max(60,Math.min(3000,orbit.dist*pinch0/d));
+    if(pinch0>0){ orbit.dist=Math.max(60,Math.min(3000,orbit.dist*pinch0/d)); markMoved(); }
     if(pinchMid) panBy(mid.x-pinchMid.x,mid.y-pinchMid.y);
     pinch0=d; pinchMid=mid;
   }
@@ -1562,7 +1654,21 @@ function toggleHolderView(){
   }
   updateCam(); needsRender=true;
 }
-function resetView(){ orbit.az=-0.9; orbit.el=0.32; if(current) fitView(current); needsRender=true; }
+/* reset: glide back to the starting view; the button lights up once someone has turned, zoomed or moved the view */
+let viewMoved=false, resetAnim=0;
+function markMoved(){ if(!viewMoved){ viewMoved=true; const b=$('#tReset'); if(b) b.classList.add('attn'); } }
+function resetView(){
+  viewMoved=false; const b=$('#tReset'); if(b) b.classList.remove('attn');
+  const from={az:orbit.az, el:orbit.el, dist:orbit.dist, t:orbit.target.clone()};
+  let toAz=-0.9; while(toAz-from.az>PI) toAz-=TAU; while(from.az-toAz>PI) toAz+=TAU;
+  const H=current?current.H:150, Rm=current?current.maxR:60;
+  const to={az:toAz, el:0.32, dist:Math.max(H*1.2,Rm*2.3)*2.9, t:new THREE.Vector3(0,0,H*0.46)};
+  const t0=performance.now(), dur=450; cancelAnimationFrame(resetAnim);
+  const step=()=>{ const u=Math.min(1,(performance.now()-t0)/dur), e=u<0.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    orbit.az=from.az+(to.az-from.az)*e; orbit.el=from.el+(to.el-from.el)*e; orbit.dist=from.dist+(to.dist-from.dist)*e; orbit.target.lerpVectors(from.t,to.t,e);
+    updateCam(); needsRender=true; if(u<1) resetAnim=requestAnimationFrame(step); };
+  step();
+}
 const endPtr=e=>{
   if(downAt && ptrs.size===1 && e.type==='pointerup'){
     const moved=Math.hypot(e.clientX-downAt.x,e.clientY-downAt.y), now=performance.now();
@@ -1573,7 +1679,7 @@ const endPtr=e=>{
   }
   ptrs.delete(e.pointerId); pinch0=0; pinchMid=null; if(!ptrs.size){ dragMode='orbit'; downAt=null; } canvas.style.cursor='grab'; };
 canvas.addEventListener('pointerup',endPtr); canvas.addEventListener('pointercancel',endPtr);
-canvas.addEventListener('wheel',e=>{ e.preventDefault(); orbit.dist=Math.max(60,Math.min(3000,orbit.dist*Math.exp(e.deltaY*0.001))); updateCam(); needsRender=true; },{passive:false});
+canvas.addEventListener('wheel',e=>{ e.preventDefault(); markMoved(); orbit.dist=Math.max(60,Math.min(3000,orbit.dist*Math.exp(e.deltaY*0.001))); updateCam(); needsRender=true; },{passive:false});
 
 function hexToRgb(h){ const n=parseInt(h.slice(1),16); return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]; }
 function toGeometry(m){
@@ -1619,7 +1725,7 @@ function refresh(quality){
   $('#hudName').textContent=describe(P);
   $('#btnBrand').textContent=isPrusa(P)?'Prusa':'Bambu Lab';
   $('#hudSub').textContent=`${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm max · ${(+P.lh).toFixed(2)} mm layers · ${P.mode==='vase'?'spiral vase':'solid wall'}${P.holder?' · + holder':''}`;
-  $('#scaleTxt').textContent=`${PRINTERS[P.printer].name}\nbed ${PRINTERS[P.printer].x} × ${PRINTERS[P.printer].y} mm`;
+  $('#scaleTxt').textContent=`3D printer build plate\n${PRINTERS[P.printer].name} · ${PRINTERS[P.printer].x} × ${PRINTERS[P.printer].y} mm`;
   if(q!==Q_DRAG){ updateAnalysis(m); }
   syncUI();
 }
@@ -1878,7 +1984,7 @@ async function doExport(what, via){
 /* ---------- wiring ---------- */
 let dragTimer=0;
 function setParam(key,val,live){
-  const num=['slotBridge','cupD','slotW','cupExtra','holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
+  const num=['lipN','lip','slotBridge','cupD','slotW','cupExtra','holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
   if(num.includes(key)) val=parseFloat(val);
   if(P[key]===val && !live) return;
   P[key]=val;
@@ -2000,7 +2106,7 @@ function checkPassword(){
   else { $('#pwMsg').textContent='Wrong password'; $('#pwIn').select(); }
 }
 function hideBooth(el){ if(el) el.classList.add('boothHide'); }
-const KIOSK_DEFAULTS={printer:'a1', nozzle:'0.4', lh:0.28, modes:['wall'], wall:1.2, holderArms:4, maxH:180, maxD:180, colorName:'PLA'};
+const KIOSK_DEFAULTS={printer:'mk4', nozzle:'0.4', lh:0.28, modes:['wall'], wall:1.2, holderArms:4, maxH:180, maxD:180, colorName:'PLA'};
 const STEPS=[
   ['secLight',  'Light source',    'This is the LED light that goes inside your lamp. A built-in holder with 4 arms keeps it in the middle.'],
   ['secBody',   'Shape',           'Choose the overall shape, then set how tall and wide your lamp is.'],
@@ -2011,8 +2117,8 @@ const STEPS=[
 function kioskMachine(){ try{ return JSON.parse(getPref('kioskMachine')||'null'); }catch(e){ return null; } }
 function applyMachine(){
   const o=kioskMachine()||{};
-  const pr=o.printer||BOOTH.printer||'a1';
-  P.printer=PRINTERS[pr]?pr:'a1'; buildBed();
+  const pr=o.printer||BOOTH.printer||'mk4';
+  P.printer=PRINTERS[pr]?pr:'mk4'; buildBed();
   P.nozzle=String(o.nozzle||BOOTH.nozzle||'0.4'); buildLayerSeg();
   P.lh=+(o.lh||BOOTH.lh||0.28);
   P.H=Math.min(P.H,maxHeight(P));
@@ -2068,7 +2174,7 @@ function enterBooth(s){
   document.documentElement.classList.add('booth');
   applyMachine();
   // kiosk lamps: solid wall with the holder cross built in, printability handled automatically
-  P.mode='wall'; P.wall=+BOOTH.wall||1.2; P.holder=true; P.holderH=4; P.cupExtra=+BOOTH.cupExtra||0; P.slotW=+BOOTH.slotW||10; P.slotBridge=(BOOTH.slotBridge!=null?+BOOTH.slotBridge:1.6); P.cupD=+BOOTH.cupD||60.6; P.top='open'; P.arch=true; P.base='open';
+  P.mode='wall'; P.wall=+BOOTH.wall||1.2; P.holder=true; P.holderH=4; P.cupExtra=+BOOTH.cupExtra||0; P.slotW=+BOOTH.slotW||10; P.slotBridge=(BOOTH.slotBridge!=null?+BOOTH.slotBridge:1.6); P.cupD=+BOOTH.cupD||60.6; P.lipN=(BOOTH.lipN!=null?+BOOTH.lipN:3); P.lip=(BOOTH.lip!=null?+BOOTH.lip:0.8); P.top='open'; P.arch=true; P.base='open';
   P.fix=true; P.maxA=45;
   if(BOOTH.color) P.color=BOOTH.color;
   ['#secPrint','#secFix','#secCheck','#secSheet'].forEach(q=>hideBooth($(q)));
@@ -2220,7 +2326,7 @@ function setupIdle(){
 
 /* ---------- per-step reset ---------- */
 const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge','tip'],
-  secPattern:['pattern','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW']};
+  secPattern:['pattern','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW','lipN','lip']};
 const STEP_NAMES={secLight:'Light source', secBody:'Shape', secPattern:'Surface pattern', secLayer:'Layer pattern', secHolder:'Light holder'};
 function resetStep(id){
   pushHistory();
