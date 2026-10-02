@@ -29,6 +29,25 @@
   --ok:#4CB67A; --warn:#E0A445; --bad:#E36A62; color-scheme:dark;
 }
 [hidden]{display:none!important}
+/* Christmas mode (hidden staff switch): red and green, gold star, snow on the stage */
+:root.xmas:not([data-theme="none"]){--accent:#C8323C;--accent-strong:#9C1F2A;--accent-ink:#FFF8F0;--stage:#060D18;--stage-2:#132640;--gold:#E8B83A}
+html.xmas header.top{position:relative}
+html.xmas header.top::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:5px;pointer-events:none;background:repeating-linear-gradient(90deg,#C8323C 0 22px,#F6F1E7 22px 30px,#1E7A4B 30px 52px,#F6F1E7 52px 60px)}
+.xmasbadge{display:none;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#1E7A4B;align-self:center;flex:0 0 auto}
+.xmasbadge svg{width:15px;height:15px;color:var(--gold,#E8B83A)}
+html.xmas .xmasbadge{display:inline-flex}
+#snow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none}
+html.xmas #snow{display:block}
+.xmascall{display:none!important}
+html.xmas .xmascall{display:flex!important;justify-content:center;gap:10px;width:100%;min-height:52px;font-size:16px;font-weight:600;border:0;border-radius:12px;color:#F6F1E7;background:linear-gradient(135deg,#1E7A4B,#145C37);box-shadow:inset 0 0 0 2px color-mix(in srgb,#E8B83A 55%,transparent)}
+html.xmas .xmascall svg{width:22px;height:22px}
+.starbox{display:grid;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid color-mix(in srgb,#E8B83A 60%,var(--line));background:color-mix(in srgb,#E8B83A 9%,var(--panel))}
+.starbox .starhead{display:flex;align-items:center;gap:8px;font-weight:600}
+.starbox .starhead svg{width:20px;height:20px;color:#D9A21B;flex:0 0 auto}
+.starbox .toggle{font-weight:600}
+.xmasmenu{display:grid;gap:12px}
+.xmasmenu .toggle{font-size:16px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.xmasmenu .toggle input{width:22px;height:22px}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--f-body)}
 *{box-sizing:border-box}
@@ -65,6 +84,14 @@ header.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 
 .sharepic.land{max-height:52vh;object-fit:contain}
 .shareside{display:grid;gap:10px;font-size:15px}
 .shareside p{margin:0}
+.homeprint{font-size:14px;line-height:1.45;padding:10px 12px;border-radius:10px;border:1px dashed var(--line);background:var(--bg);margin-top:4px}
+.homeprint ul{margin:6px 0 0;padding-left:18px}
+.homeprint li{margin:2px 0}
+.factbox{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--accent) 10%,var(--panel));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.factbox .ic{width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 16px var(--f-display)}
+.factbox .ft{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.factbox .fx{font-size:15px;line-height:1.45;margin-top:3px;transition:opacity .35s}
+html.booth .factbox .fx{font-size:17px}
 .qrbox{background:#fff;border-radius:12px;padding:10px;justify-self:center;width:min(260px,100%)}
 .qrbox svg{width:100%;height:auto;display:block}
 .md-card:has(.sharegrid){width:min(760px,100%)}
@@ -241,6 +268,25 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
 .md-body .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}
 .md-body .kv span:nth-child(odd){color:var(--muted)}
 .md-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.seedcode{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel)}
+.seedcode .sclbl{grid-column:1/-1;font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.seedcode .scval{font:700 20px/1.25 var(--f-mono);letter-spacing:.04em;word-break:break-all;user-select:all;-webkit-user-select:all}
+.seedcode .schint{grid-column:1/-1;font-size:13px;color:var(--muted);line-height:1.4}
+html.booth .seedcode .scval{font-size:24px}
+.seedload{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seedload input{flex:1 1 200px;min-width:0;font:600 16px var(--f-mono);text-transform:uppercase;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+html.booth .seedload input{font-size:20px;padding:12px 14px}
+.goodtoknow{font-size:14.5px;line-height:1.45;padding:10px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.goodtoknow ul{margin:6px 0 0;padding-left:18px}.goodtoknow li{margin:3px 0}
+.pk-tip{font-size:15px;opacity:.85;margin:6px 0 0}
+.gcedit{display:grid;gap:12px}
+.gcedit textarea{width:100%;min-height:150px;font:12.5px/1.4 var(--f-mono);padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);resize:vertical}
+.gcedit .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gcedit input[type=text],.gcedit input[type=password],.gcedit input[type=number]{font:14px var(--f-mono);padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.gcedit .probs{color:var(--bad);font-size:14px;margin:0}
+.gcedit .ok{color:var(--ok);font-size:14px;margin:0}
+.gcedit fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:10px}
+.gcedit legend{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 4px}
 .platebox{background:color-mix(in srgb,var(--accent) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:12px;padding:12px 14px;font-size:15px}
 .plate{display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid var(--line);border-radius:12px;font-size:17px;font-weight:600;cursor:pointer;min-height:60px}
 .plate input{width:30px;height:30px;accent-color:var(--accent);flex:0 0 auto}
@@ -296,8 +342,8 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
 
 <div class="app">
   <header class="top">
-    <div class="brand"><h1><button class="titlebtn" id="btnTitle" type="button" title="Switch between staff and kiosk mode">Lampshade Generator</button></h1><span class="modebadge" id="modeBadge">Staff</span><span class="tag"><button class="brandbtn" id="btnFablab" type="button">SP FabLab</button> · <button class="brandbtn" id="btnBrand" type="button">Prusa</button></span></div>
-    <div class="seedbox"><label for="seedIn">Seed</label><input id="seedIn" maxlength="8" spellcheck="false" autocomplete="off"></div>
+    <div class="brand"><h1><button class="titlebtn" id="btnTitle" type="button" title="Switch between staff and kiosk mode">Lampshade Generator</button></h1><span class="modebadge" id="modeBadge">Staff</span><span class="xmasbadge" id="xmasBadge" title="Christmas mode is on"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 6.1 6.6.6-5 4.4 1.5 6.5L12 16.7 6.2 20.1l1.5-6.5-5-4.4 6.6-.6z"/></svg></span><span class="tag"><button class="brandbtn" id="btnFablab" type="button">SP FabLab</button> · <button class="brandbtn" id="btnBrand" type="button">Prusa</button></span></div>
+    <div class="seedbox"><label for="seedIn">Seed</label><input id="seedIn" maxlength="48" spellcheck="false" autocomplete="off" title="Type a seed (FABLAB) or a full seed code (FABLAB-A7K2-…)"><button class="btn" id="btnSeedCopy" type="button" title="Copy the seed code for this exact design" style="padding:4px 8px;font-size:12px">Copy code</button></div>
     <button class="btn" id="btnPrev" title="Go back to the previous design" disabled>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3 5 8l5 5"/></svg>Back</button>
     <button class="btn" id="btnMutate" title="Small random changes to this design">
@@ -391,6 +437,7 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
 
       <section class="sec" id="secBody">
         <h2>Body</h2>
+        <button class="btn xmascall" id="btnTree" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 5 6 14h3.5L5 20h14l-4.5-6H18z"/><path d="M12 20v2.5"/><path d="M12 1.2l.9 2 2.1.2-1.6 1.4.5 2.1L12 5.8 10.1 6.9l.5-2.1L9 3.4l2.1-.2z" fill="#E8B83A" stroke="none"/></svg>Make it a Christmas tree</button>
         <div class="chips" id="bodyChips" data-key="body"></div>
         <div class="field"><label for="H">Height <output id="Ho"></output></label>
           <input type="range" id="H" data-key="H" min="60" max="180" step="1"></div>
@@ -405,6 +452,20 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
         <div class="field" id="slantRow"><label for="slant">Slanted top <output id="slanto"></output></label>
           <input type="range" id="slant" data-key="slant" min="0" max="40" step="1"></div>
         <label class="toggle" id="tipRow" for="tip">Pointed top (Christmas tree) <input type="checkbox" id="tip" data-key="tip"></label>
+        <div class="starbox" id="starBox" hidden>
+          <label class="toggle starhead" for="star"><span style="display:flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 6.1 6.6.6-5 4.4 1.5 6.5L12 16.7 6.2 20.1l1.5-6.5-5-4.4 6.6-.6z"/></svg>Star on top</span> <input type="checkbox" id="star" data-key="star"></label>
+          <div class="field" data-starctl><span class="lbl">Points</span>
+            <div class="seg" data-key="starN"><button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button><button data-v="7">7</button><button data-v="8">8</button></div></div>
+          <div class="field" data-starctl><label for="starPlump">Plumpness <output id="starPlumpo"></output></label>
+            <input type="range" id="starPlump" data-key="starPlump" min="0.3" max="0.7" step="0.01"></div>
+          <div class="field" data-starctl><label for="starSize">Star size <output id="starSizeo"></output></label>
+            <input type="range" id="starSize" data-key="starSize" min="40" max="80" step="1"></div>
+          <div class="field" data-starctl><span class="lbl">Joins the tree</span>
+            <div class="seg" data-key="starAttach"><button data-v="point">At a point</button><button data-v="between">Between two points</button></div></div>
+          <p class="hint" id="starHint" data-starctl></p>
+          <button class="btn" id="btnStarOnly" type="button" data-starctl style="justify-self:start">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg>Download star only (3MF)</button>
+        </div>
         <p class="hint" id="shapeNote" hidden></p>
       </section>
 
@@ -453,6 +514,9 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
       </section>
       <section class="sec" id="secSend" hidden>
         <p class="hint" id="sendSummary"></p>
+        <div id="sendSeed"></div>
+        <p class="hint" id="sendNote">Expect a few thin strings inside: just peel them off. 3D prints aren't 100% perfect, but your lamp will be a good one for the time it takes to print.</p>
+        <button class="factbox" id="factBox" type="button" title="Tap for another fact"><span class="ic">?</span><span><span class="ft"><span>Did you know?</span><span>tap for another</span></span><span class="fx" id="factTxt"></span></span></button>
         <button class="btn primary big" id="btnPrint2" type="button"><span>Send to printer</span></button>
         <button class="btn" id="btnTakeHome" type="button">Take it home: picture and QR code</button>
       </section>
@@ -460,7 +524,7 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
 
     <!-- CENTRE: stage -->
     <main class="stage" id="stage">
-      <canvas id="view" aria-label="3D preview of the lampshade. Drag to rotate, scroll or pinch to zoom."></canvas>
+      <canvas id="view" aria-label="3D preview of the lampshade. Drag to rotate, scroll or pinch to zoom."></canvas><canvas id="snow" aria-hidden="true"></canvas>
       <div class="hud"><div><div class="name" id="hudName"></div><div class="sub" id="hudSub"></div></div></div>
       <div class="tools">
         <button id="tStudio" aria-pressed="true">Studio</button>
@@ -483,6 +547,7 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
           <div class="pk-num" id="pkNum">Lamp #1</div>
           <h3>Your lamp is ready</h3>
           <ol><li>Open the door below the screen.</li><li>Lift your lamp off the plate. It may still be a little warm.</li><li>Close the door.</li></ol>
+          <p class="pk-tip">See some thin strings inside? That's normal for 3D printing. Just peel them off.</p>
           <p class="pk-note" id="pkNote"></p>
           <button class="btn primary big" id="btnCollected">I've got my lamp</button>
         </div>
@@ -508,6 +573,9 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
       </section>
       <section class="sec">
         <h2>Ideas <button class="btn" id="btnIdeas" style="padding:3px 9px;font-size:12px">New set</button></h2>
+        <div class="field"><label class="lbl" for="seedLoadIn">Have a seed code? Key it in</label>
+          <div class="seedload"><input id="seedLoadIn" type="text" placeholder="e.g. FABLAB-A7K2-…" spellcheck="false" autocomplete="off" autocapitalize="characters"><button class="btn primary" id="btnSeedLoad" type="button">Load</button></div>
+          <p class="hint" style="margin:4px 0 0">Every lamp has a seed code (see Send, or Take it home). It brings back the exact lamp on any screen.</p></div>
         <div class="ideas" id="ideas"></div>
         <p class="hint" id="ideasHint">Click one to load it. Your light, printer, nozzle, layer height and print mode stay as they are.</p>
       </section>
@@ -645,10 +713,10 @@ const P = {
   body:'barrel', H:180, Db:130, Dt:95, bulge:18,
   pattern:'ribs', dstyle:'ridges', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
   layer:'none', bandN:12, layerOff:0.8,
-  fix:true, maxA:45, top:'open', tip:false, slant:0, holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.2, slotBridge:1.6, lipN:3, lip:0.8, press:true, lift:1.5, color:'#EDE4D0', seed:'FABLAB', edited:false
+  fix:true, maxA:45, top:'open', tip:false, slant:0, star:true, starN:5, starPlump:0.45, starSize:60, starAttach:'between', holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.2, slotBridge:1.6, lipN:3, lip:0.8, press:true, lift:1.5, color:'#EDE4D0', seed:'FABLAB', edited:false
 };
 const DEFAULT_P = JSON.parse(JSON.stringify(P));   // starting values, used by the step Reset buttons
-const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','slant','pattern','dstyle','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
+const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','slant','star','starN','starPlump','starSize','starAttach','pattern','dstyle','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
 const history = [];
 
 let BOOTH=null, lastStats=null;
@@ -997,6 +1065,133 @@ function mergeMeshes(a, b){
   return {pos, idx};
 }
 
+/* ---------- Christmas star topper ----------
+   Two small parts that print on the same plate as the tree, with no supports:
+   - the STAR lies flat (flat back, puffy front) with a tab under its bottom point, or between two points
+   - the CAP stands upright: a hollow cone that sits on the tree's pointed tip, with a slot on top for the tab.
+   The pointed tip is always the same cone (radius 1.2 mm at the top, opening at the overhang angle effMaxA),
+   so one cap fits every tree at a given layer height. */
+const STAR = {tabT:3.0, tabW:7, slotL:8, fit:0.2, ovl:6, capLen:16, wall:2.0, clr:0.35, floor:1.2, neckR:5.2, gap:5, margin:4, tipR:1.2,
+  slicer:{layer_height:'0.2', perimeters:'3', top_solid_layers:'5', bottom_solid_layers:'4', top_solid_min_thickness:'0.8', bottom_solid_min_thickness:'0.6', fill_density:'20%'}};
+let XMAS_ON=false;   // Christmas mode on this screen (set from the hidden staff menu)
+const STAR_FEATURE=false;   // star topper switched off for now (the Christmas tree stays); set true to bring it back
+function starOn(p){ return !!(STAR_FEATURE && XMAS_ON && p.star && p.body==='pagoda' && p.tip && p.mode!=='vase'); }
+function starShape(p){
+  const N=Math.max(4,Math.min(8,Math.round(+p.starN||5)));
+  const Ro=Math.max(15,Math.min(45,(+p.starSize||60)/2));
+  const Ri=Ro*Math.max(0.25,Math.min(0.75,+p.starPlump||0.45));
+  const between=p.starAttach==='between';
+  const a0=-PI/2+(between?PI/N:0), pts=[];
+  for(let k=0;k<N;k++){ const a=a0+k*TAU/N, b=a+PI/N; pts.push([Ro*Math.cos(a),Ro*Math.sin(a)],[Ri*Math.cos(b),Ri*Math.sin(b)]); }
+  return {N, Ro, Ri, between, pts, Ay: between?-Ri:-Ro, hc: STAR.tabT+Math.max(3,0.17*Ro)};
+}
+function capDims(m){
+  const tanA=Math.tan(m.effA*PI/180);
+  const r0=STAR.tipR+STAR.clr+STAR.capLen*tanA;            // inside radius at the cap's mouth
+  const zApex=(STAR.tipR+STAR.clr)/tanA+STAR.capLen;        // inside cone closes here
+  const zf=zApex+STAR.floor, zt=zf+STAR.slotL;              // slot floor, top of the neck
+  const R0=r0+STAR.wall, zNeck=Math.max(0,(R0-STAR.neckR)/tanA);
+  return {tanA, r0, R0, zApex, zf, zt, zNeck, ro:z=>Math.max(STAR.neckR, R0-z*tanA)};
+}
+function samplePoly(pts, step){
+  const S=[], n=pts.length;
+  for(let i=0;i<n;i++){ const a=pts[i], b=pts[(i+1)%n]; const k=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/step));
+    for(let s=0;s<k;s++){ const u=s/k; S.push([a[0]+(b[0]-a[0])*u, a[1]+(b[1]-a[1])*u]); } }
+  return S;
+}
+// how far the star must sit above the top of the cap so its lower arms clear the cap (0 when a point goes in)
+function starLift(sh, cd){
+  const S=samplePoly(sh.pts,0.5);
+  for(let g=0; g<60; g+=0.25){
+    let ok=true;
+    for(const [x,y] of S){ const z=cd.zt+(y-sh.Ay)+g; if(z<cd.zt-0.01 && Math.abs(x)<cd.ro(z)+0.6){ ok=false; break; } }
+    if(ok) return g;
+  }
+  return 60;
+}
+function boxMesh(pos, idx, x0,y0,z0,x1,y1,z1){
+  const b=pos.length/3;
+  pos.push(x0,y0,z0, x1,y0,z0, x1,y1,z0, x0,y1,z0, x0,y0,z1, x1,y0,z1, x1,y1,z1, x0,y1,z1);
+  [[0,2,1],[0,3,2],[4,5,6],[4,6,7],[0,1,5],[0,5,4],[1,2,6],[1,6,5],[2,3,7],[2,7,6],[3,0,4],[3,4,7]].forEach(t=>idx.push(b+t[0],b+t[1],b+t[2]));
+}
+function signedVol(pos, idx){ let v=0; for(let q=0;q<idx.length;q+=3){ const a=idx[q]*3,b=idx[q+1]*3,c=idx[q+2]*3;
+  v+=(pos[a]*(pos[b+1]*pos[c+2]-pos[b+2]*pos[c+1]) - pos[a+1]*(pos[b]*pos[c+2]-pos[b+2]*pos[c]) + pos[a+2]*(pos[b]*pos[c+1]-pos[b+1]*pos[c]))/6; } return v; }
+function buildStarParts(p, m){
+  const sh=starShape(p), cd=capDims(m), g=starLift(sh,cd);
+  // star, lying flat: x,y in its own plane (attach point at the bottom, -y), z = thickness
+  const sp=[], si=[], n=sh.pts.length, t=STAR.tabT;
+  sp.push(0,0,0, 0,0,sh.hc);
+  for(const [x,y] of sh.pts) sp.push(x,y,0, x,y,t);
+  const B=i=>2+2*(i%n), T=i=>3+2*(i%n);
+  for(let i=0;i<n;i++){ si.push(0,B(i+1),B(i), B(i),B(i+1),T(i+1), B(i),T(i+1),T(i), 1,T(i),T(i+1)); }
+  const tabY0=sh.Ay-g-STAR.slotL;                          // tab reaches the slot floor, so the star sits firm
+  boxMesh(sp, si, -STAR.tabW/2, tabY0, 0, STAR.tabW/2, sh.Ay+STAR.ovl, t);
+  // cap, standing upright: rings that share the same angles, so the mesh closes
+  const a=(STAR.tabW+STAR.fit)/2, b=(STAR.tabT+STAR.fit)/2, ang=[];
+  for(let j=0;j<96;j++) ang.push(TAU*j/96);
+  const c=Math.atan2(b,a); [c,PI-c,PI+c,TAU-c].forEach(v=>ang.push(v)); ang.sort((u,v)=>u-v);
+  const rect=f=>Math.min(a/Math.max(1e-9,Math.abs(Math.cos(f))), b/Math.max(1e-9,Math.abs(Math.sin(f))));
+  const rings=[{pole:true,z:cd.zApex}];
+  for(let k=11;k>=0;k--){ const z=cd.zApex*k/12; rings.push({z, r:()=>cd.r0-z*cd.tanA}); }
+  for(let k=0;k<=6;k++){ const z=cd.zNeck*k/6; rings.push({z, r:()=>cd.R0-z*cd.tanA}); }
+  rings.push({z:cd.zt, r:()=>STAR.neckR}, {z:cd.zt, r:rect}, {z:cd.zf, r:rect}, {pole:true, z:cd.zf});
+  const cp=[], ci=[], na=ang.length, base=[];
+  rings.forEach(R=>{ base.push(cp.length/3); if(R.pole) cp.push(0,0,R.z); else ang.forEach(f=>{ const r=R.r(f); cp.push(r*Math.cos(f), r*Math.sin(f), R.z); }); });
+  for(let k=0;k<rings.length-1;k++){
+    const A=rings[k], Bn=rings[k+1], ia=base[k], ib=base[k+1];
+    for(let j=0;j<na;j++){ const j1=(j+1)%na;
+      if(A.pole) ci.push(ia, ib+j1, ib+j);
+      else if(Bn.pole) ci.push(ia+j, ia+j1, ib);
+      else ci.push(ia+j, ia+j1, ib+j1, ia+j, ib+j1, ib+j);
+    }
+  }
+  const fix=(pos,idx)=>{ if(signedVol(pos,idx)<0) for(let q=0;q<idx.length;q+=3){ const s=idx[q+1]; idx[q+1]=idx[q+2]; idx[q+2]=s; } return {pos:new Float32Array(pos), idx:new Uint32Array(idx)}; };
+  const star=fix(sp,si), cap=fix(cp,ci);
+  return {sh, cd, g, star, cap, tabY0, vol:Math.abs(signedVol(star.pos,star.idx))+Math.abs(signedVol(cap.pos,cap.idx))};
+}
+// star + cap moved onto the top of the tree, for the preview (lift = how high the shade sits)
+function starOnTree(sp, m, lift){
+  const z0=lift+m.H-STAR.capLen, zt=z0+sp.cd.zt, vStar=sp.sh.Ay-sp.g;   // star y=vStar sits at the top of the cap
+  const s=sp.star.pos, out=new Float32Array(s.length);
+  for(let i=0;i<s.length;i+=3){ out[i]=s[i]; out[i+1]=-(s[i+2]-STAR.tabT/2); out[i+2]=zt+(s[i+1]-vStar); }   // puffy side faces the front
+  const c=sp.cap.pos, oc=new Float32Array(c.length);
+  for(let i=0;i<c.length;i+=3){ oc[i]=c[i]; oc[i+1]=c[i+1]; oc[i+2]=c[i+2]+z0; }
+  return mergeMeshes({pos:out, idx:sp.star.idx}, {pos:oc, idx:sp.cap.idx});
+}
+// where the star and cap go on the build plate, beside the tree; null when there is no room
+const _plateCache=new Map();
+function starPlate(p, m, sp){
+  const pr=PRINTERS[p.printer], cx=pr.x/2, cy=pr.y/2, Rs=m.maxR+STAR.gap, M=STAR.margin;
+  const key=[p.printer, m.maxR.toFixed(1), p.starN, p.starPlump, p.starSize, p.starAttach, sp.g, sp.cd.R0.toFixed(2)].join('|');
+  if(_plateCache.has(key)) return _plateCache.get(key);
+  const w=STAR.tabW/2;
+  const pts=samplePoly(sp.sh.pts,1.5).concat(samplePoly([[-w,sp.tabY0],[w,sp.tabY0],[w,sp.sh.Ay],[-w,sp.sh.Ay]],1.5));
+  const cands=[];
+  for(let deg=0; deg<360; deg+=15){
+    const r=deg*PI/180, co=Math.cos(r), sn=Math.sin(r);
+    const rp=pts.map(([x,y])=>[x*co-y*sn, x*sn+y*co]);
+    let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9; rp.forEach(([x,y])=>{ x0=Math.min(x0,x); x1=Math.max(x1,x); y0=Math.min(y0,y); y1=Math.max(y1,y); });
+    for(let tx=M-x0; tx<=pr.x-M-x1+1e-6; tx+=4) for(let ty=M-y0; ty<=pr.y-M-y1+1e-6; ty+=4){
+      let cl=1e9; for(const [x,y] of rp){ const d=Math.hypot(x+tx-cx,y+ty-cy)-Rs; if(d<cl){ cl=d; if(cl<0) break; } }
+      if(cl>=0) cands.push({deg, r, tx, ty, cl, rp});
+    }
+  }
+  cands.sort((a,b)=>b.cl-a.cl);
+  let res=null;
+  const Rc=sp.cd.R0;
+  for(const s of cands.slice(0,400)){
+    let best=null;
+    for(let x=M+Rc; x<=pr.x-M-Rc; x+=3) for(let y=M+Rc; y<=pr.y-M-Rc; y+=3){
+      if(Math.hypot(x-cx,y-cy) < Rs+Rc) continue;
+      let ok=true, dmin=1e9; for(const [px,py] of s.rp){ const d=Math.hypot(px+s.tx-x,py+s.ty-y); if(d<Rc+STAR.gap){ ok=false; break; } if(d<dmin) dmin=d; }
+      if(ok && (!best || dmin<best.d)) best={x,y,d:dmin};
+    }
+    if(best){ res={star:{rot:s.r, x:s.tx, y:s.ty}, cap:{x:best.x, y:best.y}}; break; }
+  }
+  _plateCache.set(key,res); if(_plateCache.size>40) _plateCache.delete(_plateCache.keys().next().value);
+  return res;
+}
+
 /* ---------- 3MF export ---------- */
 const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
 function crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c=CRC_T[(c^u8[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
@@ -1029,18 +1224,23 @@ async function makeZip(files){
   return new Blob([...chunks,...cen,new Uint8Array(end.buffer)],{type:'application/vnd.ms-package.3dmanufacturing-3dmodel+xml'});
 }
 function xmlEsc(s){ return String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
-function modelXml(m, p, title, descOverride){
+function modelXml(m, p, title, descOverride, extras){
   const parts=[]; let s='';
-  const nv=m.pos.length/3, pos=m.pos, idx=m.idx;
   const desc=descOverride || `${describe(p)}${p.mode==='wall'&&p.top==='closed'?', closed top':''}. Layer height ${(+p.lh).toFixed(2)} mm, ${p.mode==='vase'?'spiral vase mode':'solid wall '+p.wall+' mm'}, nozzle ${p.nozzle} mm, for ${LIGHTS[p.light].name} (Ø${LIGHTS[p.light].d} mm). Seed ${p.seed}.`;
   s+='<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n';
   s+=`<metadata name="Title">${xmlEsc(title)}</metadata>\n<metadata name="Designer">SP FabLab Lampshade Generator</metadata>\n<metadata name="Description">${xmlEsc(desc)}</metadata>\n<metadata name="CreationDate">${new Date().toISOString().slice(0,10)}</metadata>\n`;
-  s+=`<resources>\n<object id="1" type="model" name="${xmlEsc(title)}">\n<mesh>\n<vertices>\n`;
+  s+=`<resources>\n`;
+  const objs=[{mesh:m, name:title, tx:PRINTERS[p.printer].x/2, ty:PRINTERS[p.printer].y/2}].concat(extras||[]);
+  objs.forEach((o,k)=>{
+  const pos=o.mesh.pos, idx=o.mesh.idx, nv=pos.length/3;
+  s+=`<object id="${k+1}" type="model" name="${xmlEsc(o.name)}">\n<mesh>\n<vertices>\n`;
   for(let i=0;i<nv;i++){ s+=`<vertex x="${pos[i*3].toFixed(3)}" y="${pos[i*3+1].toFixed(3)}" z="${pos[i*3+2].toFixed(3)}"/>\n`; if((i&8191)===8191){parts.push(s);s='';} }
   s+='</vertices>\n<triangles>\n';
   const nt=idx.length/3;
   for(let i=0;i<nt;i++){ s+=`<triangle v1="${idx[i*3]}" v2="${idx[i*3+1]}" v3="${idx[i*3+2]}"/>\n`; if((i&8191)===8191){parts.push(s);s='';} }
-  s+=`</triangles>\n</mesh>\n</object>\n</resources>\n<build>\n<item objectid="1" transform="1 0 0 0 1 0 0 0 1 ${(PRINTERS[p.printer].x/2).toFixed(1)} ${(PRINTERS[p.printer].y/2).toFixed(1)} 0"/>\n</build>\n</model>\n`;
+  s+=`</triangles>\n</mesh>\n</object>\n`;
+  });
+  s+=`</resources>\n<build>\n`+objs.map((o,k)=>`<item objectid="${k+1}" transform="1 0 0 0 1 0 0 0 1 ${o.tx.toFixed(2)} ${o.ty.toFixed(2)} 0"/>\n`).join('')+`</build>\n</model>\n`;
   parts.push(s);
   return parts;
 }
@@ -1053,14 +1253,77 @@ async function build3mf(p, what){
   } else if(p.holder && !m.vase){
     const hd=buildHolder(p, m); const mm=mergeMeshes(m, hd); obj={...m, pos:mm.pos, idx:mm.idx};
   }
+  let extras=[], starNote='';
+  if(what!=='holder' && starOn(p)){
+    const sp=buildStarParts(p, what==='star' ? m : m);
+    if(what==='star'){                                        // star + cap only, side by side in the middle of the plate
+      const pr=PRINTERS[p.printer]; const gap=sp.sh.Ro+sp.cd.R0+8;
+      extras=starExtras(sp, {star:{rot:0, x:pr.x/2-gap/2+sp.cd.R0/2, y:pr.y/2}, cap:{x:pr.x/2+gap/2+sp.cd.R0/2, y:pr.y/2}});
+      title=`star-${sp.sh.N}-points-${p.seed}`.toLowerCase();
+      return finish3mf(extras, title, `Christmas star topper: ${starText(p)}. The star prints flat and the cap stands upright. Push the star's tab into the cap, then sit the cap on the tree's pointed top.`);
+    }
+    const sf=starFit(p, m);
+    if(sf.pl){ extras=starExtras(sf.sp, sf.pl); if(sf.shrunk) starNote=`star made ${sf.size} mm wide to fit the plate`; } else starNote='no room for the star on this plate';
+  }
   const enc=new TextEncoder();
-  const parts=modelXml(obj,p,title,desc);
+  const parts=modelXml(obj,p,title,desc,extras.map(e=>({...e, mesh:e.mesh})));
   const model=enc.encode(parts.join(''));
-  const ct='<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>';
+  const ct='<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/><Default Extension="config" ContentType="text/xml"/></Types>';
   const rels='<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>';
-  const blob=await makeZip([{name:'[Content_Types].xml',data:enc.encode(ct)},{name:'_rels/.rels',data:enc.encode(rels)},{name:'3D/3dmodel.model',data:model}]);
-  return {blob, name:title+'.3mf', mesh:obj};
+  const files=[{name:'[Content_Types].xml',data:enc.encode(ct)},{name:'_rels/.rels',data:enc.encode(rels)},{name:'3D/3dmodel.model',data:model}];
+  if(extras.length) files.push({name:'Metadata/Slic3r_PE_model.config', data:enc.encode(objectConfig([{name:title, settings:null, ntri:obj.idx.length/3}].concat(extras.map(e=>({name:e.name, settings:STAR.slicer, ntri:e.mesh.idx.length/3})))))});
+  const blob=await makeZip(files);
+  return {blob, name:title+'.3mf', mesh:obj, starNote, star:extras.length>0};
 }
+async function finish3mf(all, title, desc){
+  const enc=new TextEncoder();
+  const model=modelXmlParts(all, title, desc);
+  const ct='<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/><Default Extension="config" ContentType="text/xml"/></Types>';
+  const rels='<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>';
+  const blob=await makeZip([{name:'[Content_Types].xml',data:enc.encode(ct)},{name:'_rels/.rels',data:enc.encode(rels)},{name:'3D/3dmodel.model',data:enc.encode(model)},
+    {name:'Metadata/Slic3r_PE_model.config', data:enc.encode(objectConfig(all.map(e=>({name:e.name, settings:STAR.slicer, ntri:e.mesh.idx.length/3}))))}]);
+  return {blob, name:title+'.3mf', mesh:all[0].mesh, star:true};
+}
+function modelXmlParts(objs, title, desc){
+  let s='<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n';
+  s+=`<metadata name="Title">${xmlEsc(title)}</metadata>\n<metadata name="Designer">SP FabLab Lampshade Generator</metadata>\n<metadata name="Description">${xmlEsc(desc)}</metadata>\n<resources>\n`;
+  objs.forEach((o,k)=>{ const pos=o.mesh.pos, idx=o.mesh.idx; s+=`<object id="${k+1}" type="model" name="${xmlEsc(o.name)}">\n<mesh>\n<vertices>\n`;
+    for(let i=0;i<pos.length;i+=3) s+=`<vertex x="${pos[i].toFixed(3)}" y="${pos[i+1].toFixed(3)}" z="${pos[i+2].toFixed(3)}"/>\n`;
+    s+='</vertices>\n<triangles>\n'; for(let i=0;i<idx.length;i+=3) s+=`<triangle v1="${idx[i]}" v2="${idx[i+1]}" v3="${idx[i+2]}"/>\n`;
+    s+='</triangles>\n</mesh>\n</object>\n'; });
+  return s+'</resources>\n<build>\n'+objs.map((o,k)=>`<item objectid="${k+1}" transform="1 0 0 0 1 0 0 0 1 ${o.tx.toFixed(2)} ${o.ty.toFixed(2)} 0"/>\n`).join('')+'</build>\n</model>\n';
+}
+/* PrusaSlicer reads per-object settings from this file: the star parts get top and bottom skins
+   (the lampshade itself has none) and finer 0.2 mm layers for the puffy faces */
+function objectConfig(list){
+  let s='<?xml version="1.0" encoding="UTF-8"?>\n<config>\n';
+  list.forEach((o,k)=>{
+    s+=` <object id="${k+1}" instances_count="1">\n  <metadata type="object" key="name" value="${xmlEsc(o.name)}"/>\n`;
+    if(o.settings) for(const [kk,v] of Object.entries(o.settings)) s+=`  <metadata type="object" key="${kk}" value="${xmlEsc(v)}"/>\n`;
+    s+=`  <volume firstid="0" lastid="${o.ntri-1}">\n   <metadata type="volume" key="name" value="${xmlEsc(o.name)}"/>\n   <metadata type="volume" key="volume_type" value="ModelPart"/>\n  </volume>\n </object>\n`;
+  });
+  return s+'</config>\n';
+}
+// the star as it will print: shrinks in 5 mm steps until it fits on the plate beside the tree
+function starFit(p, m){
+  const sp=buildStarParts(p, m), pl=starPlate(p, m, sp);
+  if(pl) return {sp, pl, size:+p.starSize, shrunk:false};
+  for(let sz=Math.floor((+p.starSize-1)/5)*5; sz>=30; sz-=5){
+    const q={...p, starSize:sz}, s2=buildStarParts(q, m), p2=starPlate(q, m, s2);
+    if(p2) return {sp:s2, pl:p2, size:sz, shrunk:true};
+  }
+  return {sp, pl:null, size:+p.starSize, shrunk:false};
+}
+function starTop(sp){ let my=-1e9; sp.sh.pts.forEach(([x,y])=>{ if(y>my) my=y; }); return sp.cd.zt-STAR.capLen+(my-(sp.sh.Ay-sp.g)); }   // how far the star reaches above the tree's tip
+function meshWithStar(p, m, lift){ if(!starOn(p)) return m; const sp=buildStarParts(p, m); const mm=mergeMeshes(m, starOnTree(sp, m, lift||0)); return {...m, pos:mm.pos, idx:mm.idx, starTop:starTop(sp)}; }
+// star (rotated as placed) and cap as 3MF objects; positions are plate coordinates
+function starExtras(sp, pl){
+  const co=Math.cos(pl.star.rot), sn=Math.sin(pl.star.rot), s=sp.star.pos, rp=new Float32Array(s.length);
+  for(let i=0;i<s.length;i+=3){ rp[i]=s[i]*co-s[i+1]*sn; rp[i+1]=s[i]*sn+s[i+1]*co; rp[i+2]=s[i+2]; }
+  return [{mesh:{pos:rp, idx:sp.star.idx}, name:'Star (push into cap)', tx:pl.star.x, ty:pl.star.y},
+          {mesh:sp.cap, name:'Star cap (sits on the tree tip)', tx:pl.cap.x, ty:pl.cap.y}];
+}
+function starText(p){ const sh=starShape(p); return `${sh.N} points, ${Math.round(sh.Ro*2)} mm wide, ${sh.Ri/sh.Ro<0.4?'slim':sh.Ri/sh.Ro<0.55?'classic':'plump'}, joined ${sh.between?'between two points':'at a point'}`; }
 function fileBase(p){ return `lampshade-${p.body}-${p.pattern}${p.layer!=='none'?'-'+p.layer:''}-${p.seed}-${(+p.lh).toFixed(2)}mm`.toLowerCase(); }
 const GC_A1_START = ";===== machine: A1 =========================\n;===== date: 20260513 ==================\nG392 S0\nM9833.2\n;M400\n;M73 P1.717\n\n;===== start to heat heatbead&hotend==========\nM1002 gcode_claim_action : 2\nM1002 set_filament_type:{filament_type[initial_no_support_extruder]}\nM104 S140\nM140 S[bed_temperature_initial_layer_single]\n\n;=====start printer sound ===================\nM17\nM400 S1\nM1006 S1\nM1006 A0 B10 L100 C37 D10 M60 E37 F10 N60\nM1006 A0 B10 L100 C41 D10 M60 E41 F10 N60\nM1006 A0 B10 L100 C44 D10 M60 E44 F10 N60\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N60\nM1006 A43 B10 L100 C46 D10 M70 E39 F10 N80\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N80\nM1006 A0 B10 L100 C43 D10 M60 E39 F10 N80\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N80\nM1006 A0 B10 L100 C41 D10 M80 E41 F10 N80\nM1006 A0 B10 L100 C44 D10 M80 E44 F10 N80\nM1006 A0 B10 L100 C49 D10 M80 E49 F10 N80\nM1006 A0 B10 L100 C0 D10 M80 E0 F10 N80\nM1006 A44 B10 L100 C48 D10 M60 E39 F10 N80\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N80\nM1006 A0 B10 L100 C44 D10 M80 E39 F10 N80\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N80\nM1006 A43 B10 L100 C46 D10 M60 E39 F10 N80\nM1006 W\nM18 \n;=====start printer sound ===================\n\n;=====avoid end stop =================\nG91\nG380 S2 Z40 F1200\nG380 S3 Z-15 F1200\nG90\n\n;===== reset machine status =================\n;M290 X39 Y39 Z8\nM204 S6000\n\nM630 S0 P0\nG91\nM17 Z0.3 ; lower the z-motor current\n\nG90\nM17 X0.65 Y1.2 Z0.6 ; reset motor current to default\nM960 S5 P1 ; turn on logo lamp\nG90\nM220 S100 ;Reset Feedrate\nM221 S100 ;Reset Flowrate\nM73.2   R1.0 ;Reset left time magnitude\n;M211 X0 Y0 Z0 ; turn off soft endstop to prevent protential logic problem\n\n;====== cog noise reduction=================\nM982.2 S1 ; turn on cog noise reduction\n\nM1002 gcode_claim_action : 13\n\nG28 X\nG91\nG1 Z5 F1200\nG90\nG0 X128 F30000\nG0 Y254 F3000\nG91\nG1 Z-5 F1200\n\nM109 S25 H140\n\nM17 E0.3\nM83\nG1 E10 F1200\nG1 E-0.5 F30\nM17 D\n\nG28 Z P0 T140; home z with low precision,permit 300deg temperature\nM104 S{nozzle_temperature_initial_layer[initial_extruder]}\n\nM1002 judge_flag build_plate_detect_flag\nM622 S1\n  G39.4\n  G90\n  G1 Z5 F1200\nM623\n\n;M400\n;M73 P1.717\n\n;===== prepare print temperature and material ==========\nM1002 gcode_claim_action : 24\n\nM400\n;G392 S1\nM211 X0 Y0 Z0 ;turn off soft endstop\nM975 S1 ; turn on\n\nG90\nG1 X-28.5 F30000\nG1 X-48.2 F3000\n\nM620 M ;enable remap\nM620 S[initial_no_support_extruder]A   ; switch material if AMS exist\n    M1002 gcode_claim_action : 4\n    M400\n    M1002 set_filament_type:UNKNOWN\n    M109 S[nozzle_temperature_initial_layer]\n{if (filament_type[initial_no_support_extruder] == \"PLA\") && (nozzle_diameter != 0.2)}\n    M104 S220\n{else}\n    M104 S250\n{endif}\n    M400\n    T[initial_no_support_extruder]\n    G1 X-48.2 F3000\n    M400\n\n{if (filament_type[initial_no_support_extruder] == \"PLA\") && (nozzle_diameter != 0.2)}\n    M620.1 E F{flush_volumetric_speeds[initial_no_support_extruder]/2.4053*60} T220\n    M109 S220 ;set nozzle to common flush temp\n{else}\n    M620.1 E F{flush_volumetric_speeds[initial_no_support_extruder]/2.4053*60} T{flush_temperatures[initial_no_support_extruder]}\n    M109 S250 ;set nozzle to common flush temp\n{endif}\n    M106 P1 S0\n    G92 E0\n    G1 E50 F200\n    M400\n    M1002 set_filament_type:{filament_type[initial_no_support_extruder]}\nM621 S[initial_no_support_extruder]A\n\n{if (filament_type[initial_no_support_extruder] == \"PLA\") && (nozzle_diameter != 0.2)}\n    M109 S220 H300\n{else}\n    M109 S{flush_temperatures[initial_no_support_extruder]} H300\n{endif}\nG92 E0\nG1 E50 F200 ; lower extrusion speed to avoid clog\nM400\nM106 P1 S178\nG92 E0\nG1 E5 F200\nM104 S{nozzle_temperature_initial_layer[initial_no_support_extruder]}\nG92 E0\nG1 E-0.5 F300\n\nG1 X-28.5 F30000\nG1 X-48.2 F3000\nG1 X-28.5 F30000 ;wipe and shake\nG1 X-48.2 F3000\nG1 X-28.5 F30000 ;wipe and shake\nG1 X-48.2 F3000\n\n;G392 S0\n\nM400\nM106 P1 S0\n;===== prepare print temperature and material end =====\n\n;M400\n;M73 P1.717\n\n;===== auto extrude cali start =========================\nM975 S1\n;G392 S1\n\nG90\nM83\nT1000\nG1 X-48.2 Y0 Z10 F10000\nM400\nM1002 set_filament_type:UNKNOWN\n\nM412 S1 ;  ===turn on  filament runout detection===\nM400 P10\nM620.3 W1; === turn on filament tangle detection===\nM400 S2\n\nM1002 set_filament_type:{filament_type[initial_no_support_extruder]}\n\n;M1002 set_flag extrude_cali_flag=1\nM1002 judge_flag extrude_cali_flag\n\nM622 J1\n    M1002 gcode_claim_action : 8\n\n    M109 S{nozzle_temperature[initial_extruder]}\n    G1 E10 F{outer_wall_volumetric_speed/2.4*60}\n    M983 F{outer_wall_volumetric_speed/2.4} A0.3 H[nozzle_diameter]; cali dynamic extrusion compensation\n\n    M106 P1 S255\n    M400 S5\n    G1 X-28.5 F18000\n    G1 X-48.2 F3000\n    G1 X-28.5 F18000 ;wipe and shake\n    G1 X-48.2 F3000\n    G1 X-28.5 F12000 ;wipe and shake\n    G1 X-48.2 F3000\n    M400\n    M106 P1 S0\n\n    M1002 judge_last_extrude_cali_success\n    M622 J0\n        M983 F{outer_wall_volumetric_speed/2.4} A0.3 H[nozzle_diameter]; cali dynamic extrusion compensation\n        M106 P1 S255\n        M400 S5\n        G1 X-28.5 F18000\n        G1 X-48.2 F3000\n        G1 X-28.5 F18000 ;wipe and shake\n        G1 X-48.2 F3000\n        G1 X-28.5 F12000 ;wipe and shake\n        M400\n        M106 P1 S0\n    M623\n    \n    G1 X-48.2 F3000\n    M400\n    M984 A0.1 E1 S1 F{outer_wall_volumetric_speed/2.4} H[nozzle_diameter]\n    M106 P1 S178\n    M400 S7\n    G1 X-28.5 F18000\n    G1 X-48.2 F3000\n    G1 X-28.5 F18000 ;wipe and shake\n    G1 X-48.2 F3000\n    G1 X-28.5 F12000 ;wipe and shake\n    G1 X-48.2 F3000\n    M400\n    M106 P1 S0\nM623 ; end of \"draw extrinsic para cali paint\"\n\n;G392 S0\n;===== auto extrude cali end ========================\n\n;M400\n;M73 P1.717\n\nM104 S170 ; prepare to wipe nozzle\nM106 S255 ; turn on fan\n\n;===== mech mode fast check start =====================\nM1002 gcode_claim_action : 3\n\nG1 X128 Y128 F20000\nG1 Z5 F1200\nM400 P200\nM970.3 Q1 A5 K0 O3\nM974 Q1 S2 P0\n\nM970.2 Q1 K1 W58 Z0.1\nM974 S2\n\nG1 X128 Y128 F20000\nG1 Z5 F1200\nM400 P200\nM970.3 Q0 A10 K0 O1\nM974 Q0 S2 P0\n\nM970.2 Q0 K1 W78 Z0.1\nM974 S2\n\nM975 S1\nG1 F30000\nG1 X0 Y5\nG28 X ; re-home XY\n\nG1 Z4 F1200\n\n;===== mech mode fast check end =======================\n\n;M400\n;M73 P1.717\n\n;===== wipe nozzle ===============================\nM1002 gcode_claim_action : 14\n\nM975 S1\nM106 S255 ; turn on fan (G28 has turn off fan)\nM211 S; push soft endstop status\nM211 X0 Y0 Z0 ;turn off Z axis endstop\n\n;===== remove waste by touching start =====\n\nM104 S170 ; set temp down to heatbed acceptable\n\nM83\nG1 E-1 F500\nG90\nM83\n\nM109 S170\nG0 X108 Y-0.5 F30000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X110 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X112 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X114 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X116 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X118 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X120 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X122 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X124 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X126 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X128 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X130 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X132 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X134 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X136 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X138 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X140 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X142 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X144 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X146 F10000\nG380 S3 Z-5 F1200\nG1 Z2 F1200\nG1 X148 F10000\nG380 S3 Z-5 F1200\n\nG1 Z5 F30000\n;===== remove waste by touching end =====\n\nG1 Z10 F1200\nG0 X118 Y261 F30000\nG1 Z5 F1200\nM109 S{nozzle_temperature_initial_layer[initial_extruder]-50}\n\nG28 Z P0 T300; home z with low precision,permit 300deg temperature\nG29.2 S0 ; turn off ABL\nM104 S140 ; prepare to abl\nG0 Z5 F20000\n\nG0 X128 Y261 F20000  ; move to exposed steel surface\nG0 Z-1.01 F1200      ; stop the nozzle\n\nG91\nG2 I1 J0 X2 Y0 F2000.1\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\n\nG90\nG1 Z10 F1200\n\n;===== brush material wipe nozzle =====\n\nG90\nG1 Y250 F30000\nG1 X55\nG1 Z1.300 F1200\nG1 Y262.5 F6000\nG91\nG1 X-35 F30000\nG1 Y-0.5\nG1 X45\nG1 Y-0.5\nG1 X-45\nG1 Y-0.5\nG1 X45\nG1 Y-0.5\nG1 X-45\nG1 Y-0.5\nG1 X45\nG1 Z5.000 F1200\n\nG90\nG1 X30 Y250.000 F30000\nG1 Z1.300 F1200\nG1 Y262.5 F6000\nG91\nG1 X35 F30000\nG1 Y-0.5\nG1 X-45\nG1 Y-0.5\nG1 X45\nG1 Y-0.5\nG1 X-45\nG1 Y-0.5\nG1 X45\nG1 Y-0.5\nG1 X-45\nG1 Z10.000 F1200\n\n;===== brush material wipe nozzle end =====\n\nG90\n;G0 X128 Y261 F20000  ; move to exposed steel surface\nG1 Y250 F30000\nG1 X138\nG1 Y261\nG0 Z-1.01 F1200      ; stop the nozzle\n\nG91\nG2 I1 J0 X2 Y0 F2000.1\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\nG2 I1 J0 X2\nG2 I-0.75 J0 X-1.5\n\nM109 S140\nM106 S255 ; turn on fan (G28 has turn off fan)\n\nM211 R; pop softend status\n\n;===== wipe nozzle end ================================\n\n;M400\n;M73 P1.717\n\n;===== bed leveling ==================================\nM1002 judge_flag g29_before_print_flag\n\nG90\nG1 Z5 F1200\nG1 X0 Y0 F30000\nG29.2 S1 ; turn on ABL\n\nM190 S[bed_temperature_initial_layer_single]; ensure bed temp\nM109 S140\nM106 S0 ; turn off fan , too noisy\n\nM622 J1\n    M1002 gcode_claim_action : 1\n    G29 A1 X{first_layer_print_min[0]} Y{first_layer_print_min[1]} I{first_layer_print_size[0]} J{first_layer_print_size[1]}\n    M400\n    M500 ; save cali data\nM623\n;===== bed leveling end ================================\n\n;===== home after wipe mouth============================\nM1002 judge_flag g29_before_print_flag\nM622 J0\n\n    M1002 gcode_claim_action : 13\n    G28\n\nM623\n\n;===== home after wipe mouth end =======================\n\n;M400\n;M73 P1.717\n\nG1 X108.000 Y-0.500 F30000\nG1 Z0.300 F1200\nM400\nG2814 Z0.32\n\nM104 S{nozzle_temperature_initial_layer[initial_extruder]} ; prepare to print\n\n;===== nozzle load line ===============================\n;G90\n;M83\n;G1 Z5 F1200\n;G1 X88 Y-0.5 F20000\n;G1 Z0.3 F1200\n\n;M109 S{nozzle_temperature_initial_layer[initial_extruder]}\n\n;G1 E2 F300\n;G1 X168 E4.989 F6000\n;G1 Z1 F1200\n;===== nozzle load line end ===========================\n\n;===== extrude cali test ===============================\n\nM400\n    M900 S\n    M900 C\n    G90\n    M83\n\n    M109 S{nozzle_temperature_initial_layer[initial_extruder]}\n    G0 X128 E8  F{outer_wall_volumetric_speed/(24/20)    * 60}\n    G0 X133 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G0 X138 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}\n    G0 X143 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G0 X148 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}\n    G0 X153 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G91\n    G1 X1 Z-0.300\n    G1 X4\n    G1 Z1 F1200\n    G90\n    M400\n\nM900 R\n\nM1002 judge_flag extrude_cali_flag\nM622 J1\n    G90\n    G1 X108.000 Y1.000 F30000\n    G91\n    G1 Z-0.700 F1200\n    G90\n    M83\n    G0 X128 E10  F{outer_wall_volumetric_speed/(24/20)    * 60}\n    G0 X133 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G0 X138 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}\n    G0 X143 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G0 X148 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)     * 60}\n    G0 X153 E.3742  F{outer_wall_volumetric_speed/(0.3*0.5)/4     * 60}\n    G91\n    G1 X1 Z-0.300\n    G1 X4\n    G1 Z1 F1200\n    G90\n    M400\nM623\n\nG1 Z0.2\n\n;M400\n;M73 P1.717\n\n;========turn off light and wait extrude temperature =============\nM1002 gcode_claim_action : 0\nM400\n\n;===== for Textured PEI Plate , lower the nozzle as the nozzle was touching topmost of the texture when homing ==\n;curr_bed_type={curr_bed_type}\n{if curr_bed_type==\"Textured PEI Plate\"}\nG29.1 Z{-0.02} ; for Textured PEI Plate\n{endif}\n\nM960 S1 P0 ; turn off laser\nM960 S2 P0 ; turn off laser\nM106 S0 ; turn off fan\nM106 P2 S0 ; turn off big fan\nM106 P3 S0 ; turn off chamber fan\n\nM975 S1 ; turn on mech mode supression\nG90\nM83\nT1000\n\nM211 X0 Y0 Z0 ;turn off soft endstop\n;G392 S1 ; turn on clog detection\nM1007 S1 ; turn on mass estimation\nG29.4\n";
 const GC_A1_END = ";===== date: 20260513 =====================\nG392 S0 ;turn off nozzle clog detect\n\nM400 ; wait for buffer to clear\nG92 E0 ; zero the extruder\nG90\nG1 Z{max_layer_z + 0.4} F900 ; lower z a little\nG1 X0 Y{first_layer_center_no_wipe_tower[1]} F18000 ; move to safe pos\nG1 X-13.0 F3000 ; move to safe pos\n{if !spiral_mode && print_sequence != \"by object\"}\nM1002 judge_flag timelapse_record_flag\nM622 J1\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM400 P100\nM971 S11 C11 O0\nM991 S0 P-1 ;end timelapse at safe pos\nM623\n{endif}\n\nM140 S0 ; turn off bed\nM106 S0 ; turn off fan\nM106 P2 S0 ; turn off remote part cooling fan\nM106 P3 S0 ; turn off chamber cooling fan\n\n;G1 X27 F15000 ; wipe\n\n; pull back filament to AMS\nM620 S255\nG1 X267 F15000\nT255\nG1 X-28.5 F18000\nG1 X-48.2 F3000\nG1 X-28.5 F18000\nG1 X-48.2 F3000\nM621 S255\n\nM104 S0 ; turn off hotend\n\nM400 ; wait all motion done\nM17 S\nM17 Z0.4 ; lower z motor current to reduce impact if there is something in the bottom\n{if (max_layer_z + 100.0) < 256}\n    G1 Z{max_layer_z + 100.0} F600\n    G1 Z{max_layer_z +98.0}\n{else}\n    G1 Z256 F600\n    G1 Z256\n{endif}\nM400 P100\nM17 R ; restore z current\n\nG90\nG1 X-48 Y180 F3600\n\nM220 S100  ; Reset feedrate magnitude\nM201.2 K1.0 ; Reset acc magnitude\nM73.2   R1.0 ;Reset left time magnitude\nM1002 set_gcode_claim_speed_level : 0\n\n;=====printer finish  sound=========\nM17\nM400 S1\nM1006 S1\nM1006 A0 B20 L100 C37 D20 M40 E42 F20 N60\nM1006 A0 B10 L100 C44 D10 M60 E44 F10 N60\nM1006 A0 B10 L100 C46 D10 M80 E46 F10 N80\nM1006 A44 B20 L100 C39 D20 M60 E48 F20 N60\nM1006 A0 B10 L100 C44 D10 M60 E44 F10 N60\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N60\nM1006 A0 B10 L100 C39 D10 M60 E39 F10 N60\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N60\nM1006 A0 B10 L100 C44 D10 M60 E44 F10 N60\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N60\nM1006 A0 B10 L100 C39 D10 M60 E39 F10 N60\nM1006 A0 B10 L100 C0 D10 M60 E0 F10 N60\nM1006 A0 B10 L100 C48 D10 M60 E44 F10 N80\nM1006 A0 B10 L100 C0 D10 M60 E0 F10  N80\nM1006 A44 B20 L100 C49 D20 M80 E41 F20 N80\nM1006 A0 B20 L100 C0 D20 M60 E0 F20 N80\nM1006 A0 B20 L100 C37 D20 M30 E37 F20 N60\nM1006 W\n;=====printer finish  sound=========\n\n;M17 X0.8 Y0.8 Z0.5 ; lower motor current to 45% power\nM400\nM18 X Y Z\n\n";
@@ -1518,7 +1781,7 @@ function openGcodePanel(){
     <div class="hint" id="gcFlow"></div>
     <canvas id="gcCanvas" style="width:100%;height:200px;border-radius:10px;border:1px solid var(--line)"></canvas>
     <div class="md-body" id="gcStats">Planning…</div>`,
-    [['Cancel','',closeModal],['Download','primary',gcDownload]]);
+    [['Cancel','',closeModal]].concat(BRIDGE_OK&&isPrusa(P)?[['Send to booth printer','',gcSendToBooth]]:[]).concat([['Download','primary',gcDownload]]));
   const go=$('#mdActions').lastChild; go.id='gcGo'; go.disabled=true;
   ['gcLw','gcSpeed'].forEach(id=>$('#'+id).addEventListener('input',gcRefresh));
   ['gcLh','gcPlate','gcTemp','gcBrim','gcFmt'].forEach(id=>$('#'+id).addEventListener('change',gcRefresh));
@@ -1536,12 +1799,103 @@ async function gcDownload(){
   }catch(e){ console.error(e); toast('G-code failed: '+(e&&e.message||e)); }
   finally{ $('#busy').hidden=true; if(go) go.disabled=false; }
 }
+/* ---------- staff: G-code to the printer, with edits ----------
+   Goes through the booth PC, never straight from the browser: PrusaLink wants a digest login and
+   doesn't allow other web pages to call it (CORS), and the printer password stays on the booth PC.
+   The booth PC checks every file (right printer, nozzle rises before it parks) before uploading. */
+let STAFF_PIN='';
+function staffPinField(){ return `<label class="field" for="gcPin"><span class="lbl">Booth PC staff PIN (admin_pin in config.json)</span><input id="gcPin" type="password" autocomplete="off" value="${xmlEsc(STAFF_PIN)}"></label>`; }
+let gcEditTok=null;
+function openGcodeTools(){
+  if(!BRIDGE_OK){ modal('G-code to printer (staff)','<p>This needs the booth PC. Open the generator from the booth PC address (for example http://booth-pc:8080) to send or edit G-code.</p><p class="hint">The browser can\'t talk to PrusaLink directly: it needs a digest login and blocks calls from other web pages.</p>',[['Close','primary',closeModal]]); return; }
+  modal('G-code to printer (staff)', `<div class="gcedit">${staffPinField()}
+    <fieldset><legend>This lamp: slice, edit, send</legend>
+      <p class="hint" style="margin:0">Slices the current design on the booth PC (about a minute) and shows the start and end G-code so you can change them.</p>
+      <button class="btn" id="gcSlice" type="button">Slice for editing</button>
+      <div id="gcEditBox" hidden>
+        <p class="hint" id="gcInfo" style="margin:0"></p><p id="gcProbs" class="probs"></p>
+        <label class="field"><span class="lbl">Nozzle temperature from layer 2 (°C)</span><input id="geTemp" type="number" min="170" max="290" step="1"></label>
+        <label class="field"><span class="lbl">Start G-code (runs before the first layer)</span><textarea id="gcStart" spellcheck="false"></textarea></label>
+        <label class="field"><span class="lbl">End G-code (runs after the last layer)</span><textarea id="gcEnd" spellcheck="false"></textarea></label>
+        <div class="field"><span class="lbl">Find and replace in the whole file (regular expression, one line at a time)</span>
+          <div class="row"><input id="gcF1" type="text" placeholder="find, e.g. ^M106 S255"><input id="gcR1" type="text" placeholder="replace with, e.g. M106 S200"></div>
+          <div class="row"><input id="gcF2" type="text" placeholder="find"><input id="gcR2" type="text" placeholder="replace with"></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="gcPrev" type="button">Download edited G-code</button><button class="btn primary" id="gcSendEd" type="button">Send edited G-code to printer</button></div>
+      </div>
+    </fieldset>
+    <fieldset><legend>Send a G-code file</legend>
+      <p class="hint" style="margin:0">A .gcode or .bgcode made in PrusaSlicer, or the fast-wall test file. It must be for this booth's printer.</p>
+      <input id="gcFile" type="file" accept=".gcode,.bgcode,.g,.gco">
+      <button class="btn primary" id="gcSendFile" type="button">Send file to printer</button>
+    </fieldset>
+    <label class="plate" for="gePlate"><input type="checkbox" id="gePlate"><span>The print bed is empty.</span></label>
+    <label class="toggle" for="gcSkip" style="font-size:13px">Skip the safety check (only if you know the end G-code is safe) <input type="checkbox" id="gcSkip"></label>
+    <p class="hint" id="gcMsg" style="margin:0"></p></div>`, [['Close','',closeModal]]);
+  const pin=()=>{ STAFF_PIN=$('#gcPin').value.trim(); return STAFF_PIN; };
+  const msg=(t,bad)=>{ const m=$('#gcMsg'); m.textContent=t; m.style.color=bad?'var(--bad)':''; };
+  const edits=()=>{ const rep=[]; [['#gcF1','#gcR1'],['#gcF2','#gcR2']].forEach(([a,b])=>{ const f=$(a).value; if(f) rep.push({find:f, with:$(b).value}); });
+    return {pin:pin(), token:gcEditTok, start:$('#gcStart').value, end:$('#gcEnd').value, nozzle_temp:$('#geTemp').value||null, replace:rep,
+            plate_clear:$('#gePlate').checked, skip_check:$('#gcSkip').checked, name:fileBase(P)+'-edited'}; };
+  $('#gcSlice').addEventListener('click', async()=>{
+    if(!pin()){ msg('Enter the staff PIN first.',true); return; }
+    const b=$('#gcSlice'); b.disabled=true; msg('Slicing on the booth PC…');
+    try{
+      const {blob,name}=await build3mf(P);
+      const r=await fetch('api/staff/slice',{method:'POST',body:blob,headers:{'X-Admin-Pin':STAFF_PIN,'X-Mode':P.mode,'X-Job-Name':name}});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok){ msg(j.message||('Slicing failed ('+r.status+')'),true); return; }
+      gcEditTok=j.token; $('#gcEditBox').hidden=false;
+      $('#gcStart').value=j.start; $('#gcEnd').value=j.end; $('#geTemp').value=j.nozzle_temp||'';
+      $('#gcInfo').textContent=`${j.lines.toLocaleString()} lines of printing · about ${fmtTime(j.est_min||0)} · ${j.grams?(+j.grams).toFixed(0)+' g':''}`;
+      $('#gcProbs').textContent=j.problems&&j.problems.length?'Check: '+j.problems.join('; '):''; msg('Ready. Change what you need, then send or download.');
+    }catch(e){ msg('Could not reach the booth PC: '+(e.message||e),true); }
+    finally{ b.disabled=false; }
+  });
+  $('#gcPrev').addEventListener('click', async()=>{
+    try{ const r=await fetch('api/staff/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(edits())});
+      if(!r.ok){ const j=await r.json().catch(()=>({})); msg(j.message||('Failed ('+r.status+')'),true); return; }
+      const probs=decodeURIComponent(r.headers.get('X-Problems')||''); const blob=await r.blob();
+      await offerFile(fileBase(P)+'-edited.gcode', blob); msg(probs?'Downloaded. Check: '+probs:'Downloaded. Safety check passed.', !!probs);
+    }catch(e){ msg('Could not reach the booth PC: '+(e.message||e),true); }
+  });
+  $('#gcSendEd').addEventListener('click', async()=>{
+    if(!$('#gePlate').checked){ msg('Tick "The print bed is empty" first.',true); return; }
+    try{ const r=await fetch('api/staff/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(edits())});
+      const j=await r.json().catch(()=>({}));
+      if(r.status===202){ msg(`Sent as job #${j.job.id}. Watch the progress at the top.`); } else msg(j.message||('Failed ('+r.status+')'),true);
+    }catch(e){ msg('Could not reach the booth PC: '+(e.message||e),true); }
+  });
+  $('#gcSendFile').addEventListener('click', async()=>{
+    const f=$('#gcFile').files[0]; if(!f){ msg('Choose a G-code file first.',true); return; }
+    if(!pin()){ msg('Enter the staff PIN first.',true); return; }
+    if(!$('#gePlate').checked){ msg('Tick "The print bed is empty" first.',true); return; }
+    msg('Sending…');
+    try{ const r=await fetch('api/staff/gcode',{method:'POST',body:f,headers:{'X-Admin-Pin':STAFF_PIN,'X-Job-Name':f.name.replace(/\.[^.]+$/,''),'X-Plate-Clear':'1','X-Skip-Check':$('#gcSkip').checked?'1':'0'}});
+      const j=await r.json().catch(()=>({}));
+      if(r.status===202) msg(`Sent as job #${j.job.id}. Watch the progress at the top.`); else msg(j.message||('Failed ('+r.status+')'),true);
+    }catch(e){ msg('Could not reach the booth PC: '+(e.message||e),true); }
+  });
+}
+// fast-wall G-code: straight to the booth printer
+async function gcSendToBooth(){
+  if(!isPrusa(P)){ toast('Only for the Prusa booth printer'); return; }
+  if(!STAFF_PIN){ const p=prompt('Booth PC staff PIN'); if(!p) return; STAFF_PIN=p.trim(); }
+  if(!confirm('Is the print bed empty? The fast-wall file will start printing straight away.')) return;
+  $('#busy').hidden=false;
+  try{
+    const plan=gcPlan(P,gcOpts()); const text=gcText(plan);
+    const r=await fetch('api/staff/gcode',{method:'POST',body:new Blob([text],{type:'text/plain'}),headers:{'X-Admin-Pin':STAFF_PIN,'X-Job-Name':fileBase(P)+'-fastwall','X-Plate-Clear':'1','X-Desc':encodeURIComponent('fast wall test')}});
+    const j=await r.json().catch(()=>({}));
+    if(r.status===202){ closeModal(); toast(`Fast-wall G-code sent as job #${j.job.id}`); } else { if(r.status===403) STAFF_PIN=''; toast(j.message||('Failed ('+r.status+')'),8000); }
+  }catch(e){ toast('Could not reach the booth PC: '+(e.message||e)); }
+  finally{ $('#busy').hidden=true; }
+}
 function openFablabMenu(){
   modal('Staff downloads', `<p class="hint" style="margin:0">For testing on the lab printers. Visitors don't see this.</p>`,
-    [['Cancel','',closeModal],['Fast wall G-code (test)','',()=>{ closeModal(); setTimeout(openGcodePanel,60); }],['Download 3MF','primary',()=>{ closeModal(); doExport(); }]]);
+    [['Cancel','',closeModal],[XMAS_ON?'Christmas mode off':'Christmas mode on','',kioskXmasToggle],['G-code to printer','',()=>{ closeModal(); setTimeout(openGcodeTools,60); }],['Test printer','',()=>{ closeModal(); setTimeout(testPrinter,60); }],['Fast wall G-code (test)','',()=>{ closeModal(); setTimeout(openGcodePanel,60); }],['Download 3MF','primary',()=>{ closeModal(); doExport(); }]]);
 }
 
-window.__lamp = {P, redraw:()=>{ lastFitKey=''; refresh(); }, buildMesh, buildHolder, build3mf, meshStats, gcPlan, gcText, gcPackage, gcTemplate, gcCheckEnd, md5hex, armGeom, armSlice, cupInnerR, HOLDER}; // exposed for testing
+window.__lamp = {P, redraw:()=>{ lastFitKey=''; refresh(); }, buildMesh, buildHolder, build3mf, meshStats, gcPlan, gcText, gcPackage, gcTemplate, gcCheckEnd, md5hex, armGeom, armSlice, cupInnerR, HOLDER, buildStarParts, starPlate, starOnTree, starShape, capDims, setXmasForTest:v=>{ XMAS_ON=!!v; }}; // exposed for testing
 
 /* ---------- quality presets ---------- */
 const Q_PREVIEW={dz:0.8, maxRings:320, seg:200, segMax:432, perRib:6, shell:true};
@@ -1555,7 +1909,7 @@ function describe(p){
   let s=b;
   if(p.pattern!=='smooth'){ s+=' · '+(p.pattern==='diamonds'&&p.dstyle==='quilted'?'Quilted diamonds':pt.name); if(pt.uses.includes('count')&&p.count>0) s+=' × '+Math.round(p.count); if(pt.uses.includes('twist')&&p.twist) s+=` · ${p.twist>0?'+':''}${p.twist}° twist`; }
   if(p.layer!=='none') s+=` · ${LAYERPATS[p.layer].name} / ${p.bandN} layers`;
-  if(p.body==='pagoda' && p.tip) s+=' · pointed top';
+  if(p.body==='pagoda' && p.tip) s+= starOn(p) ? ` · ${Math.round(+p.starN)}-point star` : ' · pointed top';
   else if(+p.slant>0) s+=' · slanted top';
   return s;
 }
@@ -1593,6 +1947,10 @@ function randomDesign(seed, base){
     if(q.dstyle==='ridges'){ q.depth=Math.round(rr(1.5,3.5)*10)/10; q.freq=Math.round(rr(6,14)); q.twist=0; }
     else { q.count=Math.round(rr(6,18)); q.depth=Math.round(rr(3,6.5)*10)/10; q.freq=Math.round(rr(4,12)); } }
   q.slant = (q.body!=='pagoda' && r()<0.2) ? Math.round(rr(10,35)) : 0;
+  if(XMAS_ON && r()<0.45){   // Christmas mode: plenty of trees with stars
+    q.body='pagoda'; q.tip=true; q.slant=0; q.star=true; q.bulge=Math.round(rr(8,30));
+    q.starN=pick([4,5,5,5,6,6,7,8]); q.starPlump=Math.round(rr(0.35,0.62)*100)/100; q.starAttach=pick(['between','between','point']); q.starSize=pick([50,55,60,60,65]);
+  }
   return fitToBed(q);
 }
 function fitToBed(q){
@@ -1667,7 +2025,8 @@ function buildLayerSeg(){
 
 const fmt = {
   H:v=>v+' mm', Db:v=>v+' mm', Dt:v=>v+' mm', bulge:v=>v+' mm', count:v=>v, depth:v=>(+v).toFixed(1)+' mm', freq:v=>v,
-  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>{ const e=effMaxA({...P,maxA:+v}); return e<+v ? `${v}° (${e}° at ${(+P.lh).toFixed(2)} mm layers)` : v+'°'; }, holderH:v=>(+v).toFixed(1)+' mm', cupD:v=>{ const g=(v-LIGHTS[P.light].d)/2; return `${(+v).toFixed(1)} mm (gap ${g>=0?'+':''}${g.toFixed(2)})`; }, slotBridge:v=>{ if(+v<=0) return 'off'; const hs=Math.max(4,LIGHTS[P.light].h+(+P.cupExtra||0)); return `${(+v).toFixed(1)} mm (opening ${Math.max(0,hs-v).toFixed(1)} mm tall)`; }, slotW:v=>(+v).toFixed(1)+' mm', lip:v=>{ const d=cupInnerR(P)*2-2*v; return `${(+v).toFixed(1)} mm in (opening Ø${d.toFixed(1)} vs light Ø${LIGHTS[P.light].d})`; }, lipN:v=>'', slant:v=>(+v>0?`${v} mm lower at the front`:'level'), lift:v=>`${(+v).toFixed(2)} mm (how far the lamp moves down to click)`, cupExtra:v=>(+v===0?'flush':(v>0?'+':'')+(+v).toFixed(1)+' mm'), wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm'
+  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>{ const e=effMaxA({...P,maxA:+v}); return e<+v ? `${v}° (${e}° at ${(+P.lh).toFixed(2)} mm layers)` : v+'°'; }, holderH:v=>(+v).toFixed(1)+' mm', cupD:v=>{ const g=(v-LIGHTS[P.light].d)/2; return `${(+v).toFixed(1)} mm (gap ${g>=0?'+':''}${g.toFixed(2)})`; }, slotBridge:v=>{ if(+v<=0) return 'off'; const hs=Math.max(4,LIGHTS[P.light].h+(+P.cupExtra||0)); return `${(+v).toFixed(1)} mm (opening ${Math.max(0,hs-v).toFixed(1)} mm tall)`; }, slotW:v=>(+v).toFixed(1)+' mm', lip:v=>{ const d=cupInnerR(P)*2-2*v; return `${(+v).toFixed(1)} mm in (opening Ø${d.toFixed(1)} vs light Ø${LIGHTS[P.light].d})`; }, lipN:v=>'', slant:v=>(+v>0?`${v} mm lower at the front`:'level'), lift:v=>`${(+v).toFixed(2)} mm (how far the lamp moves down to click)`, cupExtra:v=>(+v===0?'flush':(v>0?'+':'')+(+v).toFixed(1)+' mm'), wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm',
+  starPlump:v=>`${Math.round(v*100)}% · ${v<0.4?'slim':v<0.55?'classic':'plump'}`, starSize:v=>v+' mm wide'
 };
 function syncUI(){
   // segmented + chips
@@ -1696,6 +2055,13 @@ function syncUI(){
     swell:'The pattern is flat at the bottom and top, and deepest around the middle.',
     ends:'The pattern is deepest at the bottom and top, and almost flat in the middle.'}[P.env]||'';
   $('#tipRow').hidden = P.body!=='pagoda';
+  $('#starBox').hidden = !(STAR_FEATURE && XMAS_ON && P.body==='pagoda' && P.tip);
+  $$('[data-starctl]').forEach(el=>el.hidden=!P.star);
+  { const f=STAR_FIT; let h='The star prints flat and the cap prints upright, both on the same plate as your tree. Push the star into the cap, then sit the cap on the tip.';
+    if(f && !f.pl) h='No room for the star beside this tree on the printer. Make the tree narrower or the star smaller.';
+    else if(f && f.shrunk) h=`The star will be ${f.size} mm wide so it fits on the printer next to your tree. ` + h;
+    $('#starHint').textContent=h; }
+  if(document.documentElement.classList.contains('booth')) $('#btnStarOnly').hidden=true;
   $('#slantRow').hidden = P.body==='pagoda' && !!P.tip;
   const lp=LAYERPATS[P.layer];
   $$('[data-lay]').forEach(el=>el.hidden=!(lp.uses||[]).includes(el.dataset.lay));
@@ -1735,9 +2101,20 @@ const matLit=new THREE.MeshBasicMaterial({vertexColors:true});
 const shade=new THREE.Mesh(new THREE.BufferGeometry(), matStd); scene.add(shade);
 const matHolder=new THREE.MeshStandardMaterial({color:0xcfd3d9, roughness:0.7});
 const holderMesh=new THREE.Mesh(new THREE.BufferGeometry(), matHolder); scene.add(holderMesh);
+const matStar=new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.45});
+const starMesh=new THREE.Mesh(new THREE.BufferGeometry(), matStar); starMesh.visible=false; scene.add(starMesh);
+let STAR_FIT=null;
 let currentHolder=null;
 // bed
 const bedGroup=new THREE.Group(); scene.add(bedGroup);
+/* the words on the build plate in the preview; staff can rename it (Staff extras, or Printer setup in kiosk) */
+const PLATE_LABEL_DEFAULT='3D printer build plate';
+function plateLabel(){ return (getPref('plateLabel')||'').trim() || (BOOTH&&BOOTH.plate_label) || PLATE_LABEL_DEFAULT; }
+function setPlateLabel(v){ setPref('plateLabel', String(v||'').trim().slice(0,40)); buildBed(); refresh(); }
+function plateLabelField(){ return `<label class="field" for="plateLbl"><span class="lbl">Build plate label (shown on the plate in the preview)</span>
+    <input id="plateLbl" type="text" maxlength="40" value="${xmlEsc((getPref('plateLabel')||'').trim())}" placeholder="${xmlEsc((BOOTH&&BOOTH.plate_label)||PLATE_LABEL_DEFAULT)}" style="font-size:17px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)"></label>
+    <p class="hint" style="margin:-6px 0 0">Leave empty for the default. The printer name and size stay on the line below it.</p>`; }
+function wirePlateLabel(){ const i=$('#plateLbl'); if(!i) return; let t=0; i.addEventListener('input',()=>{ clearTimeout(t); t=setTimeout(()=>setPlateLabel(i.value),300); }); }
 function buildBed(){
   bedGroup.clear();
   const pr=PRINTERS[P.printer];
@@ -1746,8 +2123,9 @@ function buildBed(){
   plate.position.z=-1.05; plate.renderOrder=-1; bedGroup.add(plate);
   // label printed on the front edge of the plate
   const lc=document.createElement('canvas'); lc.width=1024; lc.height=128; const lx=lc.getContext('2d');
-  lx.fillStyle='rgba(233,236,241,0.92)'; lx.font='700 54px system-ui, sans-serif'; lx.textAlign='center'; lx.textBaseline='middle';
-  lx.fillText('3D PRINTER BUILD PLATE', 512, 46);
+  lx.fillStyle='rgba(233,236,241,0.92)'; lx.textAlign='center'; lx.textBaseline='middle';
+  const lab=plateLabel().toUpperCase(); let fs=54; do{ lx.font=`700 ${fs}px system-ui, sans-serif`; fs-=2; }while(fs>22 && lx.measureText(lab).width>990);   // long names shrink to fit
+  lx.fillText(lab, 512, 46);
   lx.font='500 34px system-ui, sans-serif'; lx.fillStyle='rgba(233,236,241,0.7)'; lx.fillText(`${pr.name} · ${pr.x} × ${pr.y} mm`, 512, 100);
   const lt=new THREE.CanvasTexture(lc); lt.anisotropy=8; lt.encoding=THREE.sRGBEncoding;
   const lw=Math.min(pr.x*0.8,200), lh=lw/8;
@@ -1767,7 +2145,7 @@ function buildPuck(){
 let lit=false, spin=true;
 const orbit={az:-0.9, el:0.32, dist:700, target:new THREE.Vector3(0,0,90)};
 function updateCam(){ const ce=Math.cos(orbit.el); camera.position.set(orbit.target.x+orbit.dist*ce*Math.cos(orbit.az), orbit.target.y+orbit.dist*ce*Math.sin(orbit.az), orbit.target.z+orbit.dist*Math.sin(orbit.el)); camera.lookAt(orbit.target); }
-function fitView(m){ const H=m.H, R=m.maxR; orbit.target.set(0,0,H*0.46); orbit.dist=Math.max(H*1.2,R*2.3)*2.9; updateCam(); }
+function fitView(m){ const H=m.H+(m.starTop||0), R=m.maxR; orbit.target.set(0,0,H*0.46); orbit.dist=Math.max(H*1.2,R*2.3)*2.9; updateCam(); }
 let needsRender=true;
 function frame(){
   if(spin){ orbit.az+=0.0035; updateCam(); needsRender=true; }
@@ -1816,10 +2194,10 @@ function toggleHolderView(){
   const b=$('#btnHolderView'); b.setAttribute('aria-pressed',String(holderView)); b.querySelector('span').textContent=holderView?'Back to lamp':'Preview holder';
   spin=false; $('#tSpin').setAttribute('aria-pressed','false');
   if(holderView){
-    shade.visible=false; $('#tShade').setAttribute('aria-pressed','false');
+    shade.visible=false; starMesh.visible=false; $('#tShade').setAttribute('aria-pressed','false');
     const r=LIGHTS[P.light].d/2; orbit.target.set(r*0.55,0,5); orbit.dist=r*5.2; orbit.el=0.42; orbit.az=-0.5;   // looking at the cable slot side
   } else {
-    shade.visible=true; $('#tShade').setAttribute('aria-pressed','true');
+    shade.visible=true; starMesh.visible=starOn(P); $('#tShade').setAttribute('aria-pressed','true');
     orbit.az=-0.9; orbit.el=0.32; if(current) fitView(current);
   }
   updateCam(); needsRender=true;
@@ -1831,7 +2209,7 @@ function resetView(){
   viewMoved=false; const b=$('#tReset'); if(b) b.classList.remove('attn');
   const from={az:orbit.az, el:orbit.el, dist:orbit.dist, t:orbit.target.clone()};
   let toAz=-0.9; while(toAz-from.az>PI) toAz-=TAU; while(from.az-toAz>PI) toAz+=TAU;
-  const H=current?current.H:150, Rm=current?current.maxR:60;
+  const H=current?current.H+(current.starTop||0):150, Rm=current?current.maxR:60;
   const to={az:toAz, el:0.32, dist:Math.max(H*1.2,Rm*2.3)*2.9, t:new THREE.Vector3(0,0,H*0.46)};
   const t0=performance.now(), dur=450; cancelAnimationFrame(resetAnim);
   const step=()=>{ const u=Math.min(1,(performance.now()-t0)/dur), e=u<0.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
@@ -1889,13 +2267,23 @@ function refresh(quality){
     matHolder.color.set(P.color).multiplyScalar(lit?0.3:(hd.integrated?1:0.8));
     shade.position.z=holderMesh.position.z=hd.lift; puckGroup.position.z=hd.ledge;
   } else { currentHolder=null; holderMesh.visible=false; shade.position.z=holderMesh.position.z=0; puckGroup.position.z=0; }
+  // Christmas star on the tip
+  if(starOn(P)){
+    const lift=(P.holder&&currentHolder)?currentHolder.lift:0;
+    let sp;
+    if(q===Q_DRAG) sp=buildStarParts(STAR_FIT&&STAR_FIT.shrunk?{...P,starSize:Math.min(+P.starSize,STAR_FIT.size)}:P, m);
+    else { STAR_FIT=starFit(P, m); sp=STAR_FIT.sp; }
+    starMesh.geometry.dispose(); starMesh.geometry=toGeometry(starOnTree(sp, m, lift));
+    matStar.color.set(P.color); if(lit) matStar.color.multiplyScalar(0.35);
+    starMesh.visible=shade.visible; m.starTop=starTop(sp);
+  } else { starMesh.visible=false; STAR_FIT=null; }
   const fk=P.light+'|'+P.printer;
   if(fk!==lastFitKey){ fitView(m); lastFitKey=fk; }
   needsRender=true;
   $('#hudName').textContent=describe(P);
   $('#btnBrand').textContent=isPrusa(P)?'Prusa':'Bambu Lab';
   $('#hudSub').textContent=`${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm max · ${(+P.lh).toFixed(2)} mm layers · ${P.mode==='vase'?'spiral vase':'solid wall'}${P.holder?' · + holder':''}`;
-  $('#scaleTxt').textContent=`3D printer build plate\n${PRINTERS[P.printer].name} · ${PRINTERS[P.printer].x} × ${PRINTERS[P.printer].y} mm`;
+  $('#scaleTxt').textContent=`${plateLabel()}\n${PRINTERS[P.printer].name} · ${PRINTERS[P.printer].x} × ${PRINTERS[P.printer].y} mm`;
   if(q!==Q_DRAG){ updateAnalysis(m); }
   syncUI();
 }
@@ -1909,6 +2297,7 @@ function setLit(on){
 /* ---------- analysis panel ---------- */
 function updateAnalysis(m){
   const st=meshStats(m,P);
+  if(starOn(P) && STAR_FIT && STAR_FIT.pl){ const v=STAR_FIT.sp.vol/1000; st.grams+=v*1.24*0.71; st.metres+=v*0.71/(PI*0.875*0.875); st.mins+=v*2.6; }   // star + cap (checked in PrusaSlicer: 8.7 cm³ → 7.7 g)
   const L=LIGHTS[P.light], pr=PRINTERS[P.printer];
   const maxD=m.maxR*2, bedOk=maxD<=Math.min(pr.x,pr.y)-4 && m.H<=pr.z;
   const ang=m.angle, angClass=ang<=m.effA+0.5?'ok':(ang<=55?'warn':'bad');
@@ -1932,6 +2321,7 @@ function updateAnalysis(m){
   rows.push([P.fix&&m.rawAngle>m.effA+0.5?`Overhang (angled from ${m.rawAngle.toFixed(0)}° to ${m.effA}°)`:'Steepest overhang', `<span class="pill ${angClass}">${ang.toFixed(0)}°</span>`]);
   if(P.mode==='vase' && P.layer!=='none' && ['bands','shingles'].includes(P.layer) && P.layerOff>P.vaseLW*0.9 && !P.fix) rows.push(['Layer offset vs wall','<span class="pill warn">steps wider than wall</span>']);
   if(m.pointed) rows.push(['Pointed top', '<span class="pill ok">closes as a cone, no supports</span>']);
+  if(starOn(P) && STAR_FIT) rows.push([`Star · ${STAR_FIT.sp.sh.N} points · ${STAR_FIT.size} mm`, !STAR_FIT.pl?'<span class="pill bad">no room</span>':STAR_FIT.shrunk?'<span class="pill warn">made smaller</span>':'<span class="pill ok">on the plate</span>']);
   else if(m.closed) rows.push([`Closed top spans Ø${(m.capR*2).toFixed(0)} mm`, m.capR*2>25?'<span class="pill warn">needs supports</span>':'<span class="pill ok">bridges</span>']);
   if(P.mode==='vase' && P.vaseLW>parseFloat(P.nozzle)*2) rows.push(['Line width vs nozzle','<span class="pill warn">over 2× nozzle</span>']);
   $('#checks').innerHTML=rows.map(([a,b])=>`<div><span>${a}</span>${b}</div>`).join('');
@@ -2090,9 +2480,9 @@ function makeIdeas(){
   for(let i=0;i<6;i++){
     const d=randomDesign(newSeed(), {...P});
     ideaSet.push(d);
-    const m=buildMesh(d,Q_THUMB);
+    const m=meshWithStar(d,buildMesh(d,Q_THUMB)); const Ht=m.H+(m.starTop||0);
     thumbMesh.geometry.dispose(); thumbMesh.geometry=toGeometry(m); thumbMesh.material.color.set(P.color);
-    const dist=Math.max(m.H*1.1,m.maxR*2.3)*2.2; thumbCam.position.set(dist*Math.cos(-0.9)*0.95,dist*Math.sin(-0.9)*0.95,m.H*0.45+dist*0.3); thumbCam.lookAt(0,0,m.H*0.45);
+    const dist=Math.max(Ht*1.1,m.maxR*2.3)*2.2; thumbCam.position.set(dist*Math.cos(-0.9)*0.95,dist*Math.sin(-0.9)*0.95,Ht*0.45+dist*0.3); thumbCam.lookAt(0,0,Ht*0.45);
     thumbR.render(thumbScene,thumbCam);
     const b=document.createElement('button'); b.className='idea'; b.title=describe(d)+' · seed '+d.seed; b.setAttribute('aria-label','Load idea: '+describe(d));
     const img=new Image(); img.alt=''; img.src=thumbR.domElement.toDataURL('image/png'); b.appendChild(img);
@@ -2141,11 +2531,12 @@ async function shareFile(name, blob){
   catch(e){ if(e && e.name==='AbortError'){ toast('Share cancelled'); return; } toast('Sharing failed here, so the file was downloaded instead.'); await offerFile(name, blob); }
 }
 async function doExport(what, via){
-  const btn=via==='share'?$('#btnShare'):(what==='holder'?$('#btnHolderOnly'):$('#btnExport')); btn.disabled=true; $('#busy').hidden=false;
+  const btn=via==='share'?$('#btnShare'):(what==='holder'?$('#btnHolderOnly'):what==='star'?$('#btnStarOnly'):$('#btnExport')); btn.disabled=true; $('#busy').hidden=false;
   await new Promise(r=>setTimeout(r,30));
   try{
-    const {blob,name}=await build3mf(P, what);
+    const {blob,name,starNote}=await build3mf(P, what);
     $('#busy').hidden=true;
+    if(starNote) toast('Star: '+starNote);
     if(via==='share') await shareFile(name, blob); else await offerFile(name, blob);
   }catch(e){ console.error(e); toast('Export failed: '+(e&&e.message||e)); }
   finally{ btn.disabled=false; $('#busy').hidden=true; }
@@ -2154,7 +2545,7 @@ async function doExport(what, via){
 /* ---------- wiring ---------- */
 let dragTimer=0;
 function setParam(key,val,live){
-  const num=['slant','lift','lipN','lip','slotBridge','cupD','slotW','cupExtra','holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
+  const num=['starN','starPlump','starSize','slant','lift','lipN','lip','slotBridge','cupD','slotW','cupExtra','holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
   if(num.includes(key)) val=parseFloat(val);
   if(P[key]===val && !live) return;
   P[key]=val;
@@ -2204,11 +2595,11 @@ function wire(){
   $('#btnHolderOnly').addEventListener('click',()=>doExport('holder'));
   $('#btnGcode').addEventListener('click',openGcodePanel);
   $('#btnHolderView').addEventListener('click',toggleHolderView);
-  $('#seedIn').addEventListener('change',e=>{ const v=e.target.value.trim().toUpperCase(); if(v) doRandom(v); });
+  $('#seedIn').addEventListener('change',e=>{ const v=e.target.value.trim().toUpperCase(); if(v) loadSeedCode(v); });
   $('#tLit').addEventListener('click',()=>setLit(true));
   $('#tStudio').addEventListener('click',()=>setLit(false));
   $('#tSpin').addEventListener('click',()=>{ spin=!spin; $('#tSpin').setAttribute('aria-pressed',String(spin)); });
-  $('#tShade').addEventListener('click',()=>{ shade.visible=!shade.visible; $('#tShade').setAttribute('aria-pressed',String(shade.visible)); needsRender=true; });
+  $('#tShade').addEventListener('click',()=>{ shade.visible=!shade.visible; starMesh.visible=shade.visible&&starOn(P); $('#tShade').setAttribute('aria-pressed',String(shade.visible)); needsRender=true; });
   $('#tReset').addEventListener('click',resetView);
   $('#btnCopy').addEventListener('click',()=>{
     const txt=$('#sheet').textContent;
@@ -2232,7 +2623,10 @@ function checkPrintable(m, bedOk, clearance, hd){
   else if(!hd && clearance<0.3){ ok=false; why='Base is too tight for the light'; }
   else if(hd && hd.arms.length<3){ ok=false; why='Make the base a little wider so the light holder has room for its arms'; }
   else if(m.closed && !m.pointed && m.capR*2>25){ ok=false; why='Open the top to print here'; }
+  else if(starOn(P) && STAR_FIT && !STAR_FIT.pl){ ok=false; why='Make the tree narrower so the star fits'; }
+  else if(BOOTH && BOOTH.maxMin && lastStats && lastStats.mins>BOOTH.maxMin){ ok=false; why=`Too long to print (${fmtTime(lastStats.mins)}, max ${fmtTime(BOOTH.maxMin)}): make it shorter or narrower`; }
   printable={ok,why};
+  { const ss=$('#sendSeed'); if(ss) ss.innerHTML=seedCodeHtml(true); }
   if(BOOTH){
     updatePrintButton();
     const st=lastStats; const sm=$('#sendSummary');
@@ -2259,15 +2653,17 @@ async function detectBooth(){
   const want = SHARED_LANDING ? 'normal' : (UI_HASH==='kiosk'||UI_HASH==='normal') ? UI_HASH : (saved==='kiosk'||saved==='normal') ? saved : (s ? (s.booth.default_ui||'kiosk') : 'normal');
   setupTitleSwitch(want);
   if(want==='kiosk') enterBooth(s || {state:'offline', link:false, booth:{}});
+  if(xmasWanted()) setXmas(true);
 }
 const KIOSK_PASSWORD='s3cr3t';   // password to leave kiosk mode
 function switchUi(mode){ setPref('lampUiMode',mode); location.hash=mode; location.reload(); }
 function setupTitleSwitch(mode){
+  UI_MODE=mode;
   $('#modeBadge').textContent = mode==='kiosk' ? 'Kiosk' : 'Staff';
   $('#btnTitle').title = mode==='kiosk' ? 'Staff: tap to leave kiosk mode' : 'Tap to switch to kiosk mode';
   $('#btnTitle').addEventListener('click',()=>{ if(mode==='kiosk') askPassword(); else switchUi('kiosk'); });
   $('#btnBrand').addEventListener('click',()=>{ if(mode==='kiosk') askPassword(openMachinePanel,'Printer setup (staff)'); });
-  $('#btnFablab').addEventListener('click',()=>{ if(mode==='kiosk') openFablabMenu(); });   // hidden: kiosk 3MF / test G-code download
+  $('#btnFablab').addEventListener('click',()=>{ if(mode==='kiosk') openFablabMenu(); else openXmasMenu(); });   // hidden: kiosk 3MF / test G-code / Christmas mode; staff view: Christmas mode
 }
 let pwOk=null;
 function askPassword(onOk, title){
@@ -2348,7 +2744,7 @@ function goStep(k){
 function enterBooth(s){
   BOOTH={...KIOSK_DEFAULTS, ...(s.booth||{})};
   document.documentElement.classList.add('booth');
-  applyMachine();
+  applyMachine(); applyLimits();
   // kiosk lamps: solid wall with the holder cross built in, printability handled automatically
   P.mode='wall'; P.wall=+BOOTH.wall||1.2; P.holder=true; P.holderH=4; P.cupExtra=+BOOTH.cupExtra||0; P.slotW=+BOOTH.slotW||10; P.slotBridge=(BOOTH.slotBridge!=null?+BOOTH.slotBridge:1.6); P.cupD=+BOOTH.cupD||60.2; P.lipN=(BOOTH.lipN!=null?+BOOTH.lipN:3); P.lip=(BOOTH.lip!=null?+BOOTH.lip:0.8); P.press=(BOOTH.press!=null?!!BOOTH.press:true); P.lift=(BOOTH.lift!=null?+BOOTH.lift:1.5); P.top='open'; P.arch=true; P.base='open';
   P.fix=true; P.maxA=45;
@@ -2378,12 +2774,14 @@ function openMachinePanel(){
     <label class="field"><span class="lbl">Printer</span><select id="mcPrinter" ${sel}>${opt(Object.entries(PRINTERS).map(([k,v])=>[k,v.name]),P.printer)}</select></label>
     <label class="field"><span class="lbl">Nozzle</span><select id="mcNozzle" ${sel}>${opt([['0.2','0.2 mm'],['0.4','0.4 mm'],['0.6','0.6 mm'],['0.8','0.8 mm']],P.nozzle)}</select></label>
     <label class="field"><span class="lbl">Layer height</span><select id="mcLh" ${sel}></select></label>
-    <div class="hint" id="mcNote"></div>`,
-    [['Booth default','',()=>{ setPref('kioskMachine',''); applyMachine(); fitToBed(P); refresh(); closeModal(); toast('Printer set back to the booth default'); }],
+    <div class="hint" id="mcNote"></div>
+    ${limitsFields()}
+    ${plateLabelField()}`,
+    [['Test connection','',()=>{ closeModal(); setTimeout(testPrinter,60); }],['Booth default','',()=>{ setPref('kioskMachine',''); setPref('kioskLimits',''); applyMachine(); applyLimits(); fitToBed(P); refresh(); closeModal(); toast('Printer and limits set back to the booth default'); }],
      ['Cancel','',closeModal],
      ['Save','primary',()=>{
         const o={printer:$('#mcPrinter').value, nozzle:$('#mcNozzle').value, lh:+$('#mcLh').value};
-        setPref('kioskMachine',JSON.stringify(o)); applyMachine(); fitToBed(P); refresh(); closeModal();
+        setPref('kioskMachine',JSON.stringify(o)); applyMachine(); saveLimitsFromForm(); fitToBed(P); refresh(); closeModal();
         toast(`Now printing on ${PRINTERS[P.printer].name}, ${P.nozzle} mm nozzle, ${(+P.lh).toFixed(2)} mm layers`);
      }]]);
   const fillLh=()=>{
@@ -2394,7 +2792,7 @@ function openMachinePanel(){
     const booth=BOOTH&&BOOTH.printer;
     $('#mcNote').textContent = (BRIDGE_OK && booth && pr!==booth) ? `The booth PC is set up for ${PRINTERS[booth]?PRINTERS[booth].name:booth}. Change its config file too, or it will refuse these prints.` : 'Saved on this screen only. Visitors keep their design.';
   };
-  $('#mcPrinter').addEventListener('change',fillLh); $('#mcNozzle').addEventListener('change',fillLh); fillLh();
+  $('#mcPrinter').addEventListener('change',fillLh); $('#mcNozzle').addEventListener('change',fillLh); fillLh(); wirePlateLabel();
 }
 function connectEvents(){
   try{ if(es) es.close(); es=new EventSource('api/events'); }catch(e){ return; }
@@ -2458,7 +2856,9 @@ function startPrintFlow(){
   modal('Before we print', `<div>${esc(describe(P))}</div><div class="kv">
     <span>Size</span><span>${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm</span>
     <span>Print time</span><span>about ${fmtTime(st?st.mins:0)}</span>
-    <span>Material</span><span>${esc(BOOTH.colorName||'PLA')} · ${st?st.grams.toFixed(0):'?'} g</span></div>
+    <span>Material</span><span>${esc(BOOTH.colorName||'PLA')} · ${st?st.grams.toFixed(0):'?'} g</span>${starOn(P)?`
+    <span>Star</span><span>Prints next to your tree with its cap. Push the star into the cap, then sit it on the tip.</span>`:''}</div>
+    ${goodToKnowHtml()}
     <div class="platebox"><strong>Look through the printer door.</strong> The print bed must be completely empty. If a lamp or anything else is on it, take it out first or ask FabLab staff.</div>
     <label class="plate" for="plateOk"><input type="checkbox" id="plateOk"><span>I checked. The print bed is empty.</span></label>`,
     [['Back to designing','',closeModal],['Send to printer','primary big',sendPrint]]);
@@ -2474,7 +2874,7 @@ async function sendPrint(){
     let js={}; try{ js=await r.json(); }catch(e){}
     if(r.status===202){
       myJob=js.job&&js.job.id;
-      modal(`Lamp #${myJob} is on its way`, `<div>The printer starts in a moment. It takes about ${fmtTime(lastStats?lastStats.mins:0)}.</div><div class="hint">Watch the progress at the top right. Carry on designing if you like. When it finishes, collect it from the door.</div>`,[['Take it home (QR)','',openShare],['OK','primary big',closeModal]]);
+      modal(`Lamp #${myJob} is on its way`, `<div>The printer starts in a moment. It takes about ${fmtTime(lastStats?lastStats.mins:0)}.</div><div class="hint">Watch the progress at the top right. Carry on designing if you like. When it finishes, collect it from the door.</div>${factHtml()}`,[['Take it home (QR)','',openShare],['OK','primary big',closeModal]]);
     } else if(r.status===409){
       modal('The printer is busy', `<div>${js.message||'Another lamp is printing. Try again when it has finished.'}</div>`,[['OK','primary',closeModal]]);
     } else {
@@ -2501,7 +2901,7 @@ function setupIdle(){
 }
 
 /* ---------- per-step reset ---------- */
-const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge','tip','slant'],
+const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge','tip','slant','star','starN','starPlump','starSize','starAttach'],
   secPattern:['pattern','dstyle','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW','lipN','lip','press','lift']};
 const STEP_NAMES={secLight:'Light source', secBody:'Shape', secPattern:'Surface pattern', secLayer:'Layer pattern', secHolder:'Light holder'};
 function resetStep(id){
@@ -2528,20 +2928,20 @@ function addNormalResets(){ for(const id in STEP_KEYS){ const h2=$('#'+id+' > h2
    or in SHARE_URL below for a standalone copy. */
 const SHARE_URL='';
 const SHARE_TEXT='My lamp, designed at the SP FabLab lamp booth #SPFabLab #3Dprinting';
-const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color','dstyle'];
+const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color','dstyle','star','starN','starPlump','starSize','starAttach'];
 function encodeDesign(p){
-  return '1~'+SHARE_FIELDS.map(k=>{ let v=p[k]; if(typeof v==='boolean') v=v?1:0; if(k==='color') v=String(v).replace('#',''); return encodeURIComponent(String(v)); }).join('~');
+  return '1~'+SHARE_FIELDS.map(k=>{ let v=p[k]; if(k==='star') v=starOn(p); if(typeof v==='boolean') v=v?1:0; if(k==='color') v=String(v).replace('#',''); return encodeURIComponent(String(v)); }).join('~');
 }
 function decodeDesign(code){
   const parts=String(code).split('~'); if(parts[0]!=='1') return null;
-  const ok={light:Object.fromEntries(Object.keys(LIGHTS).filter(k=>!HIDDEN_LIGHTS.includes(k)).map(k=>[k,1])), body:BODIES, pattern:PATTERNS, layer:LAYERPATS, profile:WAVES, env:ENVS, mode:{vase:1,wall:1}, dstyle:{ridges:1,quilted:1}};
+  const ok={light:Object.fromEntries(Object.keys(LIGHTS).filter(k=>!HIDDEN_LIGHTS.includes(k)).map(k=>[k,1])), body:BODIES, pattern:PATTERNS, layer:LAYERPATS, profile:WAVES, env:ENVS, mode:{vase:1,wall:1}, dstyle:{ridges:1,quilted:1}, starAttach:{point:1,between:1}};
   const out={};
   SHARE_FIELDS.forEach((k,i)=>{
     let v; try{ v=decodeURIComponent(parts[i+1]==null?'':parts[i+1]); }catch(e){ return; }
     if(v==='') return;
     if(ok[k]){ if(ok[k][v] || (RENAMED[k]&&RENAMED[k][v])) out[k]=v; return; }
     if(k==='color'){ if(/^[0-9a-f]{6}$/i.test(v)) out[k]='#'+v; return; }
-    if(k==='holder'){ out[k]=v==='1'; return; }
+    if(k==='holder'||k==='star'){ out[k]=v==='1'; return; }
     if(k==='seed'){ out[k]=v.replace(/[^A-Za-z0-9]/g,'').slice(0,8)||DEFAULT_P.seed; return; }
     let n=parseFloat(v); if(!isFinite(n)) return;
     const el=document.getElementById(k);
@@ -2562,6 +2962,7 @@ function applySharedFromHash(){
   const h=location.hash||''; if(!h.startsWith('#d=')) return;
   const d=decodeDesign(h.slice(3)); if(!d) return;
   Object.assign(P,d); lockFixed(P); P.edited=false; SHARED_LANDING=true;
+  if(STAR_FEATURE && d.star && P.body==='pagoda' && P.tip) XMAS_ON=true;   // a tree shared with its star: show and export the star (no Christmas theme)
   buildPuck(); P.H=Math.min(P.H,maxHeight(P));
 }
 // Instagram-sized picture card (1080 x 1350)
@@ -2581,11 +2982,11 @@ function ensureCardRenderer(){
 }
 async function renderCard(){
   ensureCardRenderer();
-  const m=buildMesh(P,Q_PREVIEW);
+  const m=meshWithStar(P,buildMesh(P,Q_PREVIEW)); const Hc=m.H+(m.starTop||0);
   cardMesh.geometry.dispose(); cardMesh.geometry=toGeometry(m); cardMesh.material.color.set(P.color);
-  const dist=Math.max(m.H*1.15,m.maxR*2.3)*2.25, az=-0.9, el=0.22;
-  cardCam.position.set(dist*Math.cos(el)*Math.cos(az), dist*Math.cos(el)*Math.sin(az), m.H*0.47+dist*Math.sin(el));
-  cardCam.lookAt(0,0,m.H*0.47);
+  const dist=Math.max(Hc*1.15,m.maxR*2.3)*2.25, az=-0.9, el=0.22;
+  cardCam.position.set(dist*Math.cos(el)*Math.cos(az), dist*Math.cos(el)*Math.sin(az), Hc*0.47+dist*Math.sin(el));
+  cardCam.lookAt(0,0,Hc*0.47);
   cardR.render(cardScene,cardCam);
   const W=1080,H=1350, c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
   const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#14171B'); bg.addColorStop(1,'#07080A'); x.fillStyle=bg; x.fillRect(0,0,W,H);
@@ -2598,8 +2999,8 @@ async function renderCard(){
   const shown=lines.slice(0,2); if(lines.length>2) shown[1]=shown[1].replace(/\s*\S*$/,'')+'…';
   shown.forEach((l,i)=>x.fillText(l,72,H-150-(shown.length-1-i)*62));
   x.fillStyle='#AEB4BE'; x.font=`500 30px ${mono}`;
-  x.fillText(`${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm · ${LIGHTS[P.light].name} · #${P.seed}`,72,H-92);
-  x.fillStyle='#6E7581'; x.font=`500 26px ${mono}`; x.fillText('Lampshade Generator · #SPFabLab',72,H-46);
+  x.fillText(`${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm · ${LIGHTS[P.light].name}`,72,H-92);
+  x.fillStyle='#6E7581'; x.font=`500 26px ${mono}`; x.fillText(`Seed code ${seedCode(P)} · #SPFabLab`,72,H-46);
   return await new Promise(res=>c.toBlob(res,'image/png'));
 }
 function saveBlob(blob,name){
@@ -2616,8 +3017,8 @@ async function openShare(){
   }
   const body=`<div class="sharegrid">
       <img class="sharepic" src="${img}" alt="Picture of your lamp">
-      <div class="shareside">${url
-        ? `${qrHtml}<p><strong>Scan with your phone camera.</strong> You get your lamp in 3D, a picture to post on Instagram, and the 3MF file to print it again.</p>`
+      <div class="shareside">${seedCodeHtml(!kiosk)}${url
+        ? `${qrHtml}<p><strong>Scan with your phone camera.</strong> You get your lamp in 3D, a picture to post on Instagram, and the 3MF file to print it again.</p>${homePrintHtml()}`
         : `<p><strong>Sharing is not set up yet.</strong></p><p class="hint">Staff: put the public address of this page in <code>booth.share_url</code> on the booth PC (or <code>SHARE_URL</code> in the page) to show a QR code here.</p>`}
       </div></div>`;
   const acts=[];
@@ -2628,6 +3029,181 @@ async function openShare(){
   acts.push(['Done','primary',closeModal]);
   modal('Take your lamp home', body, acts);
 }
+// "print it at home": what someone with their own 3D printer needs to know
+function goodToKnowHtml(){ const mins=lastStats?lastStats.mins:0;
+  return `<div class="goodtoknow"><strong>Good to know</strong>
+    <ul><li>You may find a few thin plastic strings inside the lamp. That's normal for 3D printing. Just peel or pull them off.</li>
+    <li>Your lamp is made by a machine in about ${fmtTime(mins)}. It won't be 100% perfect: small lines, marks or bumps are part of the 3D printed look. It's a good lamp for the time it takes to make.</li></ul></div>`; }
+/* ---------- seed code ----------
+   The seed plus every design setting, packed into a short code people can write down, share and key in
+   on any screen (kiosk, staff, phone, another machine): FABLAB-A7K2-Q9MX-... A seed on its own (FABLAB)
+   still works too, but only the full code brings back changes made after Randomise. Lists are append-only. */
+const SC_ABC='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const SC_FIELDS=[
+  ['light','L',['strimsav','mittled'],2], ['body','L',['column','barrel','bell','tulip','gourd','hourglass','pagoda','teardrop','bottle','globe','lantern','capsule'],4],
+  ['H','N',60,180,1,7], ['Db','N',90,180,1,7], ['Dt','N',30,180,1,8], ['bulge','N',0,60,1,6], ['tip','B'], ['slant','N',0,40,1,6],
+  ['pattern','L',['smooth','ribs','waves','bubbles','pillows','facets','organic','diamonds'],4], ['dstyle','L',['ridges','quilted'],1],
+  ['count','N',0,72,1,7], ['depth','N',0.5,10,0.1,7], ['freq','N',1,30,1,5], ['twist','N',-360,360,5,8],
+  ['profile','L',['round','pointed','square','fluted'],2], ['env','L',['uniform','rise','fade','swell','ends'],3],
+  ['layer','L',['none','bands','ridges','shingles','brick','steptwist'],3], ['bandN','N',2,60,1,6], ['layerOff','N',0.2,2.5,0.05,6],
+  ['color','C',3]
+];
+function scCheck(str){ const h=hashStr(str); return SC_ABC[h%32]+SC_ABC[(h>>>5)%32]; }   // two check letters catch typos
+function seedCode(p){
+  const q=normalizeDesign({...p}); let bits='';
+  const put=(v,n)=>{ bits+=Math.max(0,Math.min((1<<n)-1,v)).toString(2).padStart(n,'0'); };
+  for(const f of SC_FIELDS){
+    const [k,t]=f, v=q[k];
+    if(t==='L') put(Math.max(0,f[2].indexOf(v)),f[3]);
+    else if(t==='B') put(v?1:0,1);
+    else if(t==='N') put(Math.round((Math.min(f[3],Math.max(f[2],+v||0))-f[2])/f[4]),f[5]);
+    else if(t==='C'){ const i=COLORS.findIndex(c=>c[1].toLowerCase()===String(v).toLowerCase()); put(i<0?1:i,f[2]); }
+  }
+  while(bits.length%5) bits+='0';
+  let body='A'; for(let i=0;i<bits.length;i+=5) body+=SC_ABC[parseInt(bits.slice(i,i+5),2)];
+  const seed=String(p.seed||'SEED').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8)||'SEED';
+  body+=scCheck(seed+body);
+  return seed+'-'+body.match(/.{1,4}/g).join('-');
+}
+// returns {design} or {seed} or {error}
+function readSeedCode(text){
+  const t=String(text||'').toUpperCase().replace(/[\s_]+/g,'');
+  if(/^[A-Z0-9]{1,8}$/.test(t)) return {seed:t};
+  const m=t.match(/^([A-Z0-9]{1,8})-([A-Z0-9-]+)$/); if(!m) return {error:'That doesn\'t look like a seed code. It looks like FABLAB or FABLAB-A7K2-Q9MX-…'};
+  const seed=m[1], raw=m[2].replace(/-/g,'');
+  if(raw.length<4 || raw[0]!=='A') return {error:'This seed code is from a newer or older version, or has a typo.'};
+  if(scCheck(seed+raw.slice(0,-2))!==raw.slice(-2)) return {error:'This seed code has a typo. Check each letter and number.'};
+  let bits=''; for(const c of raw.slice(1,-2)){ const i=SC_ABC.indexOf(c); if(i<0) return {error:'This seed code has a letter that isn\'t used in codes.'}; bits+=i.toString(2).padStart(5,'0'); }
+  let pos=0; const take=n=>{ const v=parseInt(bits.slice(pos,pos+n)||'0',2); pos+=n; return v; };
+  const d={seed};
+  for(const f of SC_FIELDS){
+    const [k,t]=f;
+    if(t==='L') d[k]=f[2][take(f[3])]||f[2][0];
+    else if(t==='B') d[k]=!!take(1);
+    else if(t==='N'){ const v=f[2]+take(f[5])*f[4]; d[k]=Math.round(Math.min(f[3],v)*100)/100; }
+    else if(t==='C') d[k]=(COLORS[take(f[2])]||COLORS[1])[1];
+  }
+  return {design:normalizeDesign(d)};
+}
+function loadSeedCode(text){
+  const r=readSeedCode(text);
+  if(r.error){ toast(r.error,6000); return false; }
+  if(r.seed){ doRandom(r.seed); toast(`Seed ${r.seed} loaded`); return true; }
+  pushHistory(); const d=r.design;
+  Object.keys(d).forEach(k=>{ if(k==='color' && BOOTH && BOOTH.color) return; P[k]=d[k]; });   // a booth with one filament keeps its colour
+  P.edited=true; lockFixed(P); P.H=Math.min(P.H,maxHeight(P)); lastFitKey='';
+  if(buildMesh(P,Q_THUMB).maxR*2>bedMaxD(P)) fitToBed(P);
+  refresh(); toast('Seed code loaded'); return true;
+}
+function copyText(t){
+  const done=()=>toast('Copied: '+t);
+  try{ if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(t).then(done,()=>fallback()); return; } }catch(e){}
+  fallback();
+  function fallback(){ const a=document.createElement('textarea'); a.value=t; a.setAttribute('readonly',''); a.style.cssText='position:fixed;left:-9999px'; document.body.appendChild(a); a.select();
+    let ok=false; try{ ok=document.execCommand('copy'); }catch(e){} a.remove(); ok?done():toast('Copy this: '+t,9000); }
+}
+function seedCodeHtml(withCopy){
+  const c=seedCode(P);
+  return `<div class="seedcode"><span class="sclbl">Your seed code</span><span class="scval">${c}</span>${withCopy?`<button class="btn" type="button" onclick="copyText('${c}')">Copy</button>`:''}
+    <span class="schint">Write it down or take a photo. Key it in under <b>Ideas → Have a seed code?</b> on any lamp booth screen or in the generator to get this exact lamp back, or share it with friends.</span></div>`;
+}
+/* ---------- kiosk limits (staff) ----------
+   Max height, max width and max print time for visitors' lamps, set on this screen from
+   Printer setup (kiosk) or Staff extras. Empty = use the booth PC config (maxH, maxD, max_print_min). */
+function kioskLimits(){ try{ return JSON.parse(getPref('kioskLimits')||'{}')||{}; }catch(e){ return {}; } }
+let BOOTH_CFG_LIMITS=null;
+function applyLimits(){
+  if(!BOOTH) return;
+  if(!BOOTH_CFG_LIMITS) BOOTH_CFG_LIMITS={maxH:BOOTH.maxH, maxD:BOOTH.maxD, maxMin:BOOTH.max_print_min||null};
+  const L=kioskLimits();
+  BOOTH.maxH = +L.maxH || BOOTH_CFG_LIMITS.maxH; BOOTH.maxD = +L.maxD || BOOTH_CFG_LIMITS.maxD; BOOTH.maxMin = +L.maxMin || BOOTH_CFG_LIMITS.maxMin || null;
+  P.H=Math.min(P.H,maxHeight(P)); $('#H').max=maxHeight(P); $('#Db').max=$('#Dt').max=Math.floor(bedMaxD(P));
+  if(buildMesh(P,Q_THUMB).maxR*2>bedMaxD(P)) fitToBed(P);
+}
+function limitsFields(){
+  const L=kioskLimits(), C=BOOTH_CFG_LIMITS||{maxH:180,maxD:180,maxMin:null};
+  const inp=(id,v,ph,min,max,step)=>`<input id="${id}" type="number" inputmode="decimal" min="${min}" max="${max}" step="${step}" value="${v||''}" placeholder="${ph}" style="width:100%;font-size:17px;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink)">`;
+  return `<fieldset style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:8px"><legend style="font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 4px">Kiosk limits (visitors)</legend>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+      <label class="field"><span class="lbl">Max height (mm)</span>${inp('limH',L.maxH,C.maxH||180,60,180,1)}</label>
+      <label class="field"><span class="lbl">Max width Ø (mm)</span>${inp('limD',L.maxD,C.maxD||180,90,180,1)}</label>
+      <label class="field"><span class="lbl">Max print time (h)</span>${inp('limT',L.maxMin?+(L.maxMin/60).toFixed(2):'',C.maxMin?+(C.maxMin/60).toFixed(2):'none',0.5,12,0.25)}</label></div>
+    <p class="hint" style="margin:0">Saved on this screen. Empty boxes use the booth PC config. Lamps over the time limit can't be sent; the booth PC also stops anything over its own max_print_min.</p></fieldset>`;
+}
+function saveLimitsFromForm(){
+  const n=id=>{ const v=parseFloat($('#'+id).value); return isFinite(v)&&v>0?v:null; };
+  const L={maxH:n('limH')?Math.round(Math.min(180,Math.max(60,n('limH')))):null, maxD:n('limD')?Math.round(Math.min(180,Math.max(90,n('limD')))):null,
+           maxMin:n('limT')?Math.round(Math.min(12,Math.max(0.5,n('limT')))*60):null};
+  setPref('kioskLimits',JSON.stringify(L)); applyLimits(); lastFitKey=''; refresh();
+  return L;
+}
+/* ---------- test printer connection (staff) ---------- */
+async function testPrinter(){
+  if(!BRIDGE_OK){ modal('Test printer connection','<p>No booth PC found. Open the generator from the booth PC address (for example http://booth-pc:8080) to test the printer.</p>',[['Close','primary',closeModal]]); return; }
+  modal('Test printer connection','<div class="hint">Talking to the booth PC and the printer…</div>',[]);
+  const t0=performance.now(); let j=null, err='';
+  try{ const r=await fetch('api/test',{cache:'no-store'}); j=await r.json(); }catch(e){ err=e.message||String(e); }
+  const ms=Math.round(performance.now()-t0);
+  const row=(k,v)=>v==null||v===''?'':`<span>${xmlEsc(k)}</span><span>${xmlEsc(String(v))}</span>`;
+  const pill=ok=>`<span class="pill ${ok?'ok':'bad'}">${ok?'OK':'problem'}</span>`;
+  let body;
+  if(!j) body=`<p>${pill(false)} Can't reach the booth PC: ${xmlEsc(err)}</p>`;
+  else { const d=j.details||{};
+    body=`<div class="checks" style="display:grid;gap:8px">
+      <div><span>Booth PC</span>${pill(true)}</div>
+      <div><span>Printer: ${xmlEsc(j.message)}</span>${pill(j.ok)}</div>
+      <div><span>Slicer: ${xmlEsc(j.slicer&&j.slicer.message||'')}</span>${pill(!j.slicer||j.slicer.ok)}</div></div>
+      <div class="kv" style="margin-top:10px">${row('Address',d.address)}${row('Printer name',d.hostname)}${row('Firmware',d.firmware)}${row('PrusaLink',d.prusalink)}${row('State',d.state)}${row('Nozzle',d.nozzle_temp!=null?d.nozzle_temp+' °C':'')}${row('Bed',d.bed_temp!=null?d.bed_temp+' °C':'')}${row('Nozzle size',d.nozzle!=null?d.nozzle+' mm':'')}${row('Booth set up for',j.booth_printer)}${row('Round trip',ms+' ms')}</div>`; }
+  modal('Test printer connection', body, [['Test again','',testPrinter],['Close','primary',closeModal]]);
+}
+/* ---------- did you know? ----------
+   Shown next to the time and filament estimate (Send step, before printing, while it prints). */
+function factList(){
+  const st=lastStats||{grams:0,metres:0,mins:0,layers:0}, lh=+P.lh, m=current;
+  const sheets=Math.max(1,Math.round(lh/0.1));
+  return [
+    `The print time is an estimate. The slicer adds up every move at its planned speed, but the printer slows down for corners, small layers and cooling, so the real time can be a little different.`,
+    `Height matters more than width. Your lamp is ${st.layers} layers tall, and the printer has to go round once for every single layer.`,
+    `Each layer of your lamp is ${lh.toFixed(2)} mm thick, about ${sheets} sheet${sheets>1?'s':''} of paper.`,
+    `Your lamp uses about ${st.grams.toFixed(0)} g of PLA. That's roughly ${st.metres.toFixed(0)} m of plastic thread, squeezed out through a nozzle only 0.4 mm wide.`,
+    `Thicker layers print faster: doubling the layer height almost halves the time, but the lines on the surface get easier to see.`,
+    `Faster is not always better. The plastic needs time to melt in the nozzle, and each layer needs a moment to cool before the next one goes on top.`,
+    `Before the first line, the printer heats the nozzle to about 220 °C and the bed to about 60 °C, then checks the bed is level. That takes a few minutes too.`,
+    `PLA is made from plants such as corn or sugar cane, which is why it smells a little sweet when it prints.`,
+    `Engineers use 3D printing for prototypes: print a part in the morning, test it, change the design and print the next version the same day.`,
+    `Before 3D printing, a new plastic part often needed a metal mould first, which could take weeks and cost thousands of dollars. Now a first version can cost a few dollars.`,
+    `Prototyping early means finding mistakes while they are cheap to fix, not after thousands of parts have been made.`,
+    `3D printing adds material only where it is needed. Cutting a part out of a solid block can turn most of the block into waste.`,
+    `Your lamp is "parametric": its shape comes from numbers. Change one slider and the whole design updates, the same way many engineers design real products.`,
+    `A 3D printer can't print in mid-air. This app keeps every slope at ${m?m.effA:36}° or less from upright, so your lamp needs no supports.`,
+    `Light shines through the thin parts of your lamp. The wall is only about 1.2 mm thick, so ribs and patterns show up as bright and dark bands.`,
+    `Hearing aid shells, dental moulds and even some rocket engine parts are 3D printed today.`,
+    `The first 3D printer was invented in the 1980s. It used a laser to harden liquid resin one layer at a time.`,
+    `Prototypes don't have to be perfect. A quick, rough print often answers the question "will this fit?" faster than any drawing.`,
+    `Those thin "spider web" strings are called stringing: a little melted plastic oozes out while the nozzle jumps from one spot to another. They peel off easily.`,
+    `Every 3D print is a trade-off between speed and finish. Your lamp is printed with fairly thick layers so it's ready in hours, not a whole day.`
+  ];
+}
+let factIdx=-1, factTimer=0;
+function nextFact(el){
+  const L=factList(); let k; do{ k=Math.floor(Math.random()*L.length); }while(L.length>1 && k===factIdx); factIdx=k;
+  const t=el||$('#factTxt'); if(!t) return;
+  t.style.opacity=0; setTimeout(()=>{ t.textContent=L[k]; t.style.opacity=1; },180);
+}
+function factHtml(){ const L=factList(); let k; do{ k=Math.floor(Math.random()*L.length); }while(L.length>1 && k===factIdx); factIdx=k;
+  return `<button class="factbox" type="button" onclick="this.querySelector('.fx').textContent=(window.__nextFactText&&window.__nextFactText())||''"><span class="ic">?</span><span><span class="ft"><span>Did you know?</span><span>tap for another</span></span><span class="fx">${L[k]}</span></span></button>`; }
+window.__nextFactText=()=>{ const L=factList(); let k; do{ k=Math.floor(Math.random()*L.length); }while(L.length>1 && k===factIdx); factIdx=k; return L[k]; };
+function startFacts(){ clearInterval(factTimer); nextFact(); factTimer=setInterval(()=>{ const sec=$('#secSend'); if(sec && sec.offsetParent) nextFact(); },12000); }
+function homePrintHtml(onPhone){
+  const m=current; const H=m?m.H:P.H, D=m?m.maxR*2:P.Db, st=lastStats;
+  const star=starOn(P)?' The star and its cap are in the same file.':'';
+  return `<div class="homeprint"><strong>Got a 3D printer at home?</strong> ${onPhone?'Tap <b>Download 3MF</b>':'The link has the <b>.3mf file</b>'} to print another one yourself.${star}
+    <ul><li>Open it in PrusaSlicer, Bambu Studio, Cura or OrcaSlicer.</li>
+    <li>Your printer needs room for ${H.toFixed(0)} mm tall and Ø${D.toFixed(0)} mm wide.</li>
+    <li>PLA, 0.4 mm nozzle, ${(+P.lh).toFixed(2)} mm layers, no supports.${st?` About ${st.grams.toFixed(0)} g.`:''}</li>
+    <li>White or light colours glow best. The light is an IKEA STRIMSÄV.</li>
+    <li>A few thin strings inside are normal. Peel them off after printing.</li></ul></div>`;
+}
 async function openLanding(){
   const blob=await renderCard(); const img=URL.createObjectURL(blob);
   const file=new File([blob],`lamp-${P.seed}.png`,{type:'image/png'});
@@ -2637,7 +3213,7 @@ async function openLanding(){
   acts.push(['Download 3MF','',()=>{ closeModal(); doExport(); }]);
   acts.push(['Explore in 3D','primary',closeModal]);
   modal('Your lamp from the SP FabLab booth', `<img class="sharepic land" src="${img}" alt="Picture of your lamp">
-    <div class="hint">${canShare?'Tap Share and pick Instagram to post it, or':'Tap'} Save picture to keep it. Download 3MF gets the file to print it again.</div>`, acts);
+    <div class="hint">${canShare?'Tap Share and pick Instagram to post it, or':'Tap'} Save picture to keep it.</div>${seedCodeHtml(true)}${homePrintHtml(true)}`, acts);
 }
 
 /* ---------- touch support ---------- */
@@ -2694,6 +3270,65 @@ function tuneForDevice(){
 }
 window.addEventListener('orientationchange',()=>setTimeout(()=>{ resize(); if(current){ drawProfile(current); drawLens(current);} },250));
 
+/* ---------- Christmas mode ----------
+   Hidden staff switch. Staff view: tap "SP FabLab" in the header. Kiosk: tap "SP FabLab", then the staff password.
+   On: red and green theme, snow on the preview, a "Make it a Christmas tree" button, a star for the
+   pointed pagoda top (prints on the same plate), and more trees in Ideas. Saved on this screen;
+   a booth can also start in it with "xmas": true in its config. */
+let UI_MODE='normal';
+function xmasWanted(){ const v=getPref(UI_MODE==='kiosk'?'xmasKiosk':'xmasStaff'); if(v==='1') return true; if(v==='0') return false; return UI_MODE==='kiosk' && !!(BOOTH&&BOOTH.xmas); }
+function setXmas(on, quiet){
+  XMAS_ON=!!on; document.documentElement.classList.toggle('xmas', XMAS_ON);
+  renderer.setClearColor(XMAS_ON?0x06101e:0x000000, 1); needsRender=true;   // night sky behind the tree
+  if(XMAS_ON) startSnow();
+  const d=document.querySelector('#secBody .stepdesc');
+  if(d){ d.dataset.base=d.dataset.base||d.textContent; d.textContent=d.dataset.base+(XMAS_ON?' Christmas special: tap "Make it a Christmas tree" for a pointed tree you can decorate with any pattern.':''); }
+  lastFitKey=''; refresh();
+  if(!quiet) setTimeout(makeIdeas, 30);
+}
+function openXmasMenu(){
+  modal('Staff extras', `<div class="xmasmenu">
+    <p class="hint" style="margin:0">Hidden menu for FabLab staff. Settings are saved on this screen.</p>
+    ${plateLabelField()}
+    ${limitsFields()}
+    <label class="toggle" for="xmStaff">Christmas mode in this staff view <input type="checkbox" id="xmStaff"${getPref('xmasStaff')==='1'?' checked':''}></label>
+    <label class="toggle" for="xmKiosk">Christmas mode for visitors (kiosk) <input type="checkbox" id="xmKiosk"${getPref('xmasKiosk')==='1'?' checked':''}></label>
+    <p class="hint" style="margin:0">Christmas mode adds a red and green theme with snow, and a "Make it a Christmas tree" button (a pagoda with a pointed top). Ideas include more trees.</p></div>`,
+    [['Close','',()=>{ saveLimitsFromForm(); closeModal(); }],['Test printer connection','',()=>{ saveLimitsFromForm(); closeModal(); setTimeout(testPrinter,60); }]].concat(BRIDGE_OK?[['G-code to printer','',()=>{ saveLimitsFromForm(); closeModal(); setTimeout(openGcodeTools,60); }]]:[]).concat([['Open kiosk now','primary',()=>{ saveLimitsFromForm(); switchUi('kiosk'); }]]));
+  wirePlateLabel();
+  $('#xmStaff').addEventListener('change',e=>{ setPref('xmasStaff',e.target.checked?'1':'0'); setXmas(e.target.checked); });
+  $('#xmKiosk').addEventListener('change',e=>{ setPref('xmasKiosk',e.target.checked?'1':'0'); toast(e.target.checked?'Visitors will see Christmas mode in kiosk mode':'Christmas mode is off for visitors'); });
+}
+function kioskXmasToggle(){
+  closeModal();
+  setTimeout(()=>askPassword(()=>{ const on=!XMAS_ON; setPref('xmasKiosk',on?'1':'0'); setXmas(on); toast(on?'Christmas mode is on':'Christmas mode is off'); }, `Christmas mode ${XMAS_ON?'off':'on'} (staff)`),60);
+}
+let snowRun=false, snowFl=[], snowObs=null;
+function startSnow(){
+  if(snowRun) return; const cv=$('#snow'), x=cv.getContext('2d'); snowRun=true;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const size=()=>{ const r=cv.getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
+    cv.width=Math.max(1,Math.round(r.width*dpr)); cv.height=Math.max(1,Math.round(r.height*dpr)); x.setTransform(dpr,0,0,dpr,0,0);
+    const n=Math.min(150, Math.round(r.width*r.height/8000));
+    snowFl=Array.from({length:n},()=>({x:Math.random()*r.width, y:Math.random()*r.height, r:0.7+Math.random()*2.3, v:0.2+Math.random()*0.6, w:Math.random()*TAU})); };
+  size(); if(!snowObs){ snowObs=new ResizeObserver(()=>{ if(XMAS_ON) size(); }); snowObs.observe(cv); }
+  const tick=()=>{
+    const W=cv.clientWidth, H=cv.clientHeight; x.clearRect(0,0,W,H);
+    if(!XMAS_ON){ snowRun=false; return; }
+    x.fillStyle='#FFFFFF';
+    for(const f of snowFl){
+      if(!reduce){ f.y+=f.v*(0.6+f.r*0.25); f.w+=0.012; f.x+=Math.sin(f.w)*0.35; if(f.y>H+4){ f.y=-4; f.x=Math.random()*W; } }
+      x.globalAlpha=0.25+f.r*0.18; x.beginPath(); x.arc(f.x,f.y,f.r,0,TAU); x.fill();
+    }
+    x.globalAlpha=1;
+    if(reduce){ snowRun=false; return; }
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
+$('#btnTree').addEventListener('click',()=>{ pushHistory(); Object.assign(P,{body:'pagoda', tip:true, star:true, slant:0}); P.edited=true; keepWidth('body'); refresh(); toast('Christmas tree! Try a pattern next.'); });
+$('#btnStarOnly').addEventListener('click',()=>doExport('star'));
+
 /* ---------- boot ---------- */
 buildChips(); buildLayerSeg(); buildBed(); buildPuck(); addSteppers(); wire();
 tuneForDevice(); setupFullscreen();
@@ -2709,6 +3344,11 @@ fitView(current);
 if(SHARED_LANDING) setTimeout(openLanding,400);
 requestAnimationFrame(frame);
 setTimeout(makeIdeas, 60);
+$('#factBox').addEventListener('click',()=>{ nextFact(); clearInterval(factTimer); factTimer=setInterval(()=>{ const sec=$('#secSend'); if(sec && sec.offsetParent) nextFact(); },12000); });
+setTimeout(startFacts, 800);
+$('#btnSeedLoad').addEventListener('click',()=>{ const v=$('#seedLoadIn').value.trim(); if(v && loadSeedCode(v)){ $('#seedLoadIn').value=''; if(PORTRAIT_TABS.length && curStep===PORTRAIT_TABS.length-1) goStep(1); } });
+$('#seedLoadIn').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#btnSeedLoad').click(); } });
+$('#btnSeedCopy').addEventListener('click',()=>copyText(seedCode(P)));
 })();
 </script>
 
