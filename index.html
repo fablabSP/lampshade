@@ -713,7 +713,7 @@ const P = {
   body:'barrel', H:180, Db:130, Dt:95, bulge:18,
   pattern:'ribs', dstyle:'ridges', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
   layer:'none', bandN:12, layerOff:0.8,
-  fix:true, maxA:45, top:'open', tip:false, slant:0, star:true, starN:5, starPlump:0.45, starSize:60, starAttach:'between', holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.2, slotBridge:1.6, lipN:3, lip:0.8, press:true, lift:1.5, color:'#EDE4D0', seed:'FABLAB', edited:false
+  fix:true, maxA:45, top:'open', tip:false, slant:0, star:true, starN:5, starPlump:0.45, starSize:60, starAttach:'between', holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.1, slotBridge:1.6, lipN:3, lip:0.8, press:true, lift:1.5, color:'#EDE4D0', seed:'FABLAB', edited:false
 };
 const DEFAULT_P = JSON.parse(JSON.stringify(P));   // starting values, used by the step Reset buttons
 const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','slant','star','starN','starPlump','starSize','starAttach','pattern','dstyle','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
@@ -927,7 +927,7 @@ function clipInnerR(c, rsI, zs){                // inner radius of a clip at hei
   if(zs<c.zBase || zs>=c.z1) return null;
   if(zs<c.z0) return rsI;                        // riser up from a low cup wall
   const u=zs-c.z0, L=c.lip, h=c.z1-c.z0;
-  if(c.mode==='stop') return rsI-Math.min(u,L);  // stop ring: 45° in, then flat
+  if(c.mode==='stop') return rsI-Math.min(u*(c.tan||1),L);  // stop ring: STOP.angle in, then flat
   return u<L ? rsI-u : (u<h-L ? rsI-L : rsI-(h-u));
 }
 function polyArm(a, r0, r1, w){
@@ -950,11 +950,13 @@ function armGeom(p, m, a0, rsO, ha, endIn){
   const room=rEnd(0,ha/2)-r0;
   if(room < 1.2) return null;
   const footL=Math.min(ARM.footL, Math.max(0.4, room-1.5)), footW=Math.min(ARM.footW, ARM.w+2*footL);
-  return {a, r0, w:ARM.w, footW, footL, ha, gH:ARM.gH, gL:Math.min(ARM.gL, Math.max(0.6, room-0.4)), rEnd};
+  const hf=Math.min(ha, +p.holderH||ha);           // the wide foot stays low; above it only the arm core runs up (press: to the cup top)
+  return {a, r0, w:ARM.w, footW, footL, ha, hf, gH:ARM.gH, gL:Math.min(ARM.gL, Math.max(0.6, room-0.4)), rEnd};
 }
 /* where the arm (or its brace) is at height z: inner edge start(o) and outer edge end(o) across the width o */
 function armSpan(g, z){
   if(z<g.ha){
+    if(z>=(g.hf==null?g.ha:g.hf)) return {hw:g.w/2, start:o=>g.r0};
     const hw=g.footW/2, rK=g.rEnd(0,z)-g.footL;
     return {hw, start:o=>{ const ao=Math.abs(o); return ao<=g.w/2 ? g.r0 : rK+(ao-g.w/2)/(hw-g.w/2)*g.footL; }};
   }
@@ -1001,6 +1003,10 @@ function extrude(pts, z0, z1, acc){
   }
   for(let i=0;i<n;i++){ const j=(i+1)%n; const bi=base+i,bj=base+j,ti=base+n+i,tj=base+n+j; acc.idx.push(bi,bj,tj, bi,tj,ti); }
 }
+/* press-to-switch stop ring: leans in STOP.angle from upright (35°, the same limit the shade walls print at with
+   0.28 mm layers, gentler than the old 45° that strung), reaches STOP.lip mm over the light's top edge, and is one
+   closed ring: above the cable plug the cable slot is bridged, so every layer is a single loop with no jumps. */
+const STOP={angle:35, lip:1.5, flat:0.6, closed:false};   // closed:true bridges the cable slot too (tested: more travel, not less)
 function buildHolder(p, m){
   const Lt=LIGHTS[p.light], puckR=Lt.d/2, puckH=Lt.h, H0=HOLDER;
   const integrated=!m.vase;
@@ -1011,12 +1017,13 @@ function buildHolder(p, m){
   let ledge, hs, clips=null;
   if(press){
     /* press-to-switch: no ledge. The light stands on the table on its own; the shade rests on it through a
-       45° stop ring inside the cup, so the rim floats `lift` mm above the table. Pressing the lamp down pushes
+       35° stop ring inside the cup, so the rim floats `lift` mm above the table. Pressing the lamp down pushes
        the light's base switch against the table; the rim reaching the table is the end stop. */
     ledge=0;
-    const L=2.0, c0=Math.max(2, puckH-lift-(rsI-puckR)), z1=c0+L+0.6;
+    const L=STOP.lip, tn=Math.tan(STOP.angle*PI/180);
+    const c0=Math.max(2, puckH-lift-Math.max(0,rsI-puckR)/tn), z1=c0+L/tn+STOP.flat;   // the slope meets the light's top edge at puckH-lift
     hs=z1;
-    clips={mode:'stop', full:true, lip:L, z0:c0, z1, zBase:c0, lift};
+    clips={mode:'stop', full:true, lip:L, tan:tn, z0:c0, z1, zBase:c0, lift};
   } else {
     ledge=H0.ledge;
     hs=Math.max(4, puckH+(+p.cupExtra||0));      // cup wall above the ledge: flush with the top of the light by default
@@ -1024,12 +1031,12 @@ function buildHolder(p, m){
   }
   const ha=Math.min(p.holderH, ledge+hs);        // arm height
   extrude(polyCRing(rsI, rsO, slotW, H0.seg), 0, ledge+hs, acc);                 // cup wall
-  const topZ=ledge+hs, bt=Math.min(Math.max(0,+p.slotBridge||0), hs-3);
+  const topZ=ledge+hs, bt=press&&STOP.closed ? topZ-clips.z0 : Math.min(Math.max(0,+p.slotBridge||0), hs-3);   // press: slot closed from the stop ring up
   if(bt>0) extrude(polyArcBand(rsI, rsO, slotW/2+1, 16), topZ-bt, topZ, acc);      // bridge over the cable slot: closes the rim into a full circle
-  if(press){                                     // stop ring: steps in at 45° (prints without supports), open at the cable slot
+  if(press){                                     // stop ring: steps in at STOP.angle (prints without supports), a full ring over the slot too
     const c=clips, steps=Math.ceil((c.z1-c.z0)/0.2);
     for(let k=0;k<steps;k++){ const za=c.z0+(c.z1-c.z0)*k/steps, zb=c.z0+(c.z1-c.z0)*(k+1)/steps; const ri=clipInnerR(c, rsI, (za+zb)/2);
-      if(ri<rsI-0.05) extrude(polyCRing(ri, rsI+0.4, slotW, H0.seg), za-0.01, zb, acc); }
+      if(ri<rsI-0.05){ extrude(polyCRing(ri, rsI+0.4, slotW, H0.seg), za-0.01, zb, acc); if(STOP.closed) extrude(polyArcBand(ri, rsI+0.4, slotW/2+1, 16), za-0.01, zb, acc); } }
   }
   // snap clips (light held in the cup on its ledge)
   const lipN=Math.round(+p.lipN||0), lip=Math.max(0,Math.min(1.5,+p.lip||0));
@@ -1355,7 +1362,7 @@ function gcPlan(pIn, oIn){
   const m=buildMesh(p,{dz:o.lh, maxRings:5000, seg:720, segMax:720, perRib:24});
   const hd=buildHolder(p,m);
   const seg=m.seg, H=m.H, w=o.lw, hw=o.holderLW;
-  const slotW=Math.max(4,+p.slotW||10), topZ=hd.ledge+hd.hs, bt=Math.min(Math.max(0,+p.slotBridge||0), hd.hs-3);
+  const slotW=Math.max(4,+p.slotW||10), topZ=hd.ledge+hd.hs, bt=hd.press&&hd.clips&&STOP.closed ? topZ-hd.clips.z0 : Math.min(Math.max(0,+p.slotBridge||0), hd.hs-3);
   let archTop=0; for(let j=0;j<seg;j++) archTop=Math.max(archTop,m.Z[j]);
   const armGs=[]; { const nA=Math.max(3,Math.round(p.holderArms)); for(let k=0;k<nA;k++){ const g=armGeom(p,m,PI/nA+k*TAU/nA,hd.rsO,hd.ha,w/2); if(g) armGs.push(g); } }
   const flatUntil=Math.max(hd.top||topZ, hd.ha+ARM.gH, archTop+o.lh);
@@ -2355,6 +2362,7 @@ function settingsText(m,st){
   if(m.closed && m.capR*2>25) lines.push(`Support   On, Tree (auto), for the Ø${(m.capR*2).toFixed(0)} mm closed top`);
   else lines.push(`Support   Off  (steepest overhang ${m.angle.toFixed(0)}°)`);
   lines.push(m.H>150||m.maxR*2>170?'Adhesion  Brim: Outer brim only, 5 mm':'Adhesion  No brim needed on a clean plate');
+  if(isPrusa(P) && P.holder && !m.vase) lines.push('Travel    Print > Layers and perimeters > Avoid crossing perimeters: ON (max detour 50%)','          Printer > Extruder > Wipe while retracting: ON  (less stringing round the holder)');
   lines.push(pru?'Filament  White or light Prusament PLA glows best':'Filament  White or light PLA Basic / Matte glows best');
   if(P.holder && P.mode==='vase'){
     lines.push('');
@@ -2746,7 +2754,7 @@ function enterBooth(s){
   document.documentElement.classList.add('booth');
   applyMachine(); applyLimits();
   // kiosk lamps: solid wall with the holder cross built in, printability handled automatically
-  P.mode='wall'; P.wall=+BOOTH.wall||1.2; P.holder=true; P.holderH=4; P.cupExtra=+BOOTH.cupExtra||0; P.slotW=+BOOTH.slotW||10; P.slotBridge=(BOOTH.slotBridge!=null?+BOOTH.slotBridge:1.6); P.cupD=+BOOTH.cupD||60.2; P.lipN=(BOOTH.lipN!=null?+BOOTH.lipN:3); P.lip=(BOOTH.lip!=null?+BOOTH.lip:0.8); P.press=(BOOTH.press!=null?!!BOOTH.press:true); P.lift=(BOOTH.lift!=null?+BOOTH.lift:1.5); P.top='open'; P.arch=true; P.base='open';
+  P.mode='wall'; P.wall=+BOOTH.wall||1.2; P.holder=true; P.holderH=4; P.cupExtra=+BOOTH.cupExtra||0; P.slotW=+BOOTH.slotW||10; P.slotBridge=(BOOTH.slotBridge!=null?+BOOTH.slotBridge:1.6); P.cupD=+BOOTH.cupD||60.1; P.lipN=(BOOTH.lipN!=null?+BOOTH.lipN:3); P.lip=(BOOTH.lip!=null?+BOOTH.lip:0.8); P.press=(BOOTH.press!=null?!!BOOTH.press:true); P.lift=(BOOTH.lift!=null?+BOOTH.lift:1.5); P.top='open'; P.arch=true; P.base='open';
   P.fix=true; P.maxA=45;
   if(BOOTH.color) P.color=BOOTH.color;
   ['#secPrint','#secFix','#secCheck','#secSheet'].forEach(q=>hideBooth($(q)));
