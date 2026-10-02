@@ -411,6 +411,10 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
       <section class="sec" id="secPattern">
         <h2>Surface pattern</h2>
         <div class="chips four" id="patChips" data-key="pattern"></div>
+        <div class="field" data-pat="dstyle"><span class="lbl">Diamond style</span>
+          <div class="seg" data-key="dstyle">
+            <button data-v="ridges">Ridges</button><button data-v="quilted">Quilted</button>
+          </div><p class="hint" id="dstyleHint"></p></div>
         <div class="field" data-pat="count"><label for="count" id="countLbl">Count <output id="counto"></output></label>
           <input type="range" id="count" data-key="count" min="0" max="72" step="1"></div>
         <div class="field" data-pat="depth"><label for="depth">Depth <output id="deptho"></output></label>
@@ -588,10 +592,13 @@ const WAVES = {
   fluted:x=>{ const u=((x/TAU+0.5)%1+1)%1, t=2*u-1; return 2*Math.sqrt(Math.max(0,1-t*t))-1; }   // full round flutes meeting in sharp grooves
 };
 /* designs from older links / ideas: map removed shapes and patterns onto what replaced them */
-const RENAMED = {body:{globe:'barrel', lantern:'barrel', capsule:'barrel'}, pattern:{pinstripe:'ribs', juno:'diamonds', fluted:'ribs'}, profile:{scallop:'fluted'}};
+const RENAMED = {body:{globe:'barrel', lantern:'barrel', capsule:'barrel'}, pattern:{pinstripe:'ribs', juno:'diamonds', fluted:'ribs', lattice:'diamonds'}, profile:{scallop:'fluted'}};
 function normalizeDesign(q){
   if(q.pattern==='pinstripe'){ q.profile='pointed'; q.depth=Math.min(+q.depth||1.2,1.6); }
   if(q.pattern==='fluted') q.profile='fluted';
+  if(q.pattern==='lattice') q.dstyle='quilted';
+  if(q.pattern==='juno') q.dstyle='ridges';
+  if(q.dstyle!=='quilted' && (q.dstyle!=null || q.pattern==='diamonds')) q.dstyle='ridges';
   for(const k in RENAMED) if(RENAMED[k][q[k]]) q[k]=RENAMED[k][q[k]];
   if(+q.Db<90) q.Db=90;
   return q;
@@ -600,12 +607,11 @@ const PATTERNS = {
   smooth: {name:'Smooth',  uses:[]},
   ribs:   {name:'Ribs',    uses:['count','depth','twist','profile','env'], count:'Ribs'},
   waves:  {name:'Waves',   uses:['count','depth','freq','profile','env','twist'], count:'Wobble lobes', freq:'Waves up the height'},
-  lattice:{name:'Lattice', uses:['count','depth','freq','profile','env'], count:'Diamonds around', freq:'Diamonds up'},
   bubbles:{name:'Bubbles', uses:['count','depth','freq','env','twist'], count:'Per row', freq:'Rows'},
   pillows:{name:'Pillows', uses:['count','depth','freq','env','twist'], count:'Around', freq:'Rows'},
   facets: {name:'Facets',  uses:['count','twist','env'], count:'Sides'},
   organic:{name:'Organic', uses:['depth','freq','env','twist'], freq:'Scale'},
-  diamonds:{name:'Diamonds', uses:['count','depth','freq','env','twist'], count:'Diamonds around', freq:'Rows up'}
+  diamonds:{name:'Diamonds', uses:['dstyle','count','depth','freq','profile','env','twist'], count:'Diamonds around', freq:'Rows up'}
 };
 const RIBBED = new Set(['ribs','lattice','bubbles','pillows','facets','waves','diamonds','pinstripe','juno','fluted']);
 const LAYERPATS = {
@@ -613,7 +619,7 @@ const LAYERPATS = {
   bands:    {name:'Bands',   uses:['band','off'], hint:'Alternating bands stepped out by the offset. Each band is a set number of layers, so changing layer height changes band size.'},
   ridges:   {name:'Ridges',  uses:['band','off'], hint:'A raised bead every N layers, like stacked rings.'},
   shingles: {name:'Shingles',uses:['band','off'], hint:'Each band leans out then steps back in, like stacked cups.'},
-  brick:    {name:'Brick',   uses:['band'],       hint:'The surface pattern shifts half a step every N layers. Works with ribs, bubbles, pillows, lattice and facets.'},
+  brick:    {name:'Brick',   uses:['band'],       hint:'The surface pattern shifts half a step every N layers. Works with ribs, bubbles, pillows, diamonds and facets.'},
   steptwist:{name:'Stepped twist', uses:['band'], hint:'Twist happens in steps every N layers instead of smoothly. Needs some twist on the pattern.'}
 };
 
@@ -637,12 +643,12 @@ function fbm(x,y,z,s){ return vnoise(x,y,z,s)*0.6+vnoise(x*2.1,y*2.1,z*2.1,s+7)*
 const P = {
   light:'strimsav', printer:'mk4', nozzle:'0.4', lh:0.28, mode:'wall', vaseLW:0.6, wall:1.2, base:'open', arch:true,
   body:'barrel', H:180, Db:130, Dt:95, bulge:18,
-  pattern:'ribs', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
+  pattern:'ribs', dstyle:'ridges', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
   layer:'none', bandN:12, layerOff:0.8,
   fix:true, maxA:45, top:'open', tip:false, slant:0, holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.2, slotBridge:1.6, lipN:3, lip:0.8, press:true, lift:1.5, color:'#EDE4D0', seed:'FABLAB', edited:false
 };
 const DEFAULT_P = JSON.parse(JSON.stringify(P));   // starting values, used by the step Reset buttons
-const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
+const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','slant','pattern','dstyle','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
 const history = [];
 
 let BOOTH=null, lastStats=null;
@@ -702,7 +708,8 @@ function buildMesh(p, Q){
       case 'pillows': d=A*(Math.pow(Math.abs(Math.sin(n*th/2))*Math.abs(Math.sin(PI*f*tn)),0.7)-0.5); break;
       case 'organic': { const sc=f/8+0.2; d=A*1.4*fbm(Math.cos(th)*sc*2+11, Math.sin(th)*sc*2+5, (z/60)*sc*3, sN); break; }
       case 'facets': { const s=TAU/n; const ph=((th%s)+s)%s - s/2; const fac=facetK/Math.cos(ph); r = r*(1+(fac-1)*e); break; }
-      case 'diamonds': d=A*(diamondRidge(n*th/TAU, Math.max(1,f)*tn)-0.3); break;
+      case 'diamonds': d = p.dstyle==='quilted' ? 0.25*A*(w(n*th+TAU*f*tn)+w(n*th-TAU*f*tn))   // quilted: two crossing ripples make puffy cushions
+                         : A*(diamondRidge(n*th/TAU, Math.max(1,f)*tn)-0.3); break;   // ridges: sharp raised diamond outlines
       case 'pinstripe': d=0.5*A*WAVES.pointed(n*th); break;
       case 'fluted': { const u=n*th/TAU; const x=2*(u-Math.floor(u))-1; d=A*(Math.sqrt(Math.max(0,1-x*x))-0.6); break; }   // round flutes meeting in sharp grooves
       case 'juno': { const k=Math.max(0,Math.min(1,(tn-0.52)/0.1)), kk=k*k*(3-2*k);   // diamonds below, straight flutes above
@@ -1546,7 +1553,7 @@ const Q_EXPORT ={dz:0.4, maxRings:800, seg:256, segMax:576, perRib:8};
 function describe(p){
   const b=BODIES[p.body].name, pt=PATTERNS[p.pattern];
   let s=b;
-  if(p.pattern!=='smooth'){ s+=' · '+pt.name; if(pt.uses.includes('count')&&p.count>0) s+=' × '+Math.round(p.count); if(pt.uses.includes('twist')&&p.twist) s+=` · ${p.twist>0?'+':''}${p.twist}° twist`; }
+  if(p.pattern!=='smooth'){ s+=' · '+(p.pattern==='diamonds'&&p.dstyle==='quilted'?'Quilted diamonds':pt.name); if(pt.uses.includes('count')&&p.count>0) s+=' × '+Math.round(p.count); if(pt.uses.includes('twist')&&p.twist) s+=` · ${p.twist>0?'+':''}${p.twist}° twist`; }
   if(p.layer!=='none') s+=` · ${LAYERPATS[p.layer].name} / ${p.bandN} layers`;
   if(p.body==='pagoda' && p.tip) s+=' · pointed top';
   else if(+p.slant>0) s+=' · slanted top';
@@ -1566,7 +1573,7 @@ function randomDesign(seed, base){
   q.Dt=Math.round(rr(40,cap*0.75));
   if(q.body==='bell'){ q.Dt=Math.round(Math.min(q.Dt,q.Db*0.6)); }
   q.bulge=Math.round(rr(4,q.body==='hourglass'?Math.min(q.Db,q.Dt)*0.25:32));
-  q.pattern=pick(['ribs','ribs','ribs','waves','lattice','bubbles','pillows','facets','facets','organic','smooth','diamonds','diamonds']);
+  q.pattern=pick(['ribs','ribs','ribs','waves','diamonds','bubbles','pillows','facets','facets','organic','smooth','diamonds','diamonds']);
   q.count = q.pattern==='facets' ? pick([5,6,7,8,9,10,12,16]) : q.pattern==='waves' ? pick([0,0,3,4,5,6,8]) : q.pattern==='pinstripe' ? Math.round(rr(40,72)) : (q.pattern==='diamonds'||q.pattern==='juno') ? Math.round(rr(10,22)) : q.pattern==='fluted' ? Math.round(rr(14,30)) : Math.round(rr(q.pattern==='ribs'?10:5,q.pattern==='ribs'?44:18));
   q.depth=Math.round(rr(1.5,q.pattern==='bubbles'?5:7)*10)/10;
   q.freq=q.pattern==='waves'?Math.round(rr(3,16)):q.pattern==='organic'?Math.round(rr(3,14)):Math.round(rr(4,14));
@@ -1582,7 +1589,9 @@ function randomDesign(seed, base){
   q.tip = q.body==='pagoda' && r()<0.35;
   if(q.pattern==='ribs' && q.profile==='pointed' && r()<0.5){ q.count=Math.round(rr(40,64)); q.depth=Math.round(rr(0.8,2)*10)/10; }   // fine pinstripes
   if(q.pattern==='ribs' && q.profile==='fluted'){ q.count=Math.round(rr(14,32)); q.depth=Math.round(rr(2,4)*10)/10; }   // fat round flutes
-  if(q.pattern==='diamonds'||q.pattern==='juno'){ q.depth=Math.round(rr(1.5,3.5)*10)/10; q.freq=Math.round(rr(6,14)); q.twist=0; }
+  if(q.pattern==='diamonds'){ q.dstyle=r()<0.5?'ridges':'quilted';
+    if(q.dstyle==='ridges'){ q.depth=Math.round(rr(1.5,3.5)*10)/10; q.freq=Math.round(rr(6,14)); q.twist=0; }
+    else { q.count=Math.round(rr(6,18)); q.depth=Math.round(rr(3,6.5)*10)/10; q.freq=Math.round(rr(4,12)); } }
   q.slant = (q.body!=='pagoda' && r()<0.2) ? Math.round(rr(10,35)) : 0;
   return fitToBed(q);
 }
@@ -1621,7 +1630,6 @@ function patSvg(key){
     smooth:`<rect x="9" y="5" width="16" height="24" rx="2" ${S}/>`,
     ribs:`<path d="M10 5v24M14 5v24M18 5v24M22 5v24M26 5v24" ${S}/>`,
     waves:`<path d="M6 9q4-4 8 0t8 0 8 0M6 17q4-4 8 0t8 0 8 0M6 25q4-4 8 0t8 0 8 0" ${S}/>`,
-    lattice:`<path d="M6 6l22 22M6 17l11 11M17 6l11 11M28 6L6 28M28 17L17 28M17 6L6 17" ${S}/>`,
     bubbles:`<circle cx="11" cy="10" r="3.5" ${S}/><circle cx="23" cy="10" r="3.5" ${S}/><circle cx="17" cy="18" r="3.5" ${S}/><circle cx="11" cy="26" r="3.5" ${S}/><circle cx="23" cy="26" r="3.5" ${S}/>`,
     pillows:`<rect x="6" y="6" width="10" height="10" rx="4" ${S}/><rect x="18" y="6" width="10" height="10" rx="4" ${S}/><rect x="6" y="18" width="10" height="10" rx="4" ${S}/><rect x="18" y="18" width="10" height="10" rx="4" ${S}/>`,
     facets:`<path d="M17 4l11 6.5v13L17 30 6 23.5v-13z M17 4v26M6 10.5l22 13M28 10.5l-22 13" ${S}/>`,
@@ -1674,7 +1682,9 @@ function syncUI(){
   $$('.swatch').forEach(s=>s.setAttribute('aria-pressed',String(s.dataset.c===P.color)));
   $('#H').max=maxHeight(P); $('#Db').max=$('#Dt').max=Math.floor(bedMaxD(P));
   const pt=PATTERNS[P.pattern];
-  $$('[data-pat]').forEach(el=>el.hidden=!pt.uses.includes(el.dataset.pat));
+  const ridges = P.pattern==='diamonds' && P.dstyle!=='quilted';   // rib profile only shapes the quilted style
+  $$('[data-pat]').forEach(el=>el.hidden=!pt.uses.includes(el.dataset.pat) || (ridges && el.dataset.pat==='profile'));
+  $('#dstyleHint').textContent = P.dstyle==='quilted' ? 'Soft puffy cushions in a criss-cross grid. Rib profile changes how rounded they are.' : 'Sharp raised lines in a diamond grid, like cut glass.';
   $('#countLbl').firstChild.textContent=(pt.count||'Count')+' ';
   $('#freqLbl').firstChild.textContent=(pt.freq||'Rows')+' ';
   $('#count').min = P.pattern==='facets'?3:(P.pattern==='waves'?0:2);
@@ -2158,7 +2168,9 @@ function setParam(key,val,live){
   if(key==='pattern' && val==='facets' && P.count>16) P.count=8;
   // good starting values when picking one of the vase-style patterns
   if(key==='pattern' && val!=='ribs' && P.count>48) P.count=24;
-  if(key==='pattern' && val==='diamonds'){ P.count=Math.max(10,Math.min(22,P.count)); if(P.freq<5) P.freq=10; P.depth=Math.min(Math.max(P.depth,2),3.5); }
+  if(key==='pattern' && val==='diamonds' && P.dstyle!=='quilted'){ P.count=Math.max(10,Math.min(22,P.count)); if(P.freq<5) P.freq=10; P.depth=Math.min(Math.max(P.depth,2),3.5); }
+  if(key==='dstyle' && val==='quilted'){ P.count=Math.max(6,Math.min(18,P.count)); if(P.freq<4) P.freq=8; P.depth=Math.max(P.depth,4); }
+  if(key==='dstyle' && val==='ridges'){ P.count=Math.max(10,Math.min(22,P.count)); if(P.freq<5) P.freq=10; P.depth=Math.min(Math.max(P.depth,2),3.5); }
   if(live){ refresh(Q_DRAG); clearTimeout(dragTimer); dragTimer=setTimeout(()=>{ keepWidth(key); refresh(); },260); }
   else { keepWidth(key); refresh(); }
 }
@@ -2490,7 +2502,7 @@ function setupIdle(){
 
 /* ---------- per-step reset ---------- */
 const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge','tip','slant'],
-  secPattern:['pattern','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW','lipN','lip','press','lift']};
+  secPattern:['pattern','dstyle','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW','lipN','lip','press','lift']};
 const STEP_NAMES={secLight:'Light source', secBody:'Shape', secPattern:'Surface pattern', secLayer:'Layer pattern', secHolder:'Light holder'};
 function resetStep(id){
   pushHistory();
@@ -2516,13 +2528,13 @@ function addNormalResets(){ for(const id in STEP_KEYS){ const h2=$('#'+id+' > h2
    or in SHARE_URL below for a standalone copy. */
 const SHARE_URL='';
 const SHARE_TEXT='My lamp, designed at the SP FabLab lamp booth #SPFabLab #3Dprinting';
-const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color'];
+const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color','dstyle'];
 function encodeDesign(p){
   return '1~'+SHARE_FIELDS.map(k=>{ let v=p[k]; if(typeof v==='boolean') v=v?1:0; if(k==='color') v=String(v).replace('#',''); return encodeURIComponent(String(v)); }).join('~');
 }
 function decodeDesign(code){
   const parts=String(code).split('~'); if(parts[0]!=='1') return null;
-  const ok={light:Object.fromEntries(Object.keys(LIGHTS).filter(k=>!HIDDEN_LIGHTS.includes(k)).map(k=>[k,1])), body:BODIES, pattern:PATTERNS, layer:LAYERPATS, profile:WAVES, env:ENVS, mode:{vase:1,wall:1}};
+  const ok={light:Object.fromEntries(Object.keys(LIGHTS).filter(k=>!HIDDEN_LIGHTS.includes(k)).map(k=>[k,1])), body:BODIES, pattern:PATTERNS, layer:LAYERPATS, profile:WAVES, env:ENVS, mode:{vase:1,wall:1}, dstyle:{ridges:1,quilted:1}};
   const out={};
   SHARE_FIELDS.forEach((k,i)=>{
     let v; try{ v=decodeURIComponent(parts[i+1]==null?'':parts[i+1]); }catch(e){ return; }
