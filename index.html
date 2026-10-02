@@ -368,11 +368,14 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
           <input type="range" id="slotBridge" data-key="slotBridge" min="0" max="4" step="0.2"></div>
         <div class="field" data-hold><label for="slotW">Cable slot width <output id="slotWo"></output></label>
           <input type="range" id="slotW" data-key="slotW" min="6" max="16" step="0.5"></div>
-        <div class="field" data-hold><label for="lipN">Snap clips on top <output id="lipNo"></output></label>
+        <label class="toggle" data-hold for="press">Press the top of the lamp to switch on <input type="checkbox" id="press" data-key="press"></label>
+        <div class="field" data-hold data-press><label for="lift">Lamp floats above the table <output id="lifto"></output></label>
+          <input type="range" id="lift" data-key="lift" min="0.5" max="3" step="0.25"></div>
+        <div class="field" data-hold data-nopress><label for="lipN">Snap clips on top <output id="lipNo"></output></label>
           <select id="lipN" data-key="lipN"><option value="0">Off</option><option value="3">3 clips</option><option value="4">4 clips</option><option value="6">6 clips</option></select></div>
-        <div class="field" data-hold><label for="lip">Clip grip <output id="lipo"></output></label>
+        <div class="field" data-hold data-nopress><label for="lip">Clip grip <output id="lipo"></output></label>
           <input type="range" id="lip" data-key="lip" min="0.3" max="1.5" step="0.1"></div>
-        <div class="field" data-hold><label for="cupExtra">Cup wall vs top of light <output id="cupExtrao"></output></label>
+        <div class="field" data-hold data-nopress><label for="cupExtra">Cup wall vs top of light <output id="cupExtrao"></output></label>
           <input type="range" id="cupExtra" data-key="cupExtra" min="-5" max="3" step="0.5"></div>
         <p class="hint" id="holderHint"></p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -396,6 +399,8 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
         </div>
         <div class="field"><label for="bulge" id="bulgeLbl">Bulge <output id="bulgeo"></output></label>
           <input type="range" id="bulge" data-key="bulge" min="0" max="60" step="1"></div>
+        <div class="field" id="slantRow"><label for="slant">Slanted top <output id="slanto"></output></label>
+          <input type="range" id="slant" data-key="slant" min="0" max="40" step="1"></div>
         <label class="toggle" id="tipRow" for="tip">Pointed top (Christmas tree) <input type="checkbox" id="tip" data-key="tip"></label>
         <p class="hint" id="shapeNote" hidden></p>
       </section>
@@ -404,7 +409,7 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
         <h2>Surface pattern</h2>
         <div class="chips four" id="patChips" data-key="pattern"></div>
         <div class="field" data-pat="count"><label for="count" id="countLbl">Count <output id="counto"></output></label>
-          <input type="range" id="count" data-key="count" min="0" max="48" step="1"></div>
+          <input type="range" id="count" data-key="count" min="0" max="72" step="1"></div>
         <div class="field" data-pat="depth"><label for="depth">Depth <output id="deptho"></output></label>
           <input type="range" id="depth" data-key="depth" min="0.5" max="10" step="0.1"></div>
         <div class="field" data-pat="freq"><label for="freq" id="freqLbl">Rows <output id="freqo"></output></label>
@@ -566,7 +571,11 @@ const BODIES = {
   gourd:    {name:'Gourd',     bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*Math.sin(PI*Math.pow(t,0.6))},
   hourglass:{name:'Hourglass', bulge:'Pinch',  f:(t,B,a,b)=>lin(t,a,b)-B*Math.sin(PI*t)},
   lantern:  {name:'Lantern',   bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*(1-Math.pow(Math.abs(2*t-1),4))},
-  pagoda:   {name:'Pagoda',    bulge:'Tier step', f:(t,B,a,b)=>{const u=(t*4)%1; return lin(t,a,b)+B*0.6*(1-u);}}
+  pagoda:   {name:'Pagoda',    bulge:'Tier step', f:(t,B,a,b)=>{const u=(t*4)%1; return lin(t,a,b)+B*0.6*(1-u);}},
+  teardrop: {name:'Teardrop',  bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*(Math.exp(-Math.pow((t-0.3)/0.24,2))-0.1)},
+  capsule:  {name:'Capsule',   bulge:'Round ends', f:(t,B,a,b)=>{ const e=Math.max(0,(Math.abs(2*t-1)-0.55)/0.45); return lin(t,a,b)-B*(1-Math.sqrt(Math.max(0,1-e*e))); }},
+  bottle:   {name:'Bottle',    bulge:'Neck pinch', f:(t,B,a,b)=>{ const ss=(x,e0,e1)=>{ const u=Math.max(0,Math.min(1,(x-e0)/(e1-e0))); return u*u*(3-2*u); };
+              const neck=Math.max(14,Math.min(a,b)-B); const body=a+(neck-a)*ss(t,0.5,0.7); return body+(b-neck)*ss(t,0.8,1.0); }}
 };
 const ENVS = {
   uniform:t=>1, rise:t=>0.15+0.85*t, fade:t=>1-0.85*t, swell:t=>Math.sin(PI*t), ends:t=>1-0.85*Math.sin(PI*t)
@@ -585,9 +594,13 @@ const PATTERNS = {
   bubbles:{name:'Bubbles', uses:['count','depth','freq','env','twist'], count:'Per row', freq:'Rows'},
   pillows:{name:'Pillows', uses:['count','depth','freq','env','twist'], count:'Around', freq:'Rows'},
   facets: {name:'Facets',  uses:['count','twist','env'], count:'Sides'},
-  organic:{name:'Organic', uses:['depth','freq','env','twist'], freq:'Scale'}
+  organic:{name:'Organic', uses:['depth','freq','env','twist'], freq:'Scale'},
+  diamonds:{name:'Diamonds', uses:['count','depth','freq','env','twist'], count:'Diamonds around', freq:'Rows up'},
+  pinstripe:{name:'Pinstripe', uses:['count','depth','twist','env'], count:'Fine ribs'},
+  juno:   {name:'Diamond + flutes', uses:['count','depth','freq','env'], count:'Around', freq:'Diamond rows'},
+  fluted: {name:'Fluted', uses:['count','depth','twist','env'], count:'Flutes'}
 };
-const RIBBED = new Set(['ribs','lattice','bubbles','pillows','facets','waves']);
+const RIBBED = new Set(['ribs','lattice','bubbles','pillows','facets','waves','diamonds','pinstripe','juno','fluted']);
 const LAYERPATS = {
   none:     {name:'None'},
   bands:    {name:'Bands',   uses:['band','off'], hint:'Alternating bands stepped out by the offset. Each band is a set number of layers, so changing layer height changes band size.'},
@@ -597,6 +610,11 @@ const LAYERPATS = {
   steptwist:{name:'Stepped twist', uses:['band'], hint:'Twist happens in steps every N layers instead of smoothly. Needs some twist on the pattern.'}
 };
 
+/* raised diamond grid: two sets of thin ridges crossing (u around, v up) */
+function diamondRidge(u, v){
+  const rd=x=>{ const q=Math.abs(x-Math.round(x)); return Math.pow(Math.max(0,1-q/0.16),1.4); };
+  return Math.max(rd(u+v), rd(u-v));
+}
 /* ---------- random ---------- */
 function hashStr(s){ let h=1779033703^s.length; for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19;} h=Math.imul(h^h>>>16,2246822507); h=Math.imul(h^h>>>13,3266489909); return (h^h>>>16)>>>0; }
 function rng(seed){ let a=hashStr(String(seed)); return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
@@ -614,10 +632,10 @@ const P = {
   body:'barrel', H:180, Db:130, Dt:95, bulge:18,
   pattern:'ribs', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
   layer:'none', bandN:12, layerOff:0.8,
-  fix:true, maxA:45, top:'open', tip:false, holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.6, slotBridge:1.6, lipN:3, lip:0.8, color:'#EDE4D0', seed:'FABLAB', edited:false
+  fix:true, maxA:45, top:'open', tip:false, slant:0, holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.2, slotBridge:1.6, lipN:3, lip:0.8, press:true, lift:1.5, color:'#EDE4D0', seed:'FABLAB', edited:false
 };
 const DEFAULT_P = JSON.parse(JSON.stringify(P));   // starting values, used by the step Reset buttons
-const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
+const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
 const history = [];
 
 let BOOTH=null, lastStats=null;
@@ -658,6 +676,7 @@ function buildMesh(p, Q){
   const archH=6, archHalf=8/Math.max(30,Rb);
   const facetK = Math.sqrt(Math.cos(PI/Math.max(3,n)));
   const pointed = !vase && p.body==='pagoda' && !!p.tip;   // closed cone tip (Christmas tree)
+  const slant = pointed ? 0 : Math.max(0, Math.min(H*0.4, +p.slant||0));   // slanted top: drop from the high side (back) to the low side (front)
   const tipR=1.2;
 
   function radiusAt(th0, z, tn){
@@ -676,6 +695,11 @@ function buildMesh(p, Q){
       case 'pillows': d=A*(Math.pow(Math.abs(Math.sin(n*th/2))*Math.abs(Math.sin(PI*f*tn)),0.7)-0.5); break;
       case 'organic': { const sc=f/8+0.2; d=A*1.4*fbm(Math.cos(th)*sc*2+11, Math.sin(th)*sc*2+5, (z/60)*sc*3, sN); break; }
       case 'facets': { const s=TAU/n; const ph=((th%s)+s)%s - s/2; const fac=facetK/Math.cos(ph); r = r*(1+(fac-1)*e); break; }
+      case 'diamonds': d=A*(diamondRidge(n*th/TAU, Math.max(1,f)*tn)-0.3); break;
+      case 'pinstripe': d=0.5*A*WAVES.pointed(n*th); break;
+      case 'fluted': { const u=n*th/TAU; const x=2*(u-Math.floor(u))-1; d=A*(Math.sqrt(Math.max(0,1-x*x))-0.6); break; }   // round flutes meeting in sharp grooves
+      case 'juno': { const k=Math.max(0,Math.min(1,(tn-0.52)/0.1)), kk=k*k*(3-2*k);   // diamonds below, straight flutes above
+        d=A*((1-kk)*(diamondRidge(n*th/TAU, Math.max(1,f)*tn)-0.3) + kk*0.55*(Math.cos(2*n*th)+0.4)); break; }
     }
     r += d*e;
     switch(p.layer){
@@ -693,8 +717,9 @@ function buildMesh(p, Q){
     let a=0;
     if(arch){ let u=th0>PI?th0-TAU:th0; u/=archHalf; if(Math.abs(u)<1) a=archH*Math.pow(Math.cos(u*PI/2),0.7); }
     const rFull=z=>{ let r=radiusAt(th0,z,z/H); if(z<=needZ) r=Math.max(r,needR); r=Math.max(r, 12+(vase?0:t)); if(pointed) r=Math.min(r, tipR+(H-z)*tanA); return r; };
+    const Hj = H - slant*(1+Math.sin(th0))/2;                // top height of this column
     for(let i=0;i<=nz;i++){
-      const z=a+(H-a)*i/nz;
+      const z=a+(Hj-a)*i/nz;
       R[i*seg+j]=rFull(z); Z[i*seg+j]=z;
     }
     if(p.fix && a>0){   // cable arch column: carry the overhang limit up from the bed so it matches its neighbours
@@ -771,7 +796,7 @@ function buildMesh(p, Q){
       else { tri(O(nz,j),I(top,j+1),I(top,j)); tri(O(nz,j),O(nz,j+1),I(top,j+1)); }
     }
   }
-  return {pos, idx, seg, nz, dz, k, H, vOuter, nInner, ring, ic, vase, shell, closed, pointed, effA, capR, t, rc, puckR, puckH, maxR, minR,
+  return {pos, idx, seg, nz, dz, k, H, slant, vOuter, nInner, ring, ic, vase, shell, closed, pointed, effA, capR, t, rc, puckR, puckH, maxR, minR,
     rawAngle:Math.atan(rawSlope)*180/PI, angle:Math.atan(slope)*180/PI, R, Z};
 }
 
@@ -797,7 +822,7 @@ function meshStats(m, p){
    The cup and its ledge have a slot at the cable side (0°); arms sit between, clear of it. */
 const HIDDEN_LIGHTS = ['mittled'];   // not offered for now: no power adapter included
 function cupInnerR(p){ const d=LIGHTS[p.light].d; const c=+p.cupD; return (c>=d-2 && c<=d+6 ? c : d+2*HOLDER.grip)/2; }   // cup inside radius
-const HOLDER = {grip:0.3, ring:1.6, ledge:1.2, ledgeIn:2.5, slot:6, armW:3, gap:3, seg:160};
+const HOLDER = {grip:0.3, ring:1.6, ledge:1.2, ledgeIn:2.5, slot:6, armW:3, gap:5, seg:160};
 function polyCRing(ri, ro, w, n){
   const go=Math.asin(Math.min(0.99,(w/2)/ro)), gi=Math.asin(Math.min(0.99,(w/2)/ri)); const pts=[];
   for(let k=0;k<=n;k++){ const a=go+(TAU-2*go)*k/n; pts.push([ro*Math.cos(a),ro*Math.sin(a)]); }
@@ -820,6 +845,7 @@ function clipInnerR(c, rsI, zs){                // inner radius of a clip at hei
   if(zs<c.zBase || zs>=c.z1) return null;
   if(zs<c.z0) return rsI;                        // riser up from a low cup wall
   const u=zs-c.z0, L=c.lip, h=c.z1-c.z0;
+  if(c.mode==='stop') return rsI-Math.min(u,L);  // stop ring: 45° in, then flat
   return u<L ? rsI-u : (u<h-L ? rsI-L : rsI-(h-u));
 }
 function polyArm(a, r0, r1, w){
@@ -838,8 +864,11 @@ function armGeom(p, m, a0, rsO, ha, endIn){
     const avg=c?sum/c:1e9; if(avg<bestR-1e-6 || (Math.abs(avg-bestR)<1e-6 && Math.abs(a-a0)<Math.abs(best-a0))){ bestR=avg; best=a; } }
   const a=best, r0=rsO-0.4;
   const rEnd=(o,z)=>{ let r=bestR; for(let it=0;it<2;it++){ const rr=R(a+o/Math.max(10,r),z); if(rr!=null) r=rr; } return r-endIn; };
-  if(rEnd(0,ha/2)-r0 < ARM.footL+2) return null;
-  return {a, r0, w:ARM.w, footW:ARM.footW, footL:ARM.footL, ha, gH:ARM.gH, gL:ARM.gL, rEnd};
+  // short arms (narrow base): shrink the foot and the brace to fit, but never leave the cup without arms
+  const room=rEnd(0,ha/2)-r0;
+  if(room < 1.2) return null;
+  const footL=Math.min(ARM.footL, Math.max(0.4, room-1.5)), footW=Math.min(ARM.footW, ARM.w+2*footL);
+  return {a, r0, w:ARM.w, footW, footL, ha, gH:ARM.gH, gL:Math.min(ARM.gL, Math.max(0.6, room-0.4)), rEnd};
 }
 /* where the arm (or its brace) is at height z: inner edge start(o) and outer edge end(o) across the width o */
 function armSpan(g, z){
@@ -885,18 +914,35 @@ function buildHolder(p, m){
   const integrated=!m.vase;
   const slotW=Math.max(4,+p.slotW||10);          // cable slot through cup + ledge
   const rsI=cupInnerR(p), rsO=rsI+H0.ring;
-  const hs=Math.max(4, puckH+(+p.cupExtra||0));   // cup wall above the ledge: flush with the top of the light by default
-  const ha=Math.min(p.holderH, H0.ledge+hs);     // arm height
+  const press=!!p.press, lift=Math.max(0.5,Math.min(3,+p.lift||1.5));
   const acc={pos:[],idx:[]};
-  extrude(polyCRing(puckR-H0.ledgeIn, rsI+0.3, slotW, H0.seg), 0, H0.ledge, acc);  // ledge the light rests on
-  extrude(polyCRing(rsI, rsO, slotW, H0.seg), 0, H0.ledge+hs, acc);              // cup wall
-  const topZ=H0.ledge+hs, bt=Math.min(Math.max(0,+p.slotBridge||0), hs-3);
+  let ledge, hs, clips=null;
+  if(press){
+    /* press-to-switch: no ledge. The light stands on the table on its own; the shade rests on it through a
+       45° stop ring inside the cup, so the rim floats `lift` mm above the table. Pressing the lamp down pushes
+       the light's base switch against the table; the rim reaching the table is the end stop. */
+    ledge=0;
+    const L=2.0, c0=Math.max(2, puckH-lift-(rsI-puckR)), z1=c0+L+0.6;
+    hs=z1;
+    clips={mode:'stop', full:true, lip:L, z0:c0, z1, zBase:c0, lift};
+  } else {
+    ledge=H0.ledge;
+    hs=Math.max(4, puckH+(+p.cupExtra||0));      // cup wall above the ledge: flush with the top of the light by default
+    extrude(polyCRing(puckR-H0.ledgeIn, rsI+0.3, slotW, H0.seg), 0, ledge, acc);  // ledge the light rests on
+  }
+  const ha=Math.min(p.holderH, ledge+hs);        // arm height
+  extrude(polyCRing(rsI, rsO, slotW, H0.seg), 0, ledge+hs, acc);                 // cup wall
+  const topZ=ledge+hs, bt=Math.min(Math.max(0,+p.slotBridge||0), hs-3);
   if(bt>0) extrude(polyArcBand(rsI, rsO, slotW/2+1, 16), topZ-bt, topZ, acc);      // bridge over the cable slot: closes the rim into a full circle
-  // snap clips
+  if(press){                                     // stop ring: steps in at 45° (prints without supports), open at the cable slot
+    const c=clips, steps=Math.ceil((c.z1-c.z0)/0.2);
+    for(let k=0;k<steps;k++){ const za=c.z0+(c.z1-c.z0)*k/steps, zb=c.z0+(c.z1-c.z0)*(k+1)/steps; const ri=clipInnerR(c, rsI, (za+zb)/2);
+      if(ri<rsI-0.05) extrude(polyCRing(ri, rsI+0.4, slotW, H0.seg), za-0.01, zb, acc); }
+  }
+  // snap clips (light held in the cup on its ledge)
   const lipN=Math.round(+p.lipN||0), lip=Math.max(0,Math.min(1.5,+p.lip||0));
-  let clips=null;
-  if(lipN>0 && lip>0){
-    const z0=H0.ledge+puckH+0.2, hL=2*lip+0.4, z1=z0+hL, halfW=4, angs=clipAngles(lipN).map(d=>d*PI/180);
+  if(!press && lipN>0 && lip>0){
+    const z0=ledge+puckH+0.2, hL=2*lip+0.4, z1=z0+hL, halfW=4, angs=clipAngles(lipN).map(d=>d*PI/180);
     clips={n:lipN, lip, z0, z1, zBase:Math.min(z0,topZ), halfW, angs};
     const steps=Math.max(4,Math.ceil(hL/0.2));
     for(const a of angs){
@@ -918,7 +964,7 @@ function buildHolder(p, m){
   }
   const pos=new Float32Array(acc.pos), idx=new Uint32Array(acc.idx);
   let vol=0; for(let t=0;t<idx.length;t+=3){const a=idx[t]*3,b=idx[t+1]*3,c=idx[t+2]*3; vol+=(pos[a]*(pos[b+1]*pos[c+2]-pos[b+2]*pos[c+1])-pos[a+1]*(pos[b]*pos[c+2]-pos[b+2]*pos[c])+pos[a+2]*(pos[b]*pos[c+1]-pos[b+1]*pos[c]))/6;}
-  return {pos, idx, integrated, ledge:H0.ledge, rsI, rsO, hs, ha, arms, clips, top:Math.max(topZ, clips?clips.z1:0), ledgeR:puckR-H0.ledgeIn, grams:vol*0.9/1000*1.24};
+  return {pos, idx, integrated, ledge, press, lift: press?lift:0, rsI, rsO, hs, ha, arms, clips, top:Math.max(topZ, clips?clips.z1:0), ledgeR: press?rsI:puckR-H0.ledgeIn, grams:vol*0.9/1000*1.24};
 }
 function mergeMeshes(a, b){
   const na=a.pos.length/3;
@@ -1018,6 +1064,7 @@ function gcSampleR(m, j, z){                                              // out
 function gcPlan(pIn, oIn){
   const o={...GC_DEF, ...oIn};
   const p=lockFixed({...pIn, lh:o.lh});
+  if(+p.slant>0 && !(p.body==='pagoda'&&p.tip)) throw new Error('A slanted top cannot be printed as one continuous spiral. Use the normal 3MF for this design, or set Slanted top to level.');
   const m=buildMesh(p,{dz:o.lh, maxRings:5000, seg:720, segMax:720, perRib:24});
   const hd=buildHolder(p,m);
   const seg=m.seg, H=m.H, w=o.lw, hw=o.holderLW;
@@ -1036,7 +1083,7 @@ function gcPlan(pIn, oIn){
     const paths=[];
     const sp1 = first ? o.firstSpeed : null;
     // ledge / cup band as arcs, zig-zag, with a gap at the cable slot (full circle where the bridge closes it)
-    const band = zs<hd.ledge ? [hd.ledgeR, hd.rsO] : (zs<topZ ? [hd.rsI, hd.rsO] : null);
+    const band = zs<hd.ledge ? [hd.ledgeR, hd.rsO] : (zs<topZ ? [(hd.clips&&hd.clips.full&&clipInnerR(hd.clips,hd.rsI,zs)) || hd.rsI, hd.rsO] : null);
     if(band){
       const bridge = zs>=topZ-bt && zs<topZ && zs>=hd.ledge, firstBridge = bridge && (zs-o.lh)<topZ-bt;
       const nL=Math.max(2,Math.round((band[1]-band[0])/hw)), spc=(band[1]-band[0])/nL;
@@ -1051,7 +1098,7 @@ function gcPlan(pIn, oIn){
       paths.push({pts, w:spc, h, speed: sp1 || (firstBridge?15:o.holderSpeed), feature: bridge?'Bridge':'Inner wall', fanMax:firstBridge});
     }
     // snap clips: short arcs; below the cup top only the part that sticks in past the cup wall
-    if(hd.clips){
+    if(hd.clips && !hd.clips.full){
       const ri=clipInnerR(hd.clips, hd.rsI, zs);
       if(ri!=null){
         const ro = zs<topZ ? hd.rsI+0.2 : hd.rsO;
@@ -1162,52 +1209,105 @@ function gcTemplate(src, V){
   return out;
 }
 
+/* Machines the direct G-code supports. Each file is made for ONE printer: Prusa files carry the firmware's
+   printer-model check (M862.3), so an MK4 refuses an MK3.5 file and the other way round. Z never goes above
+   the printer's height and never comes back down after the print. */
+const GC_MACHINES = {
+  a1:  {kind:'bambu', name:'Bambu Lab A1', cx:128, cy:128, bedX:256, bedY:256, zmax:256, retr:0.8, retrF:1800, travelF:18000, maxVol:21, fan:'M106 P1 S'},
+  mk4: {kind:'prusa', name:'Prusa MK4 / MK4S', model:'MK4', cx:125, cy:105, bedX:250, bedY:210, zmax:220, park:[241,170], retr:0.7, retrF:2100, deretrF:1500, travelF:12000, maxVol:15, fan:'M106 S', firstTemp:230, temp:220, bed:60},
+  mk35:{kind:'prusa', name:'Prusa MK3.5 / MK3.5S', model:'MK3.5', cx:125, cy:105, bedX:250, bedY:210, zmax:210, park:[241,201], retr:0.8, retrF:2100, deretrF:2100, travelF:12000, maxVol:15, fan:'M106 S', firstTemp:230, temp:220, bed:60}
+};
+function gcMachine(p){ return GC_MACHINES[p.printer]||null; }
+/* Start G-code exactly as PrusaSlicer 2.9 writes it for these printers with Generic PLA (checked against real
+   PrusaSlicer output); only the M555 print-area line depends on the lamp. */
+function gcPrusaStart(mc, box){
+  const [x0,y0,x1,y1]=box.map((v,i)=>v+(i%2?mc.cy:mc.cx));
+  const mx=Math.min(mc.bedX, x0+32)-32, my=Math.max(0,y0)-4, mw=Math.min(mc.bedX, Math.max(x0+32,x1))-mx, mh=y1-my;
+  const head=['M17 ; enable steppers','M862.1 P0.4 A0 F0 ; nozzle check',`M862.3 P "${mc.model}" ; printer model check`,'M862.5 P2 ; g-code level check','M862.6 P"Input shaper" ; FW feature check','M115 U6.5.7+12836',
+    `M555 X${mx.toFixed(4)} Y${my.toFixed(4)} W${mw.toFixed(3)} H${mh.toFixed(3)}`,'G90 ; use absolute coordinates','M83 ; extruder relative mode',`M140 S${mc.bed} ; set bed temp`,
+    'M104 T0 S170 ; set extruder temp for bed leveling','M109 T0 R170 ; wait for temp'];
+  const mid = mc.model==='MK4'
+    ? ['M84 E ; turn off E motor','G28 ; home all without mesh bed level','G1 X42 Y-4 Z5 F4800','M302 S155 ; lower cold extrusion limit to 155C','G1 E-2 F2400 ; retraction','M84 E ; turn off E motor','G29 P9 X10 Y-4 W32 H4','M106 S100','G0 Z40 F10000',`M190 S${mc.bed} ; wait for bed temp`,'M107',
+       'M84 E ; turn off E motor','G29 P1 ; invalidate mbl & probe print area','G29 P1 X0 Y0 W50 H20 C ; probe near purge place','G29 P3.2 ; interpolate mbl probes','G29 P3.13 ; extrapolate mbl outside probe area','G29 A ; activate mbl']
+    : [`M190 S${mc.bed} ; wait for bed temp`,'G28 ; home all','G29 P1 ; invalidate mbl & probe print area','G29 P1 X23 Y5 W80 H20 C ; probe near purge place','G29 P3.2 ; interpolate mbl probes','G29 P3.13 ; extrapolate mbl outside probe area','G29 A ; activate mbl'];
+  const purge=[`M104 S${mc.firstTemp}`,'G0 X0 Y-4 Z15 F4800 ; move away and ready for the purge',`M109 S${mc.firstTemp}`,
+    ...(mc.model==='MK4'?['G92 E0','M569 S0 E ; set spreadcycle mode for extruder','G92 E0 ; reset extruder position','G1 E2 F2400 ; deretraction after the initial one before nozzle cleaning']:['G92 E0 ; reset extruder position']),
+    'G0 E7 X15 Z0.2 F500 ; purge','G0 X25 E4 F500 ; purge','G0 X35 E4 F650 ; purge','G0 X45 E4 F800 ; purge','G0 X48 Z0.05 F8000 ; wipe, move close to the bed','G0 X51 Z0.2 F8000 ; wipe, move quickly away from the bed','G92 E0',
+    mc.model==='MK4'?'M221 S100 ; set flow to 100%':'M221 S100 ; reset flow to 100%'];
+  return [...head,...mid,...purge].join('\n');
+}
+function gcPrusaEnd(mc, maxZ){
+  // lift 10 mm straight up BEFORE any sideways move, so the nozzle and fan duct clear a slightly curled rim
+  const z1=Math.min(maxZ+10, mc.zmax), z2=Math.max(z1, Math.min(maxZ+23, mc.zmax));
+  return [`G1 Z${z1.toFixed(2)} F720 ; move print head straight up 10 mm (never above ${mc.zmax} mm)`,'M104 S0 ; turn off temperature','M140 S0 ; turn off heatbed','M107 ; turn off fan',
+    `G1 X${mc.park[0]} Y${mc.park[1]} F3600 ; park: bed comes forward so the lamp is easy to take off`,`G1 Z${z2.toFixed(2)} F300 ; move print head up`,'G4 ; wait','M572 S0 ; reset PA','M593 X T2 F0 ; disable IS','M593 Y T2 F0 ; disable IS','M84 X Y E ; disable motors','M73 P100 R0'].join('\n');
+}
+
 function gcText(plan){
-  const {o, layers, H}=plan; const pl=GC_PLATES[o.plate]||GC_PLATES.textured;
-  const cx=128, cy=128;                                                   // A1 bed centre
+  const {o, layers, H}=plan;
+  const mc=gcMachine(plan.p);
+  if(!mc) throw new Error(`Direct G-code is only made for the Prusa MK4, Prusa MK3.5 and Bambu Lab A1. Pick one of those as the printer first.`);
+  const prusa=mc.kind==='prusa', pl=GC_PLATES[o.plate]||GC_PLATES.textured;
+  if(H+2>mc.zmax) throw new Error(`The lamp is too tall for the ${mc.name}.`);
+  const cx=mc.cx, cy=mc.cy;                                               // bed centre
   const X=v=>(v+cx).toFixed(3), Y=v=>(v+cy).toFixed(3);
   const ePer=plan.ePerMm3;
   const [bx0,by0,bx1,by1]=plan.box;
-  const vol=Math.min(GC_FIL.maxVol, Math.max(6, plan.volFlow));
-  const V={bed_temperature_initial_layer_single:pl.bed, initial_no_support_extruder:0, initial_extruder:0, nozzle_diameter:0.4,
-    nozzle_temperature_initial_layer:[o.temp], nozzle_temperature:[o.temp], filament_type:['PLA'], curr_bed_type:pl.name,
-    first_layer_print_min:[bx0+cx-2, by0+cy-2], first_layer_print_size:[bx1-bx0+4, by1-by0+4], first_layer_center_no_wipe_tower:[cx,cy],
-    flush_temperatures:[o.temp], flush_volumetric_speeds:[12], outer_wall_volumetric_speed:vol, spiral_mode:true, print_sequence:'by layer', max_layer_z:H};
+  if(bx0+cx<2 || by0+cy<2 || bx1+cx>mc.bedX-2 || by1+cy>mc.bedY-2) throw new Error(`The lamp does not fit on the ${mc.name} bed.`);
   const total=layers.length, totMin=plan.mins+8;
   const out=[];
-  out.push('; HEADER_BLOCK_START',
-    '; generated by SP FabLab Lampshade Generator, direct toolpath ("fast wall", FullControl-style)',
-    `; model printing time: ${fmtTime(plan.mins)}; total estimated time: ${fmtTime(totMin)}`,
-    `; total layer number: ${total}`,
-    `; total filament length [mm] : ${(plan.metres*1000).toFixed(2)}`,
-    `; total filament volume [cm^3] : ${(plan.vol/1000).toFixed(2)}`,
-    `; total filament weight [g] : ${plan.grams.toFixed(2)}`,
-    `; filament_density: ${GC_FIL.density}`, `; filament_diameter: ${GC_FIL.dia}`, `; max_z_height: ${H.toFixed(2)}`,
-    '; HEADER_BLOCK_END','',
-    '; CONFIG_BLOCK_START', '; printer_model = Bambu Lab A1', '; nozzle_diameter = 0.4', '; filament_type = PLA', `; curr_bed_type = ${pl.name}`,
-    `; layer_height = ${o.lh}`, `; initial_layer_print_height = 0.2`, `; line_width = ${o.lw}`, `; outer_wall_speed = ${o.speed}`, `; nozzle_temperature = ${o.temp}`,
-    `; textured_plate_temp = ${pl.bed}`, '; spiral_mode = 1', `; design = ${describe(plan.p)} · seed ${plan.p.seed}`,
-    '; CONFIG_BLOCK_END','', '; EXECUTABLE_BLOCK_START');
-  out.push(gcTemplate(GC_A1_START, V));
-  out.push('; ===== lampshade toolpath =====','M83','M204 S5000','G90','M106 P1 S0');
-  let eOn=true, cur=null, curZ=0.2, tDone=0, lastFan=-1, retracted=false;
-  const fanSet=v=>{ const s=Math.round(Math.max(0,Math.min(100,v))*2.55); if(s!==lastFan){ out.push(`M106 P1 S${s}`); lastFan=s; } };
-  const retract=()=>{ if(!retracted){ out.push('G1 E-0.8 F1800'); retracted=true; } };
-  const unretract=()=>{ if(retracted){ out.push('G1 E0.8 F1800'); retracted=false; } };
+  if(prusa){
+    out.push(`; generated by SP FabLab Lampshade Generator, direct toolpath ("fast wall", FullControl-style) for the ${mc.name} ONLY`,
+      `; printer_model = ${mc.model}`, `; estimated printing time (normal mode) = ${fmtTime(totMin)}`,
+      `; filament used [g] = ${plan.grams.toFixed(2)}`, `; layer_height = ${o.lh}`, `; max_layer_z = ${H.toFixed(2)}`, `; design = ${describe(plan.p)} · seed ${plan.p.seed}`, '');
+    out.push(gcPrusaStart(mc, plan.box));
+    out.push('; ===== lampshade toolpath =====','M83','G90','M204 P2000 T4000',`${mc.fan}0`);
+  } else {
+    const vol=Math.min(GC_FIL.maxVol, Math.max(6, plan.volFlow));
+    const V={bed_temperature_initial_layer_single:pl.bed, initial_no_support_extruder:0, initial_extruder:0, nozzle_diameter:0.4,
+      nozzle_temperature_initial_layer:[o.temp], nozzle_temperature:[o.temp], filament_type:['PLA'], curr_bed_type:pl.name,
+      first_layer_print_min:[bx0+cx-2, by0+cy-2], first_layer_print_size:[bx1-bx0+4, by1-by0+4], first_layer_center_no_wipe_tower:[cx,cy],
+      flush_temperatures:[o.temp], flush_volumetric_speeds:[12], outer_wall_volumetric_speed:vol, spiral_mode:true, print_sequence:'by layer', max_layer_z:H};
+    plan._V=V;
+    out.push('; HEADER_BLOCK_START',
+      '; generated by SP FabLab Lampshade Generator, direct toolpath ("fast wall", FullControl-style) for the Bambu Lab A1 ONLY',
+      `; model printing time: ${fmtTime(plan.mins)}; total estimated time: ${fmtTime(totMin)}`,
+      `; total layer number: ${total}`,
+      `; total filament length [mm] : ${(plan.metres*1000).toFixed(2)}`,
+      `; total filament volume [cm^3] : ${(plan.vol/1000).toFixed(2)}`,
+      `; total filament weight [g] : ${plan.grams.toFixed(2)}`,
+      `; filament_density: ${GC_FIL.density}`, `; filament_diameter: ${GC_FIL.dia}`, `; max_z_height: ${H.toFixed(2)}`,
+      '; HEADER_BLOCK_END','',
+      '; CONFIG_BLOCK_START', '; printer_model = Bambu Lab A1', '; nozzle_diameter = 0.4', '; filament_type = PLA', `; curr_bed_type = ${pl.name}`,
+      `; layer_height = ${o.lh}`, `; initial_layer_print_height = 0.2`, `; line_width = ${o.lw}`, `; outer_wall_speed = ${o.speed}`, `; nozzle_temperature = ${o.temp}`,
+      `; textured_plate_temp = ${pl.bed}`, '; spiral_mode = 1', `; design = ${describe(plan.p)} · seed ${plan.p.seed}`,
+      '; CONFIG_BLOCK_END','', '; EXECUTABLE_BLOCK_START');
+    out.push(gcTemplate(GC_A1_START, V));
+    out.push('; ===== lampshade toolpath =====','M83','M204 S5000','G90',`${mc.fan}0`);
+  }
+  let cur=null, curZ=0.2, tDone=0, lastFan=-1, retracted=false;
+  const zSafe=z=>Math.min(z, mc.zmax);
+  const fanSet=v=>{ const s=Math.round(Math.max(0,Math.min(100,v))*2.55); if(s!==lastFan){ out.push(`${mc.fan}${s}`); lastFan=s; } };
+  const retract=()=>{ if(!retracted){ out.push(`G1 E-${mc.retr} F${mc.retrF}`); retracted=true; } };
+  const unretract=()=>{ if(retracted){ out.push(`G1 E${mc.retr} F${mc.deretrF||mc.retrF}`); retracted=false; } };
   const travel=(x,y,z)=>{
     const d=cur?Math.hypot(x-cur[0],y-cur[1]):99;
     if(d<0.05 && Math.abs(z-curZ)<1e-4) return;
-    if(d>2){ retract(); out.push(`G1 Z${(Math.max(z,curZ)+0.4).toFixed(3)} F1200`); out.push(`G1 X${X(x)} Y${Y(y)} F18000`); out.push(`G1 Z${z.toFixed(3)} F1200`); unretract(); }
-    else { out.push(`G1 X${X(x)} Y${Y(y)}${Math.abs(z-curZ)>1e-4?' Z'+z.toFixed(3):''} F12000`); }
+    if(d>2){ retract(); out.push(`G1 Z${zSafe(Math.max(z,curZ)+0.4).toFixed(3)} F1200`); out.push(`G1 X${X(x)} Y${Y(y)} F${mc.travelF}`); out.push(`G1 Z${z.toFixed(3)} F1200`); unretract(); }
+    else { out.push(`G1 X${X(x)} Y${Y(y)}${Math.abs(z-curZ)>1e-4?' Z'+z.toFixed(3):''} F${Math.min(12000,mc.travelF)}`); }
     cur=[x,y]; curZ=z;
   };
+  const fType={ 'Outer wall':'External perimeter', 'Inner wall':'Perimeter', 'Bridge':'Bridge infill', 'Brim':'Skirt/Brim' };
   layers.forEach((L,li)=>{
-    out.push('; CHANGE_LAYER',`; Z_HEIGHT: ${L.z.toFixed(3)}`,`; LAYER_HEIGHT: ${L.h.toFixed(3)}`,
+    if(prusa) out.push(';LAYER_CHANGE',`;Z:${L.z.toFixed(3)}`,`;HEIGHT:${L.h.toFixed(3)}`);
+    else out.push('; CHANGE_LAYER',`; Z_HEIGHT: ${L.z.toFixed(3)}`,`; LAYER_HEIGHT: ${L.h.toFixed(3)}`,
       `; layer num/total_layer_count: ${li+1}/${total}`, `M73 L${li+1}`, `M991 S0 P${li}`);
     const pct=Math.min(99,Math.floor(tDone/Math.max(1e-6,plan.mins)*100)); out.push(`M73 P${pct} R${Math.max(0,Math.round(plan.mins-tDone))}`);
     if(li===0) fanSet(0); else if(li===1) fanSet(o.fan*0.5); else fanSet(o.fan);
+    if(prusa && li===1) out.push(`M104 S${o.temp} ; normal printing temperature after the first layer`);
     for(const pa of L.paths){
-      out.push(`; FEATURE: ${pa.feature}`,`; LINE_WIDTH: ${pa.w.toFixed(3)}`);
+      if(prusa) out.push(`;TYPE:${fType[pa.feature]||pa.feature}`,`;WIDTH:${pa.w.toFixed(3)}`);
+      else out.push(`; FEATURE: ${pa.feature}`,`; LINE_WIDTH: ${pa.w.toFixed(3)}`);
       if(pa.fanMax) fanSet(100);
       const f=Math.round(Math.max(5,pa.speed*L.slow)*60), eLin=gcArea(pa.w,pa.h)*ePer;
       const z0 = pa.zz ? pa.zz[0] : L.z;
@@ -1225,11 +1325,29 @@ function gcText(plan){
       if(pa.fanMax) fanSet(o.fan);
     }
   });
-  retract(); out.push(`G1 Z${(curZ+2).toFixed(3)} F1200`);
+  retract(); out.push(`G1 Z${zSafe(curZ+1).toFixed(3)} F1200`);
   out.push('; ===== end of lampshade toolpath =====');
-  out.push(gcTemplate(GC_A1_END, V));
-  out.push('; EXECUTABLE_BLOCK_END','');
-  return out.join('\n');
+  if(prusa) out.push(gcPrusaEnd(mc, Math.max(H, curZ)));
+  else { out.push(gcTemplate(GC_A1_END, plan._V)); out.push('; EXECUTABLE_BLOCK_END'); }
+  out.push('');
+  const text=out.join('\n');
+  gcCheckEnd(text, mc);
+  return text;
+}
+/* Safety rule: once the last layer is printed, the nozzle may only go UP, and it must clear the top
+   by at least 5 mm before any sideways move. A file that breaks this is never saved. */
+function gcCheckEnd(text, mc){
+  const i=text.indexOf('; ===== end of lampshade toolpath ====='); if(i<0) throw new Error('G-code check: end marker missing');
+  const body=text.slice(0,i), tail=text.slice(i);
+  let topZ=0; const zr=/^G[01] [^\n]*?Z(-?[\d.]+)/gm; let mm; while((mm=zr.exec(body))) topZ=Math.max(topZ, +mm[1]);
+  let z=null, lastZ=topZ, cleared=false;
+  for(const line of tail.split('\n')){
+    const c=line.split(';')[0].trim(); if(!/^G[01]\b/.test(c)) continue;
+    if(/\bG91\b/.test(c)) throw new Error('G-code check: relative moves after the print');
+    const zm=c.match(/\bZ(-?[\d.]+)/), xy=/\b[XY]-?[\d.]/.test(c);
+    if(zm){ z=+zm[1]; if(z<lastZ-1e-3 && !(mc.kind==='bambu')) throw new Error(`G-code check: the nozzle would move down to Z${z} after the print (top ${topZ.toFixed(2)})`); lastZ=Math.max(lastZ,z); if(z>=Math.min(topZ+5, mc.zmax)-1e-3) cleared=true; }
+    if(xy && !cleared && mc.kind==='prusa') throw new Error('G-code check: sideways move before the nozzle has cleared the top of the lamp');
+  }
 }
 
 /* MD5 (for the .gcode.md5 inside Bambu's .gcode.3mf) */
@@ -1255,8 +1373,9 @@ function md5hex(u8){
 
 async function gcPackage(plan, text){
   const enc=new TextEncoder(); const g=enc.encode(text);
-  const base=`${fileBase(plan.p)}-fastwall-${plan.o.lw}w`;
-  if(plan.o.format==='gcode') return {blob:new Blob([g],{type:'text/x.gcode'}), name:base+'.gcode'};
+  const mc=gcMachine(plan.p);
+  const base=`${fileBase(plan.p)}-fastwall-${plan.o.lw}w-${plan.p.printer}`;
+  if(plan.o.format==='gcode' || (mc && mc.kind==='prusa')) return {blob:new Blob([g],{type:'text/x.gcode'}), name:base+'.gcode'};
   const secs=Math.round((plan.mins+8)*60);
   const ct='<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/><Default Extension="gcode" ContentType="text/x.gcode"/><Default Extension="config" ContentType="text/xml"/><Default Extension="md5" ContentType="text/plain"/></Types>';
   const rels='<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>';
@@ -1332,7 +1451,8 @@ function gcRefresh(){
   const o=gcOpts(); gcSaveOpts(o);
   $('#gcLwO').textContent=o.lw.toFixed(2)+' mm'; $('#gcSpeedO').textContent=o.speed+' mm/s';
   const volF=gcFlowVol(o);
-  $('#gcFlow').innerHTML = `Flow on the wall: <b>${volF.toFixed(1)} mm³/s</b>` + (volF>GC_FIL.maxVol ? ` <span class="pill bad">over the A1's ${GC_FIL.maxVol} mm³/s for PLA, slow down</span>` : volF>19 ? ' <span class="pill warn">near the limit</span>' : ' <span class="pill ok">ok</span>');
+  const mc=gcMachine(P), mv=mc?mc.maxVol:GC_FIL.maxVol;
+  $('#gcFlow').innerHTML = `Flow on the wall: <b>${volF.toFixed(1)} mm³/s</b>` + (volF>mv ? ` <span class="pill bad">over the ${mc?mc.name:'printer'}'s ${mv} mm³/s for PLA, slow down</span>` : volF>mv*0.9 ? ' <span class="pill warn">near the limit</span>' : ' <span class="pill ok">ok</span>');
   clearTimeout(gcTimer);
   gcTimer=setTimeout(()=>{
     try{
@@ -1343,7 +1463,7 @@ function gcRefresh(){
         <span>Layers</span><span>${plan.nFlat} flat (holder and cable arch, to ${plan.flatUntil.toFixed(1)} mm) + ${plan.nSpiral} spiral</span>
         <span>Wall</span><span>one ${o.lw.toFixed(2)} mm line${plan.m.pointed?' · pointed top closes to a small hole':''}</span></div>`;
       gcDraw($('#gcCanvas'), plan);
-      $('#gcGo').disabled=false;
+      $('#gcGo').disabled=!gcMachine(P);
     }catch(e){ console.error(e); $('#gcStats').textContent='Could not plan this design: '+(e.message||e); $('#gcGo').disabled=true; }
   }, 250);
 }
@@ -1351,7 +1471,10 @@ function openGcodePanel(){
   const o=gcLoadOpts();
   const optList=(list,cur)=>list.map(([v,l])=>`<option value="${v}"${String(v)===String(cur)?' selected':''}>${l}</option>`).join('');
   const sel='style="width:100%;font-size:16px;min-height:44px"';
-  const notA1 = P.printer!=='a1' ? `<p class="hint" style="color:var(--bad)">Start and end G-code are the Bambu Lab A1's. The current printer is ${xmlEsc(PRINTERS[P.printer].name)}: only use this file on an A1.</p>` : '';
+  const mc=gcMachine(P), prusa=mc&&mc.kind==='prusa';
+  if(prusa && !getPref('gcOpts')) o.speed=70;
+  const notA1 = !mc ? `<p class="hint" style="color:var(--bad)"><b>Not available for the ${xmlEsc(PRINTERS[P.printer].name)}.</b> Direct G-code is only made for the Prusa MK4, Prusa MK3.5 and Bambu Lab A1. Pick one of those as the printer first.</p>`
+    : `<p class="hint" style="margin:0"><b>For the ${xmlEsc(mc.name)} only.</b> ${prusa?`Start and end G-code are the same as PrusaSlicer writes for this printer. The printer checks the model and refuses the file on any other printer. After the print the head moves up (never above ${mc.zmax} mm) and the bed comes forward.`:`Start and end G-code are Bambu Studio's own for the A1. Never print this file on a Prusa.`}</p>`;
   modal('Fast wall G-code (test)', `
     <p class="hint" style="margin:0">Prints the shade as one wide line: the holder and cable arch in flat layers, then a continuous spiral with no seam or retractions. It skips the slicer, so check the first layer closely. Built from Bambu's own A1 start and end G-code.</p>
     ${notA1}
@@ -1361,13 +1484,13 @@ function openGcodePanel(){
     </div>
     <div class="row2">
       <label class="field"><span class="lbl">Layer height</span><select id="gcLh" ${sel}>${optList([[0.2,'0.20 mm'],[0.24,'0.24 mm'],[0.28,'0.28 mm'],[0.32,'0.32 mm']],o.lh)}</select></label>
-      <label class="field"><span class="lbl">Build plate</span><select id="gcPlate" ${sel}>${optList(Object.entries(GC_PLATES).map(([k,v])=>[k,v.label]),o.plate)}</select></label>
+      <label class="field"${prusa?' hidden':''}><span class="lbl">Build plate</span><select id="gcPlate" ${sel}>${optList(Object.entries(GC_PLATES).map(([k,v])=>[k,v.label]),o.plate)}</select></label>
     </div>
     <div class="row2">
       <label class="field"><span class="lbl">Nozzle temperature</span><select id="gcTemp" ${sel}>${optList([[210,'210 °C'],[215,'215 °C'],[220,'220 °C (Bambu PLA)'],[225,'225 °C'],[230,'230 °C'],[235,'235 °C']],o.temp)}</select></label>
       <label class="field"><span class="lbl">Brim</span><select id="gcBrim" ${sel}>${optList([[0,'None'],[2,'2 loops'],[4,'4 loops']],o.brim)}</select></label>
     </div>
-    <label class="field"><span class="lbl">File</span><select id="gcFmt" ${sel}>${optList([['3mf','.gcode.3mf (A1: microSD card or Bambu Studio)'],['gcode','.gcode (plain, for checking in a G-code viewer)']],o.format)}</select></label>
+    <label class="field"${prusa?' hidden':''}><span class="lbl">File</span><select id="gcFmt" ${sel}>${optList([['3mf','.gcode.3mf (A1: microSD card or Bambu Studio)'],['gcode','.gcode (plain, for checking in a G-code viewer)']],o.format)}</select></label>
     <div class="hint" id="gcFlow"></div>
     <canvas id="gcCanvas" style="width:100%;height:200px;border-radius:10px;border:1px solid var(--line)"></canvas>
     <div class="md-body" id="gcStats">Planning…</div>`,
@@ -1394,13 +1517,13 @@ function openFablabMenu(){
     [['Cancel','',closeModal],['Fast wall G-code (test)','',()=>{ closeModal(); setTimeout(openGcodePanel,60); }],['Download 3MF','primary',()=>{ closeModal(); doExport(); }]]);
 }
 
-window.__lamp = {P, buildMesh, buildHolder, build3mf, meshStats, gcPlan, gcText, gcPackage, gcTemplate, md5hex}; // exposed for testing
+window.__lamp = {P, redraw:()=>{ lastFitKey=''; refresh(); }, buildMesh, buildHolder, build3mf, meshStats, gcPlan, gcText, gcPackage, gcTemplate, gcCheckEnd, md5hex}; // exposed for testing
 
 /* ---------- quality presets ---------- */
-const Q_PREVIEW={dz:0.8, maxRings:320, seg:200, segMax:320, perRib:8, shell:true};
+const Q_PREVIEW={dz:0.8, maxRings:320, seg:200, segMax:432, perRib:6, shell:true};
 const Q_DRAG   ={dz:1.6, maxRings:160, seg:120, segMax:200, perRib:6, shell:true};
 const Q_THUMB  ={dz:2.5, maxRings:90,  seg:84,  segMax:140, perRib:5, shell:true};
-const Q_EXPORT ={dz:0.4, maxRings:800, seg:256, segMax:384, perRib:10};
+const Q_EXPORT ={dz:0.4, maxRings:800, seg:256, segMax:576, perRib:8};
 
 /* ---------- describe ---------- */
 function describe(p){
@@ -1409,6 +1532,7 @@ function describe(p){
   if(p.pattern!=='smooth'){ s+=' · '+pt.name; if(pt.uses.includes('count')&&p.count>0) s+=' × '+Math.round(p.count); if(pt.uses.includes('twist')&&p.twist) s+=` · ${p.twist>0?'+':''}${p.twist}° twist`; }
   if(p.layer!=='none') s+=` · ${LAYERPATS[p.layer].name} / ${p.bandN} layers`;
   if(p.body==='pagoda' && p.tip) s+=' · pointed top';
+  else if(+p.slant>0) s+=' · slanted top';
   return s;
 }
 
@@ -1425,8 +1549,8 @@ function randomDesign(seed, base){
   q.Dt=Math.round(rr(40,cap*0.75));
   if(q.body==='bell'){ q.Dt=Math.round(Math.min(q.Dt,q.Db*0.6)); }
   q.bulge=Math.round(rr(4,q.body==='hourglass'?Math.min(q.Db,q.Dt)*0.25:32));
-  q.pattern=pick(['ribs','ribs','waves','lattice','bubbles','pillows','facets','facets','organic','smooth']);
-  q.count = q.pattern==='facets' ? pick([5,6,7,8,9,10,12,16]) : q.pattern==='waves' ? pick([0,0,3,4,5,6,8]) : Math.round(rr(q.pattern==='ribs'?10:5,q.pattern==='ribs'?44:18));
+  q.pattern=pick(['ribs','ribs','waves','lattice','bubbles','pillows','facets','facets','organic','smooth','diamonds','diamonds','pinstripe','juno','fluted','fluted']);
+  q.count = q.pattern==='facets' ? pick([5,6,7,8,9,10,12,16]) : q.pattern==='waves' ? pick([0,0,3,4,5,6,8]) : q.pattern==='pinstripe' ? Math.round(rr(40,72)) : (q.pattern==='diamonds'||q.pattern==='juno') ? Math.round(rr(10,22)) : q.pattern==='fluted' ? Math.round(rr(14,30)) : Math.round(rr(q.pattern==='ribs'?10:5,q.pattern==='ribs'?44:18));
   q.depth=Math.round(rr(1.5,q.pattern==='bubbles'?5:7)*10)/10;
   q.freq=q.pattern==='waves'?Math.round(rr(3,16)):q.pattern==='organic'?Math.round(rr(3,14)):Math.round(rr(4,14));
   q.twist=pick([0,0,45,60,90,120,180,-90,-120,-180,270,360]);
@@ -1439,6 +1563,11 @@ function randomDesign(seed, base){
   if(q.layer!=='none' && q.bandN*q.lh<0.8) q.bandN=Math.ceil(0.8/q.lh);
   q.layerOff=Math.round(rr(0.4,1.4)*20)/20;
   q.tip = q.body==='pagoda' && r()<0.35;
+  if(q.pattern==='pinstripe') q.depth=Math.round(rr(0.8,2)*10)/10;
+  if(q.pattern==='fluted'){ q.depth=Math.round(rr(2,4)*10)/10; if(r()<0.5) q.body=pick(['capsule','column','capsule']); }
+  if(q.pattern==='diamonds'||q.pattern==='juno'){ q.depth=Math.round(rr(1.5,3.5)*10)/10; q.freq=Math.round(rr(6,14)); q.twist=0; }
+  if(q.pattern==='juno') q.body=pick(['bottle','bottle','column','capsule']);
+  q.slant = (q.body!=='pagoda' && r()<0.2) ? Math.round(rr(10,35)) : 0;
   return fitToBed(q);
 }
 function fitToBed(q){
@@ -1463,7 +1592,7 @@ function mutate(p){
 /* ---------- UI build ---------- */
 function profileSvg(key){
   const f=BODIES[key].f; const pts=[];
-  const defs={column:[34,22,0],barrel:[30,24,8],bell:[40,14,6],globe:[22,16,14],tulip:[24,30,8],gourd:[26,14,12],hourglass:[34,30,10],lantern:[26,24,9],pagoda:[34,18,8]}[key];
+  const defs={column:[34,22,0],barrel:[30,24,8],bell:[40,14,6],globe:[22,16,14],tulip:[24,30,8],gourd:[26,14,12],hourglass:[34,30,10],lantern:[26,24,9],pagoda:[34,18,8],teardrop:[18,10,18],capsule:[28,28,10],bottle:[30,30,14]}[key];
   for(let i=0;i<=24;i++){ const t=i/24; const r=Math.max(4,f(t,defs[2],defs[0],defs[1])); pts.push([r,t]); }
   const s=0.42, cx=17, bot=31, h=28;
   const right=pts.map(([r,t])=>`${(cx+r*s).toFixed(1)},${(bot-t*h).toFixed(1)}`);
@@ -1480,7 +1609,11 @@ function patSvg(key){
     bubbles:`<circle cx="11" cy="10" r="3.5" ${S}/><circle cx="23" cy="10" r="3.5" ${S}/><circle cx="17" cy="18" r="3.5" ${S}/><circle cx="11" cy="26" r="3.5" ${S}/><circle cx="23" cy="26" r="3.5" ${S}/>`,
     pillows:`<rect x="6" y="6" width="10" height="10" rx="4" ${S}/><rect x="18" y="6" width="10" height="10" rx="4" ${S}/><rect x="6" y="18" width="10" height="10" rx="4" ${S}/><rect x="18" y="18" width="10" height="10" rx="4" ${S}/>`,
     facets:`<path d="M17 4l11 6.5v13L17 30 6 23.5v-13z M17 4v26M6 10.5l22 13M28 10.5l-22 13" ${S}/>`,
-    organic:`<path d="M8 8c5-3 8 3 12 0s6 4 6 8-5 3-6 8-8 4-10 0-6-2-5-7 0-6 3-9z" ${S}/>`
+    organic:`<path d="M8 8c5-3 8 3 12 0s6 4 6 8-5 3-6 8-8 4-10 0-6-2-5-7 0-6 3-9z" ${S}/>`,
+    diamonds:`<path d="M5 9l6-5 6 5 6-5 6 5M5 9l6 6 6-6 6 6 6-6M5 21l6-6 6 6 6-6 6 6M5 21l6 6 6-6 6 6 6-6" ${S}/>`,
+    pinstripe:`<path d="M8 5v24M11 5v24M14 5v24M17 5v24M20 5v24M23 5v24M26 5v24" stroke="currentColor" stroke-width="0.9" fill="none"/>`,
+    fluted:`<path d="M6 29V8a2.75 2.75 0 0 1 5.5 0v21M11.5 29V8a2.75 2.75 0 0 1 5.5 0v21M17 29V8a2.75 2.75 0 0 1 5.5 0v21M22.5 29V8a2.75 2.75 0 0 1 5.5 0v21" ${S}/>`,
+    juno:`<path d="M10 4v9M14 4v9M18 4v9M22 4v9M26 4v9" ${S}/><path d="M7 16l5 5 5-5 5 5 5-5M7 26l5-5 5 5 5-5 5 5" ${S}/>`
   }[key];
   return `<svg viewBox="0 0 34 34" aria-hidden="true">${g}</svg>`;
 }
@@ -1510,7 +1643,7 @@ function buildLayerSeg(){
 
 const fmt = {
   H:v=>v+' mm', Db:v=>v+' mm', Dt:v=>v+' mm', bulge:v=>v+' mm', count:v=>v, depth:v=>(+v).toFixed(1)+' mm', freq:v=>v,
-  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>{ const e=effMaxA({...P,maxA:+v}); return e<+v ? `${v}° (${e}° at ${(+P.lh).toFixed(2)} mm layers)` : v+'°'; }, holderH:v=>(+v).toFixed(1)+' mm', cupD:v=>{ const g=(v-LIGHTS[P.light].d)/2; return `${(+v).toFixed(1)} mm (gap ${g>=0?'+':''}${g.toFixed(2)})`; }, slotBridge:v=>{ if(+v<=0) return 'off'; const hs=Math.max(4,LIGHTS[P.light].h+(+P.cupExtra||0)); return `${(+v).toFixed(1)} mm (opening ${Math.max(0,hs-v).toFixed(1)} mm tall)`; }, slotW:v=>(+v).toFixed(1)+' mm', lip:v=>{ const d=cupInnerR(P)*2-2*v; return `${(+v).toFixed(1)} mm in (opening Ø${d.toFixed(1)} vs light Ø${LIGHTS[P.light].d})`; }, lipN:v=>'', cupExtra:v=>(+v===0?'flush':(v>0?'+':'')+(+v).toFixed(1)+' mm'), wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm'
+  twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>{ const e=effMaxA({...P,maxA:+v}); return e<+v ? `${v}° (${e}° at ${(+P.lh).toFixed(2)} mm layers)` : v+'°'; }, holderH:v=>(+v).toFixed(1)+' mm', cupD:v=>{ const g=(v-LIGHTS[P.light].d)/2; return `${(+v).toFixed(1)} mm (gap ${g>=0?'+':''}${g.toFixed(2)})`; }, slotBridge:v=>{ if(+v<=0) return 'off'; const hs=Math.max(4,LIGHTS[P.light].h+(+P.cupExtra||0)); return `${(+v).toFixed(1)} mm (opening ${Math.max(0,hs-v).toFixed(1)} mm tall)`; }, slotW:v=>(+v).toFixed(1)+' mm', lip:v=>{ const d=cupInnerR(P)*2-2*v; return `${(+v).toFixed(1)} mm in (opening Ø${d.toFixed(1)} vs light Ø${LIGHTS[P.light].d})`; }, lipN:v=>'', slant:v=>(+v>0?`${v} mm lower at the front`:'level'), lift:v=>`${(+v).toFixed(2)} mm (how far the lamp moves down to click)`, cupExtra:v=>(+v===0?'flush':(v>0?'+':'')+(+v).toFixed(1)+' mm'), wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm'
 };
 function syncUI(){
   // segmented + chips
@@ -1529,21 +1662,27 @@ function syncUI(){
   $('#countLbl').firstChild.textContent=(pt.count||'Count')+' ';
   $('#freqLbl').firstChild.textContent=(pt.freq||'Rows')+' ';
   $('#count').min = P.pattern==='facets'?3:(P.pattern==='waves'?0:2);
+  $('#count').max = P.pattern==='pinstripe'?72:(P.pattern==='facets'?16:48);
   $('#bulgeLbl').firstChild.textContent=BODIES[P.body].bulge+' ';
   $('#tipRow').hidden = P.body!=='pagoda';
+  $('#slantRow').hidden = P.body==='pagoda' && !!P.tip;
   const lp=LAYERPATS[P.layer];
   $$('[data-lay]').forEach(el=>el.hidden=!(lp.uses||[]).includes(el.dataset.lay));
   $('#layerHint').textContent=lp.hint||'Plain layers. Pick a layer pattern to add texture that follows your layer height.';
   $('#bandMm').textContent = P.layer!=='none' ? `${P.bandN} × ${(+P.lh).toFixed(2)} = ${(P.bandN*P.lh).toFixed(2)} mm` : '';
   $$('[data-show]').forEach(el=>el.hidden=(el.dataset.show!==P.mode) || (P.holder && el.hasAttribute('data-noholder')));
   $$('[data-hold]').forEach(el=>el.hidden=!P.holder);
-  $('#lip').closest('.field').hidden = !P.holder || !(+P.lipN>0);
+  $$('[data-press]').forEach(el=>el.hidden=!P.holder||!P.press);
+  $$('[data-nopress]').forEach(el=>el.hidden=!P.holder||!!P.press);
+  $('#lip').closest('.field').hidden = !P.holder || !!P.press || !(+P.lipN>0);
   $$('[data-holdvase]').forEach(el=>el.hidden=!(P.holder && P.mode==='vase'));
   $('#holderHint').textContent = !P.holder ? 'Off: the light sits loose on the table under the shade.'
     : P.mode==='vase'
       ? `A cup holds the ${LIGHTS[P.light].name} on a small ledge, with arms out to the shade wall. Spiral vase cannot print it inside the shade, so it exports as a separate insert that drops in from below. The cord leaves through the slot in the cup.`
+      : P.press
+      ? `Press-to-switch: the ${LIGHTS[P.light].name} stands on the table and the lamp rests on it through a ring inside the cup, so the rim floats ${(+P.lift).toFixed(1)} mm above the table. Press the top of the lamp straight down and the light's switch clicks against the table; the rim touching the table stops it going further. Lift the lamp off to reach the light. Arms join the cup to the shade wall, the cord leaves through the cup slot and the cable arch. Prints with no supports.`
       : `A cup holds the ${LIGHTS[P.light].name} on a small ledge, with arms out to the shade wall. It prints as part of the shade, no supports. The cord leaves through the slot in the cup and out under the cable arch.${+P.lipN>0?` ${P.lipN} snap clips on the rim stop the light being pushed out when you press it to switch it on: tilt it in under one clip, then press the other side down until it clicks.`:''}`;
-  $('#lightHint').textContent=LIGHTS[P.light].note;
+  $('#lightHint').textContent = (P.holder && P.press && P.light==='strimsav') ? 'Ø60 × 10 mm, 115 lm, 1 W. The light stands on the table under your lamp. Press the top of the lamp down to switch it on or off.' : LIGHTS[P.light].note;
   $('#lightPic').hidden = P.light!=='strimsav';
   $('#seedIn').value=P.seed;
   $('#seedIn').title=P.edited?'Design has been edited since this seed':'';
@@ -1717,8 +1856,8 @@ function refresh(quality){
     const hg=new THREE.BufferGeometry(); hg.setAttribute('position',new THREE.BufferAttribute(hd.pos,3)); hg.setIndex(new THREE.BufferAttribute(hd.idx,1)); hg.computeVertexNormals();
     holderMesh.geometry.dispose(); holderMesh.geometry=hg; holderMesh.visible=true;
     matHolder.color.set(P.color).multiplyScalar(lit?0.3:(hd.integrated?1:0.8));
-    shade.position.z=0; puckGroup.position.z=hd.ledge;
-  } else { currentHolder=null; holderMesh.visible=false; shade.position.z=0; puckGroup.position.z=0; }
+    shade.position.z=holderMesh.position.z=hd.lift; puckGroup.position.z=hd.ledge;
+  } else { currentHolder=null; holderMesh.visible=false; shade.position.z=holderMesh.position.z=0; puckGroup.position.z=0; }
   const fk=P.light+'|'+P.printer;
   if(fk!==lastFitKey){ fitView(m); lastFitKey=fk; }
   needsRender=true;
@@ -1834,7 +1973,7 @@ function drawProfile(m){
     x.fillStyle=acc; x.globalAlpha=0.6;
     const rect=(r0,r1,z0,z1)=>{ x.fillRect(cx+r0*s,by0-z1*s,(r1-r0)*s,(z1-z0)*s); };
     rect(-hd.rsO,-hd.rsI,0,hd.ledge+hd.hs);          // cup wall (left; right side is the cable slot)
-    rect(-hd.rsI-0.3,-hd.ledgeR,0,hd.ledge);          // ledge
+    if(hd.ledge>0) rect(-hd.rsI-0.3,-hd.ledgeR,0,hd.ledge);          // ledge
     x.globalAlpha=0.35;
     for(const a of hd.arms){ const sx=Math.cos(a.a)>=0?1:-1; rect(Math.min(sx*a.r0,sx*a.r1),Math.max(sx*a.r0,sx*a.r1),0,hd.ha); }
     x.globalAlpha=1;
@@ -1856,7 +1995,7 @@ function drawProfile(m){
   if(m.closed){ x.fillStyle=ink; x.globalAlpha=0.85; x.fillRect(cx-m.capR*s-1,by-m.H*s,(m.capR*2)*s+2,Math.max(1.5,m.t*s)); x.globalAlpha=1; }
   // puck
   x.fillStyle='#F1F1EC'; x.strokeStyle=muted; x.lineWidth=1;
-  const pz=hd?hd.ledge*s:0;
+  const pz=hd?(hd.press?-hd.lift:hd.ledge)*s:0;
   x.beginPath(); x.rect(cx-L.d/2*s,by-pz-L.h*s,L.d*s,L.h*s); x.fill(); x.stroke();
   x.fillStyle=acc; x.fillRect(cx-L.d/2*s*0.8,by-pz-L.h*s-1.5,L.d*s*0.8,2);
   // dims
@@ -1984,7 +2123,7 @@ async function doExport(what, via){
 /* ---------- wiring ---------- */
 let dragTimer=0;
 function setParam(key,val,live){
-  const num=['lipN','lip','slotBridge','cupD','slotW','cupExtra','holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
+  const num=['slant','lift','lipN','lip','slotBridge','cupD','slotW','cupExtra','holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
   if(num.includes(key)) val=parseFloat(val);
   if(P[key]===val && !live) return;
   P[key]=val;
@@ -1996,6 +2135,10 @@ function setParam(key,val,live){
   if(key==='mode' && val==='vase' && P.top==='closed'){ P.top='open'; toast('Top set to Open. Spiral vase can only print an open top.'); }
   if(key==='pattern' && val==='facets' && P.count<3) P.count=6;
   if(key==='pattern' && val==='facets' && P.count>16) P.count=8;
+  // good starting values when picking one of the vase-style patterns
+  if(key==='pattern' && val==='pinstripe'){ if(P.count<36) P.count=56; P.depth=Math.min(P.depth,1.6); }
+  if(key==='pattern' && val==='fluted'){ P.count=Math.max(12,Math.min(32,P.count||20)); if(P.depth<2) P.depth=3; }
+  if(key==='pattern' && (val==='diamonds'||val==='juno')){ P.count=Math.max(10,Math.min(22,P.count)); if(P.freq<5) P.freq=10; P.depth=Math.min(Math.max(P.depth,2),3.5); }
   if(live){ refresh(Q_DRAG); clearTimeout(dragTimer); dragTimer=setTimeout(()=>{ keepWidth(key); refresh(); },260); }
   else { keepWidth(key); refresh(); }
 }
@@ -2055,7 +2198,8 @@ function checkPrintable(m, bedOk, clearance, hd){
   else if(BOOTH && BOOTH.maxD && m.maxR*2>BOOTH.maxD+0.5){ ok=false; why=`Make it narrower (max Ø${BOOTH.maxD} mm)`; }
   else if(BOOTH && BOOTH.maxH && m.H>BOOTH.maxH+0.5){ ok=false; why=`Make it shorter (max ${BOOTH.maxH} mm)`; }
   else if(!hd && clearance<0.3){ ok=false; why='Base is too tight for the light'; }
-  else if(m.closed && m.capR*2>25){ ok=false; why='Open the top to print here'; }
+  else if(hd && hd.arms.length<3){ ok=false; why='Make the base a little wider so the light holder has room for its arms'; }
+  else if(m.closed && !m.pointed && m.capR*2>25){ ok=false; why='Open the top to print here'; }
   printable={ok,why};
   if(BOOTH){
     updatePrintButton();
@@ -2108,7 +2252,7 @@ function checkPassword(){
 function hideBooth(el){ if(el) el.classList.add('boothHide'); }
 const KIOSK_DEFAULTS={printer:'mk4', nozzle:'0.4', lh:0.28, modes:['wall'], wall:1.2, holderArms:4, maxH:180, maxD:180, colorName:'PLA'};
 const STEPS=[
-  ['secLight',  'Light source',    'This is the LED light that goes inside your lamp. A built-in holder with 4 arms keeps it in the middle.'],
+  ['secLight',  'Light source',    'This is the LED light that goes inside your lamp. A built-in holder with 4 arms keeps it in the middle, and you press the top of the lamp to switch it on.'],
   ['secBody',   'Shape',           'Choose the overall shape, then set how tall and wide your lamp is.'],
   ['secPattern','Surface pattern', 'Add texture to the outside. Light shines through the thinner parts, so patterns glow.'],
   ['secLayer',  'Layer pattern',   'The printer builds your lamp one thin layer at a time. These patterns use the layers to add rings, bands and steps.'],
@@ -2174,7 +2318,7 @@ function enterBooth(s){
   document.documentElement.classList.add('booth');
   applyMachine();
   // kiosk lamps: solid wall with the holder cross built in, printability handled automatically
-  P.mode='wall'; P.wall=+BOOTH.wall||1.2; P.holder=true; P.holderH=4; P.cupExtra=+BOOTH.cupExtra||0; P.slotW=+BOOTH.slotW||10; P.slotBridge=(BOOTH.slotBridge!=null?+BOOTH.slotBridge:1.6); P.cupD=+BOOTH.cupD||60.6; P.lipN=(BOOTH.lipN!=null?+BOOTH.lipN:3); P.lip=(BOOTH.lip!=null?+BOOTH.lip:0.8); P.top='open'; P.arch=true; P.base='open';
+  P.mode='wall'; P.wall=+BOOTH.wall||1.2; P.holder=true; P.holderH=4; P.cupExtra=+BOOTH.cupExtra||0; P.slotW=+BOOTH.slotW||10; P.slotBridge=(BOOTH.slotBridge!=null?+BOOTH.slotBridge:1.6); P.cupD=+BOOTH.cupD||60.2; P.lipN=(BOOTH.lipN!=null?+BOOTH.lipN:3); P.lip=(BOOTH.lip!=null?+BOOTH.lip:0.8); P.press=(BOOTH.press!=null?!!BOOTH.press:true); P.lift=(BOOTH.lift!=null?+BOOTH.lift:1.5); P.top='open'; P.arch=true; P.base='open';
   P.fix=true; P.maxA=45;
   if(BOOTH.color) P.color=BOOTH.color;
   ['#secPrint','#secFix','#secCheck','#secSheet'].forEach(q=>hideBooth($(q)));
@@ -2325,8 +2469,8 @@ function setupIdle(){
 }
 
 /* ---------- per-step reset ---------- */
-const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge','tip'],
-  secPattern:['pattern','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW','lipN','lip']};
+const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge','tip','slant'],
+  secPattern:['pattern','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW','lipN','lip','press','lift']};
 const STEP_NAMES={secLight:'Light source', secBody:'Shape', secPattern:'Surface pattern', secLayer:'Layer pattern', secHolder:'Light holder'};
 function resetStep(id){
   pushHistory();
@@ -2352,7 +2496,7 @@ function addNormalResets(){ for(const id in STEP_KEYS){ const h2=$('#'+id+' > h2
    or in SHARE_URL below for a standalone copy. */
 const SHARE_URL='';
 const SHARE_TEXT='My lamp, designed at the SP FabLab lamp booth #SPFabLab #3Dprinting';
-const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color'];
+const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color'];
 function encodeDesign(p){
   return '1~'+SHARE_FIELDS.map(k=>{ let v=p[k]; if(typeof v==='boolean') v=v?1:0; if(k==='color') v=String(v).replace('#',''); return encodeURIComponent(String(v)); }).join('~');
 }
