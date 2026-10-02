@@ -174,7 +174,10 @@ html{-webkit-tap-highlight-color:transparent}
 body{touch-action:manipulation}
 button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .rangeRow{display:flex;align-items:center;gap:8px}
-.rangeRow input[type=range]{flex:1;min-width:0}
+.rangeRow input[type=range]{flex:1;min-width:0;position:relative;z-index:1}
+.rangeRow{position:relative}
+.rangeRow::before{content:'';position:absolute;left:50%;top:50%;width:2px;height:16px;margin:-8px 0 0 -1px;border-radius:1px;background:var(--muted);opacity:.5;pointer-events:none;z-index:0}   /* centre of every slider */
+.touch .rangeRow::before{height:24px;margin-top:-12px}
 .stepper{display:none;flex:0 0 auto;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font:600 22px/1 var(--f-mono);color:var(--ink);cursor:pointer;align-items:center;justify-content:center;padding:0}
 .stepper:active{background:var(--chip)}
 .touch .stepper{display:inline-flex}
@@ -393,7 +396,7 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
           <input type="range" id="H" data-key="H" min="60" max="180" step="1"></div>
         <div class="row2">
           <div class="field"><label for="Db">Base Ø <output id="Dbo"></output></label>
-            <input type="range" id="Db" data-key="Db" min="70" max="180" step="1"></div>
+            <input type="range" id="Db" data-key="Db" min="90" max="180" step="1"></div>
           <div class="field"><label for="Dt">Top Ø <output id="Dto"></output></label>
             <input type="range" id="Dt" data-key="Dt" min="30" max="180" step="1"></div>
         </div>
@@ -414,16 +417,16 @@ button,.chip,.seg button,.swatch,.idea,.stepper{-webkit-user-select:none;user-se
           <input type="range" id="depth" data-key="depth" min="0.5" max="10" step="0.1"></div>
         <div class="field" data-pat="freq"><label for="freq" id="freqLbl">Rows <output id="freqo"></output></label>
           <input type="range" id="freq" data-key="freq" min="1" max="30" step="1"></div>
-        <div class="field" data-pat="twist"><label for="twist">Twist over height <output id="twisto"></output></label>
+        <div class="field" data-pat="twist"><label for="twist">Twist pattern <output id="twisto"></output></label>
           <input type="range" id="twist" data-key="twist" min="-360" max="360" step="5"></div>
         <div class="field" data-pat="profile"><span class="lbl">Rib profile</span>
           <div class="seg" data-key="profile">
-            <button data-v="round">Round</button><button data-v="pointed">Pointed</button><button data-v="square">Square</button><button data-v="scallop">Scallop</button>
+            <button data-v="round">Round</button><button data-v="pointed">Pointed</button><button data-v="square">Square</button><button data-v="fluted">Fluted</button>
           </div></div>
         <div class="field" data-pat="env"><label for="env">Depth along height</label>
           <select id="env" data-key="env">
             <option value="uniform">Even</option><option value="rise">Grows upward</option><option value="fade">Fades upward</option><option value="swell">Deepest in the middle</option><option value="ends">Deepest at the ends</option>
-          </select></div>
+          </select><p class="hint" id="envHint"></p></div>
       </section>
 
       <section class="sec" id="secLayer">
@@ -566,14 +569,11 @@ const BODIES = {
   column:   {name:'Column',    bulge:'Bulge (unused)', f:(t,B,a,b)=>lin(t,a,b)},
   barrel:   {name:'Barrel',    bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*Math.sin(PI*t)},
   bell:     {name:'Bell',      bulge:'Flare',  f:(t,B,a,b)=>b+(a-b)*Math.pow(1-t,2)+B*Math.pow(1-t,7)},
-  globe:    {name:'Globe',     bulge:'Roundness', f:(t,B,a,b)=>lin(t,a,b)+B*Math.sqrt(Math.max(0,Math.sin(PI*t)))},
   tulip:    {name:'Tulip',     bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*Math.sin(PI*Math.pow(t,1.6))},
   gourd:    {name:'Gourd',     bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*Math.sin(PI*Math.pow(t,0.6))},
   hourglass:{name:'Hourglass', bulge:'Pinch',  f:(t,B,a,b)=>lin(t,a,b)-B*Math.sin(PI*t)},
-  lantern:  {name:'Lantern',   bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*(1-Math.pow(Math.abs(2*t-1),4))},
   pagoda:   {name:'Pagoda',    bulge:'Tier step', f:(t,B,a,b)=>{const u=(t*4)%1; return lin(t,a,b)+B*0.6*(1-u);}},
   teardrop: {name:'Teardrop',  bulge:'Belly',  f:(t,B,a,b)=>lin(t,a,b)+B*(Math.exp(-Math.pow((t-0.3)/0.24,2))-0.1)},
-  capsule:  {name:'Capsule',   bulge:'Round ends', f:(t,B,a,b)=>{ const e=Math.max(0,(Math.abs(2*t-1)-0.55)/0.45); return lin(t,a,b)-B*(1-Math.sqrt(Math.max(0,1-e*e))); }},
   bottle:   {name:'Bottle',    bulge:'Neck pinch', f:(t,B,a,b)=>{ const ss=(x,e0,e1)=>{ const u=Math.max(0,Math.min(1,(x-e0)/(e1-e0))); return u*u*(3-2*u); };
               const neck=Math.max(14,Math.min(a,b)-B); const body=a+(neck-a)*ss(t,0.5,0.7); return body+(b-neck)*ss(t,0.8,1.0); }}
 };
@@ -584,8 +584,18 @@ const WAVES = {
   round:x=>Math.cos(x),
   pointed:x=>1-2*Math.acos(Math.max(-1,Math.min(1,Math.cos(x))))/PI,
   square:x=>Math.tanh(3*Math.cos(x))/Math.tanh(3),
-  scallop:x=>2*Math.abs(Math.cos(x/2))-1
+  scallop:x=>2*Math.abs(Math.cos(x/2))-1,
+  fluted:x=>{ const u=((x/TAU+0.5)%1+1)%1, t=2*u-1; return 2*Math.sqrt(Math.max(0,1-t*t))-1; }   // full round flutes meeting in sharp grooves
 };
+/* designs from older links / ideas: map removed shapes and patterns onto what replaced them */
+const RENAMED = {body:{globe:'barrel', lantern:'barrel', capsule:'barrel'}, pattern:{pinstripe:'ribs', juno:'diamonds', fluted:'ribs'}, profile:{scallop:'fluted'}};
+function normalizeDesign(q){
+  if(q.pattern==='pinstripe'){ q.profile='pointed'; q.depth=Math.min(+q.depth||1.2,1.6); }
+  if(q.pattern==='fluted') q.profile='fluted';
+  for(const k in RENAMED) if(RENAMED[k][q[k]]) q[k]=RENAMED[k][q[k]];
+  if(+q.Db<90) q.Db=90;
+  return q;
+}
 const PATTERNS = {
   smooth: {name:'Smooth',  uses:[]},
   ribs:   {name:'Ribs',    uses:['count','depth','twist','profile','env'], count:'Ribs'},
@@ -595,10 +605,7 @@ const PATTERNS = {
   pillows:{name:'Pillows', uses:['count','depth','freq','env','twist'], count:'Around', freq:'Rows'},
   facets: {name:'Facets',  uses:['count','twist','env'], count:'Sides'},
   organic:{name:'Organic', uses:['depth','freq','env','twist'], freq:'Scale'},
-  diamonds:{name:'Diamonds', uses:['count','depth','freq','env','twist'], count:'Diamonds around', freq:'Rows up'},
-  pinstripe:{name:'Pinstripe', uses:['count','depth','twist','env'], count:'Fine ribs'},
-  juno:   {name:'Diamond + flutes', uses:['count','depth','freq','env'], count:'Around', freq:'Diamond rows'},
-  fluted: {name:'Fluted', uses:['count','depth','twist','env'], count:'Flutes'}
+  diamonds:{name:'Diamonds', uses:['count','depth','freq','env','twist'], count:'Diamonds around', freq:'Rows up'}
 };
 const RIBBED = new Set(['ribs','lattice','bubbles','pillows','facets','waves','diamonds','pinstripe','juno','fluted']);
 const LAYERPATS = {
@@ -648,7 +655,7 @@ function autoMaxA(p){ const lw=(parseFloat(p.nozzle)||0.4)*1.05; return Math.flo
 function effMaxA(p){ return Math.max(25, Math.min(+p.maxA||45, autoMaxA(p))); }
 
 /* ---------- geometry ---------- */
-function lockFixed(p){ p.mode='wall'; p.top='open'; p.base='open'; p.holder=true; p.holderArms=4; return p; }
+function lockFixed(p){ p.mode='wall'; p.top='open'; p.base='open'; p.holder=true; p.holderArms=4; if(!BODIES[p.body]||!PATTERNS[p.pattern]||!WAVES[p.profile]) normalizeDesign(p); return p; }
 function buildMesh(p, Q){
   lockFixed(p);
   const Lt=LIGHTS[p.light], puckR=Lt.d/2, puckH=Lt.h;
@@ -884,16 +891,26 @@ function armSpan(g, z){
   return null;
 }
 function armSlice(g, z){
+  // outline in the arm's own (along, across) coordinates: an inner edge and the wall edge, both running
+  // across the arm in order, with the inner edge kept at least 0.3 mm inside the wall, so it can never cross itself
   const sp=armSpan(g,z); if(!sp) return null;
   const ux=Math.cos(g.a), uy=Math.sin(g.a), vx=-uy, vy=ux, P2=(r,o)=>[r*ux+o*vx, r*uy+o*vy];
-  const hw=sp.hw, pts=[], N=8;
-  if(z<g.ha){
-    const rK=g.rEnd(0,z)-g.footL;
-    pts.push(P2(g.r0,-g.w/2), P2(g.r0,g.w/2), P2(rK,g.w/2));
-  } else pts.push(P2(sp.start(0),-hw), P2(sp.start(0),hw));
-  for(let i=0;i<=N;i++){ const o=hw-2*hw*i/N; pts.push(P2(g.rEnd(o,z),o)); }
-  if(z<g.ha) pts.push(P2(g.rEnd(0,z)-g.footL,-g.w/2));
-  return pts;
+  const hw=sp.hw, N=6, end=o=>g.rEnd(o,z), start=o=>Math.min(sp.start(o), end(o)-0.3);
+  const lin=(a0,a1,n)=>Array.from({length:n+1},(_,i)=>a0+(a1-a0)*i/n);
+  // the same sample positions for both edges, so the straight segments between samples can't cross
+  let os = (z<g.ha && hw>g.w/2+0.05) ? [...lin(-hw,-g.w/2,N), ...lin(-g.w/2,g.w/2,N).slice(1), ...lin(g.w/2,hw,N).slice(1)] : lin(-hw,hw,2*N);
+  const inner=[], outer=[];
+  for(const o of os){ const e=end(o); outer.push(P2(e,o)); inner.push(P2(Math.min(start(o), e-0.3),o)); }
+  if(z<g.ha && hw>g.w/2+0.05){                      // square step from the fillet onto the arm core at ±w/2
+    const iL=N, iR=2*N, eL=end(-g.w/2), eR=end(g.w/2);
+    inner.splice(iR+1, 0, P2(Math.min(sp.start(g.w/2+1e-6), eR-0.3), g.w/2));
+    inner.splice(iL, 0, P2(Math.min(sp.start(-g.w/2-1e-6), eL-0.3), -g.w/2));
+  }
+  outer.reverse();
+  const pts=inner.concat(outer), out=[];
+  for(const q of pts){ const l=out[out.length-1]; if(!l || Math.hypot(q[0]-l[0],q[1]-l[1])>0.02) out.push(q); }
+  if(out.length>2 && Math.hypot(out[0][0]-out[out.length-1][0], out[0][1]-out[out.length-1][1])<0.02) out.pop();
+  return out;
 }
 function extrude(pts, z0, z1, acc){
   { let ar=0; for(let i=0;i<pts.length;i++){ const [x0,y0]=pts[i], [x1,y1]=pts[(i+1)%pts.length]; ar+=x0*y1-x1*y0; } if(ar<0) pts=pts.slice().reverse(); }   // outline must run counter-clockwise
@@ -1517,7 +1534,7 @@ function openFablabMenu(){
     [['Cancel','',closeModal],['Fast wall G-code (test)','',()=>{ closeModal(); setTimeout(openGcodePanel,60); }],['Download 3MF','primary',()=>{ closeModal(); doExport(); }]]);
 }
 
-window.__lamp = {P, redraw:()=>{ lastFitKey=''; refresh(); }, buildMesh, buildHolder, build3mf, meshStats, gcPlan, gcText, gcPackage, gcTemplate, gcCheckEnd, md5hex}; // exposed for testing
+window.__lamp = {P, redraw:()=>{ lastFitKey=''; refresh(); }, buildMesh, buildHolder, build3mf, meshStats, gcPlan, gcText, gcPackage, gcTemplate, gcCheckEnd, md5hex, armGeom, armSlice, cupInnerR, HOLDER}; // exposed for testing
 
 /* ---------- quality presets ---------- */
 const Q_PREVIEW={dz:0.8, maxRings:320, seg:200, segMax:432, perRib:6, shell:true};
@@ -1545,16 +1562,16 @@ function randomDesign(seed, base){
   q.H=Math.round(rr(Math.min(110,Hm*0.6),Hm));
   const cap=bedMaxD(q);
   const minD=LIGHTS[q.light].d+2*wallT(q)+12;
-  q.Db=Math.round(rr(Math.max(minD,85),cap*0.8));
+  q.Db=Math.round(rr(Math.max(minD,90),cap*0.8));
   q.Dt=Math.round(rr(40,cap*0.75));
   if(q.body==='bell'){ q.Dt=Math.round(Math.min(q.Dt,q.Db*0.6)); }
   q.bulge=Math.round(rr(4,q.body==='hourglass'?Math.min(q.Db,q.Dt)*0.25:32));
-  q.pattern=pick(['ribs','ribs','waves','lattice','bubbles','pillows','facets','facets','organic','smooth','diamonds','diamonds','pinstripe','juno','fluted','fluted']);
+  q.pattern=pick(['ribs','ribs','ribs','waves','lattice','bubbles','pillows','facets','facets','organic','smooth','diamonds','diamonds']);
   q.count = q.pattern==='facets' ? pick([5,6,7,8,9,10,12,16]) : q.pattern==='waves' ? pick([0,0,3,4,5,6,8]) : q.pattern==='pinstripe' ? Math.round(rr(40,72)) : (q.pattern==='diamonds'||q.pattern==='juno') ? Math.round(rr(10,22)) : q.pattern==='fluted' ? Math.round(rr(14,30)) : Math.round(rr(q.pattern==='ribs'?10:5,q.pattern==='ribs'?44:18));
   q.depth=Math.round(rr(1.5,q.pattern==='bubbles'?5:7)*10)/10;
   q.freq=q.pattern==='waves'?Math.round(rr(3,16)):q.pattern==='organic'?Math.round(rr(3,14)):Math.round(rr(4,14));
   q.twist=pick([0,0,45,60,90,120,180,-90,-120,-180,270,360]);
-  q.profile=pick(['round','round','pointed','square','scallop']);
+  q.profile=pick(['round','round','pointed','square','fluted','fluted']);
   q.env=pick(['uniform','uniform','uniform','rise','fade','swell','ends']);
   q.layer=r()<0.45?'none':pick(['bands','ridges','shingles','brick','steptwist']);
   if(q.layer==='steptwist' && !q.twist) q.twist=pick([90,180,-180,270]);
@@ -1563,10 +1580,9 @@ function randomDesign(seed, base){
   if(q.layer!=='none' && q.bandN*q.lh<0.8) q.bandN=Math.ceil(0.8/q.lh);
   q.layerOff=Math.round(rr(0.4,1.4)*20)/20;
   q.tip = q.body==='pagoda' && r()<0.35;
-  if(q.pattern==='pinstripe') q.depth=Math.round(rr(0.8,2)*10)/10;
-  if(q.pattern==='fluted'){ q.depth=Math.round(rr(2,4)*10)/10; if(r()<0.5) q.body=pick(['capsule','column','capsule']); }
+  if(q.pattern==='ribs' && q.profile==='pointed' && r()<0.5){ q.count=Math.round(rr(40,64)); q.depth=Math.round(rr(0.8,2)*10)/10; }   // fine pinstripes
+  if(q.pattern==='ribs' && q.profile==='fluted'){ q.count=Math.round(rr(14,32)); q.depth=Math.round(rr(2,4)*10)/10; }   // fat round flutes
   if(q.pattern==='diamonds'||q.pattern==='juno'){ q.depth=Math.round(rr(1.5,3.5)*10)/10; q.freq=Math.round(rr(6,14)); q.twist=0; }
-  if(q.pattern==='juno') q.body=pick(['bottle','bottle','column','capsule']);
   q.slant = (q.body!=='pagoda' && r()<0.2) ? Math.round(rr(10,35)) : 0;
   return fitToBed(q);
 }
@@ -1575,14 +1591,14 @@ function fitToBed(q){
     const m=buildMesh(q,Q_THUMB); const lim=bedMaxD(q);
     if(m.maxR*2<=lim) break;
     const s=(lim/(m.maxR*2))*0.97;
-    q.Db=Math.max(LIGHTS[q.light].d+20,Math.round(q.Db*s)); q.Dt=Math.max(30,Math.round(q.Dt*s)); q.bulge=Math.round(q.bulge*s); q.depth=Math.round(q.depth*s*10)/10;
+    q.Db=Math.max(90,Math.round(q.Db*s)); q.Dt=Math.max(30,Math.round(q.Dt*s)); q.bulge=Math.round(q.bulge*s); q.depth=Math.round(q.depth*s*10)/10;
   }
   return q;
 }
 function mutate(p){
   const r=rng(newSeed()), jit=(v,amt,lo,hi,st=1)=>{ const x=v*(1+(r()*2-1)*amt); return Math.min(hi,Math.max(lo,Math.round(x/st)*st)); };
   const q={...p, edited:true};
-  q.H=jit(q.H,0.12,60,maxHeight(q)); q.Db=jit(q.Db,0.12,70,MAX_D); q.Dt=jit(q.Dt,0.18,30,MAX_D); q.bulge=jit(q.bulge+2,0.35,0,60);
+  q.H=jit(q.H,0.12,60,maxHeight(q)); q.Db=jit(q.Db,0.12,90,MAX_D); q.Dt=jit(q.Dt,0.18,30,MAX_D); q.bulge=jit(q.bulge+2,0.35,0,60);
   q.depth=jit(q.depth,0.3,0.5,10,0.1); q.count=Math.max(q.pattern==='facets'?3:0,jit(q.count,0.2,0,48));
   q.twist=Math.max(-360,Math.min(360,Math.round((q.twist+(r()*2-1)*45)/5)*5)); q.freq=jit(q.freq,0.25,1,30);
   if(r()<0.25) q.profile=['round','pointed','square','scallop'][Math.floor(r()*4)];
@@ -1662,8 +1678,13 @@ function syncUI(){
   $('#countLbl').firstChild.textContent=(pt.count||'Count')+' ';
   $('#freqLbl').firstChild.textContent=(pt.freq||'Rows')+' ';
   $('#count').min = P.pattern==='facets'?3:(P.pattern==='waves'?0:2);
-  $('#count').max = P.pattern==='pinstripe'?72:(P.pattern==='facets'?16:48);
+  $('#count').max = P.pattern==='ribs'?72:(P.pattern==='facets'?16:48);
   $('#bulgeLbl').firstChild.textContent=BODIES[P.body].bulge+' ';
+  $('#envHint').textContent={uniform:'The pattern is the same depth from the bottom of the lamp to the top.',
+    rise:'The pattern starts almost flat at the bottom and gets deeper towards the top.',
+    fade:'The pattern is deepest at the bottom and fades out towards the top.',
+    swell:'The pattern is flat at the bottom and top, and deepest around the middle.',
+    ends:'The pattern is deepest at the bottom and top, and almost flat in the middle.'}[P.env]||'';
   $('#tipRow').hidden = P.body!=='pagoda';
   $('#slantRow').hidden = P.body==='pagoda' && !!P.tip;
   const lp=LAYERPATS[P.layer];
@@ -2136,9 +2157,8 @@ function setParam(key,val,live){
   if(key==='pattern' && val==='facets' && P.count<3) P.count=6;
   if(key==='pattern' && val==='facets' && P.count>16) P.count=8;
   // good starting values when picking one of the vase-style patterns
-  if(key==='pattern' && val==='pinstripe'){ if(P.count<36) P.count=56; P.depth=Math.min(P.depth,1.6); }
-  if(key==='pattern' && val==='fluted'){ P.count=Math.max(12,Math.min(32,P.count||20)); if(P.depth<2) P.depth=3; }
-  if(key==='pattern' && (val==='diamonds'||val==='juno')){ P.count=Math.max(10,Math.min(22,P.count)); if(P.freq<5) P.freq=10; P.depth=Math.min(Math.max(P.depth,2),3.5); }
+  if(key==='pattern' && val!=='ribs' && P.count>48) P.count=24;
+  if(key==='pattern' && val==='diamonds'){ P.count=Math.max(10,Math.min(22,P.count)); if(P.freq<5) P.freq=10; P.depth=Math.min(Math.max(P.depth,2),3.5); }
   if(live){ refresh(Q_DRAG); clearTimeout(dragTimer); dragTimer=setTimeout(()=>{ keepWidth(key); refresh(); },260); }
   else { keepWidth(key); refresh(); }
 }
@@ -2147,7 +2167,7 @@ function keepWidth(key){
   const lim=bedMaxD(P)-0.5, wid=()=>buildMesh(P,Q_THUMB).maxR*2;
   if(!DESIGN_KEYS.includes(key) || wid()<=lim) return;
   if(['bulge','Db','Dt','depth'].includes(key)){
-    let lo={bulge:0,depth:0.5,Db:70,Dt:30}[key], hi=+P[key];
+    let lo={bulge:0,depth:0.5,Db:90,Dt:30}[key], hi=+P[key];
     for(let i=0;i<12;i++){ const mid=(lo+hi)/2; P[key]=mid; if(wid()<=lim) lo=mid; else hi=mid; }
     P[key]= key==='depth' ? Math.floor(lo*10)/10 : Math.floor(lo);
   }
@@ -2507,7 +2527,7 @@ function decodeDesign(code){
   SHARE_FIELDS.forEach((k,i)=>{
     let v; try{ v=decodeURIComponent(parts[i+1]==null?'':parts[i+1]); }catch(e){ return; }
     if(v==='') return;
-    if(ok[k]){ if(ok[k][v]) out[k]=v; return; }
+    if(ok[k]){ if(ok[k][v] || (RENAMED[k]&&RENAMED[k][v])) out[k]=v; return; }
     if(k==='color'){ if(/^[0-9a-f]{6}$/i.test(v)) out[k]='#'+v; return; }
     if(k==='holder'){ out[k]=v==='1'; return; }
     if(k==='seed'){ out[k]=v.replace(/[^A-Za-z0-9]/g,'').slice(0,8)||DEFAULT_P.seed; return; }
@@ -2516,7 +2536,7 @@ function decodeDesign(code){
     if(el && el.type==='range'){ n=Math.min(parseFloat(el.max),Math.max(parseFloat(el.min),n)); }
     out[k]=n;
   });
-  return out;
+  return normalizeDesign(out);
 }
 function shareBase(){
   if(BOOTH && BOOTH.share_url) return BOOTH.share_url;
