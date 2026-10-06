@@ -276,6 +276,7 @@ html.booth .seedcode .scval{font-size:24px}
 .seedload{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .seedload input{flex:1 1 200px;min-width:0;font:600 16px var(--f-mono);text-transform:uppercase;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 html.booth .seedload input{font-size:20px;padding:12px 14px}
+.capnote{margin:-4px 0 0;padding:8px 11px;border-radius:9px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--panel));color:var(--ink)}
 .goodtoknow{font-size:14.5px;line-height:1.45;padding:10px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
 .goodtoknow ul{margin:6px 0 0;padding-left:18px}.goodtoknow li{margin:3px 0}
 .pk-tip{font-size:15px;opacity:.85;margin:6px 0 0}
@@ -451,6 +452,8 @@ html.booth .seedload input{font-size:20px;padding:12px 14px}
           <input type="range" id="bulge" data-key="bulge" min="0" max="60" step="1"></div>
         <div class="field" id="slantRow"><label for="slant">Slanted top <output id="slanto"></output></label>
           <input type="range" id="slant" data-key="slant" min="0" max="40" step="1"></div>
+        <label class="toggle" id="capRow" for="capTop">Cap the top (closed lid) <input type="checkbox" id="capTop"></label>
+        <p class="hint capnote" id="capNote" hidden>Heads up: a 3D printer can't print onto thin air. The lid is printed straight across the open top (this is called bridging), so its underside may sag a little and show some strings. That's normal and doesn't affect the lamp. The top of the lid will look neat.</p>
         <label class="toggle" id="tipRow" for="tip">Pointed top (Christmas tree) <input type="checkbox" id="tip" data-key="tip"></label>
         <div class="starbox" id="starBox" hidden>
           <label class="toggle starhead" for="star"><span style="display:flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 6.1 6.6.6-5 4.4 1.5 6.5L12 16.7 6.2 20.1l1.5-6.5-5-4.4 6.6-.6z"/></svg>Star on top</span> <input type="checkbox" id="star" data-key="star"></label>
@@ -716,7 +719,7 @@ const P = {
   fix:true, maxA:45, top:'open', tip:false, slant:0, star:true, starN:5, starPlump:0.45, starSize:60, starAttach:'between', holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.1, slotBridge:1.6, lipN:3, lip:0.8, press:true, lift:1.5, color:'#EDE4D0', seed:'FABLAB', edited:false
 };
 const DEFAULT_P = JSON.parse(JSON.stringify(P));   // starting values, used by the step Reset buttons
-const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','slant','star','starN','starPlump','starSize','starAttach','pattern','dstyle','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
+const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','slant','top','star','starN','starPlump','starSize','starAttach','pattern','dstyle','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
 const history = [];
 
 let BOOTH=null, lastStats=null;
@@ -729,7 +732,7 @@ function autoMaxA(p){ const lw=(parseFloat(p.nozzle)||0.4)*1.05; return Math.flo
 function effMaxA(p){ return Math.max(25, Math.min(+p.maxA||45, autoMaxA(p))); }
 
 /* ---------- geometry ---------- */
-function lockFixed(p){ p.mode='wall'; p.top='open'; p.base='open'; p.holder=true; p.holderArms=4; if(!BODIES[p.body]||!PATTERNS[p.pattern]||!WAVES[p.profile]) normalizeDesign(p); return p; }
+function lockFixed(p){ p.mode='wall'; p.top = p.top==='closed' ? 'closed' : 'open'; p.base='open'; p.holder=true; p.holderArms=4; if(!BODIES[p.body]||!PATTERNS[p.pattern]||!WAVES[p.profile]) normalizeDesign(p); return p; }
 function buildMesh(p, Q){
   lockFixed(p);
   const Lt=LIGHTS[p.light], puckR=Lt.d/2, puckH=Lt.h;
@@ -757,7 +760,8 @@ function buildMesh(p, Q){
   const archH=6, archHalf=8/Math.max(30,Rb);
   const facetK = Math.sqrt(Math.cos(PI/Math.max(3,n)));
   const pointed = !vase && p.body==='pagoda' && !!p.tip;   // closed cone tip (Christmas tree)
-  const slant = pointed ? 0 : Math.max(0, Math.min(H*0.4, +p.slant||0));   // slanted top: drop from the high side (back) to the low side (front)
+  const capped = !vase && !pointed && p.top==='closed';   // flat lid: bridged across the top, so the top stays level
+  const slant = (pointed||capped) ? 0 : Math.max(0, Math.min(H*0.4, +p.slant||0));   // slanted top: drop from the high side (back) to the low side (front)
   const tipR=1.2;
 
   function radiusAt(th0, z, tn){
@@ -1006,6 +1010,7 @@ function extrude(pts, z0, z1, acc){
 /* press-to-switch stop ring: leans in STOP.angle from upright (35°, the same limit the shade walls print at with
    0.28 mm layers, gentler than the old 45° that strung), reaches STOP.lip mm over the light's top edge, and is one
    closed ring: above the cable plug the cable slot is bridged, so every layer is a single loop with no jumps. */
+const LID_SLICER={top_solid_layers:'5', bottom_solid_layers:'3', top_solid_min_thickness:'0', bottom_solid_min_thickness:'0'};   // capped top: solid lid, bridged underside
 const STOP={angle:35, lip:1.5, flat:0.6, closed:false};   // closed:true bridges the cable slot too (tested: more travel, not less)
 function buildHolder(p, m){
   const Lt=LIGHTS[p.light], puckR=Lt.d/2, puckH=Lt.h, H0=HOLDER;
@@ -1278,7 +1283,8 @@ async function build3mf(p, what){
   const ct='<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/><Default Extension="config" ContentType="text/xml"/></Types>';
   const rels='<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>';
   const files=[{name:'[Content_Types].xml',data:enc.encode(ct)},{name:'_rels/.rels',data:enc.encode(rels)},{name:'3D/3dmodel.model',data:model}];
-  if(extras.length) files.push({name:'Metadata/Slic3r_PE_model.config', data:enc.encode(objectConfig([{name:title, settings:null, ntri:obj.idx.length/3}].concat(extras.map(e=>({name:e.name, settings:STAR.slicer, ntri:e.mesh.idx.length/3})))))});
+  const lidCfg = (what!=='holder' && m.closed && !m.pointed) ? LID_SLICER : null;   // the booth profile has no top/bottom layers; a lid needs them
+  if(extras.length || lidCfg) files.push({name:'Metadata/Slic3r_PE_model.config', data:enc.encode(objectConfig([{name:title, settings:lidCfg, ntri:obj.idx.length/3}].concat(extras.map(e=>({name:e.name, settings:STAR.slicer, ntri:e.mesh.idx.length/3})))))});
   const blob=await makeZip(files);
   return {blob, name:title+'.3mf', mesh:obj, starNote, star:extras.length>0};
 }
@@ -1359,6 +1365,7 @@ function gcPlan(pIn, oIn){
   const o={...GC_DEF, ...oIn};
   const p=lockFixed({...pIn, lh:o.lh});
   if(+p.slant>0 && !(p.body==='pagoda'&&p.tip)) throw new Error('A slanted top cannot be printed as one continuous spiral. Use the normal 3MF for this design, or set Slanted top to level.');
+  if(p.top==='closed' && !(p.body==='pagoda'&&p.tip)) throw new Error('A capped top cannot be printed as one continuous spiral. Use the normal 3MF for this design, or untick Cap the top.');
   const m=buildMesh(p,{dz:o.lh, maxRings:5000, seg:720, segMax:720, perRib:24});
   const hd=buildHolder(p,m);
   const seg=m.seg, H=m.H, w=o.lw, hw=o.holderLW;
@@ -1917,6 +1924,7 @@ function describe(p){
   if(p.pattern!=='smooth'){ s+=' · '+(p.pattern==='diamonds'&&p.dstyle==='quilted'?'Quilted diamonds':pt.name); if(pt.uses.includes('count')&&p.count>0) s+=' × '+Math.round(p.count); if(pt.uses.includes('twist')&&p.twist) s+=` · ${p.twist>0?'+':''}${p.twist}° twist`; }
   if(p.layer!=='none') s+=` · ${LAYERPATS[p.layer].name} / ${p.bandN} layers`;
   if(p.body==='pagoda' && p.tip) s+= starOn(p) ? ` · ${Math.round(+p.starN)}-point star` : ' · pointed top';
+  else if(p.top==='closed') s+=' · capped top';
   else if(+p.slant>0) s+=' · slanted top';
   return s;
 }
@@ -2069,7 +2077,10 @@ function syncUI(){
     else if(f && f.shrunk) h=`The star will be ${f.size} mm wide so it fits on the printer next to your tree. ` + h;
     $('#starHint').textContent=h; }
   if(document.documentElement.classList.contains('booth')) $('#btnStarOnly').hidden=true;
-  $('#slantRow').hidden = P.body==='pagoda' && !!P.tip;
+  const pointedTip = P.body==='pagoda' && !!P.tip;
+  $('#slantRow').hidden = pointedTip || P.top==='closed';
+  $('#capRow').hidden = pointedTip || P.mode==='vase'; $('#capTop').checked = P.top==='closed';
+  $('#capNote').hidden = !(P.top==='closed' && !pointedTip);
   const lp=LAYERPATS[P.layer];
   $$('[data-lay]').forEach(el=>el.hidden=!(lp.uses||[]).includes(el.dataset.lay));
   $('#layerHint').textContent=lp.hint||'Plain layers. Pick a layer pattern to add texture that follows your layer height.';
@@ -2329,7 +2340,7 @@ function updateAnalysis(m){
   if(P.mode==='vase' && P.layer!=='none' && ['bands','shingles'].includes(P.layer) && P.layerOff>P.vaseLW*0.9 && !P.fix) rows.push(['Layer offset vs wall','<span class="pill warn">steps wider than wall</span>']);
   if(m.pointed) rows.push(['Pointed top', '<span class="pill ok">closes as a cone, no supports</span>']);
   if(starOn(P) && STAR_FIT) rows.push([`Star · ${STAR_FIT.sp.sh.N} points · ${STAR_FIT.size} mm`, !STAR_FIT.pl?'<span class="pill bad">no room</span>':STAR_FIT.shrunk?'<span class="pill warn">made smaller</span>':'<span class="pill ok">on the plate</span>']);
-  else if(m.closed) rows.push([`Closed top spans Ø${(m.capR*2).toFixed(0)} mm`, m.capR*2>25?'<span class="pill warn">needs supports</span>':'<span class="pill ok">bridges</span>']);
+  else if(m.closed) rows.push([`Lid bridges Ø${(m.capR*2).toFixed(0)} mm`, '<span class="pill warn">underside may sag or string</span>']);
   if(P.mode==='vase' && P.vaseLW>parseFloat(P.nozzle)*2) rows.push(['Line width vs nozzle','<span class="pill warn">over 2× nozzle</span>']);
   $('#checks').innerHTML=rows.map(([a,b])=>`<div><span>${a}</span>${b}</div>`).join('');
   const sn=$('#shapeNote');
@@ -2346,7 +2357,7 @@ function fmtTime(mins){ const h=Math.floor(mins/60), mm=Math.round(mins%60); ret
 function settingsText(m,st){
   const pr=PRINTERS[P.printer]; const lh=(+P.lh).toFixed(2);
   const lines=[`Printer   ${pr.name}, ${P.nozzle} mm nozzle`,`Layer     ${lh} mm  (${st.layers} layers)`];
-  if(!m.vase) lines.push(`Top       ${m.closed?'Closed cap '+P.wall.toFixed(1)+' mm':'Open'}`);
+  if(!m.vase) lines.push(`Top       ${m.pointed?'Pointed (closes as a cone)':m.closed?'Flat lid '+P.wall.toFixed(1)+' mm, bridged (top 5 / bottom 3 solid layers set in the 3MF)':'Open'}`);
   const pru=isPrusa(P);
   if(P.mode==='vase'){
     lines.push(pru?'Mode      Print > Layers and perimeters > Spiral vase: ON':'Mode      Others > Spiral vase: ON');
@@ -2359,7 +2370,7 @@ function settingsText(m,st){
     lines.push('Infill    Sparse infill 15% (only the base ring uses it)');
     lines.push('Top/bot   Keep defaults');
   }
-  if(m.closed && m.capR*2>25) lines.push(`Support   On, Tree (auto), for the Ø${(m.capR*2).toFixed(0)} mm closed top`);
+  if(m.closed && !m.pointed) lines.push(`Support   Off: the lid is bridged (supports inside a lamp can't be removed). Expect some sag underneath.`);
   else lines.push(`Support   Off  (steepest overhang ${m.angle.toFixed(0)}°)`);
   lines.push(m.H>150||m.maxR*2>170?'Adhesion  Brim: Outer brim only, 5 mm':'Adhesion  No brim needed on a clean plate');
   if(isPrusa(P) && P.holder && !m.vase) lines.push('Travel    Print > Layers and perimeters > Avoid crossing perimeters: ON (max detour 50%)','          Printer > Extruder > Wipe while retracting: ON  (less stringing round the holder)');
@@ -2630,7 +2641,6 @@ function checkPrintable(m, bedOk, clearance, hd){
   else if(BOOTH && BOOTH.maxH && m.H>BOOTH.maxH+0.5){ ok=false; why=`Make it shorter (max ${BOOTH.maxH} mm)`; }
   else if(!hd && clearance<0.3){ ok=false; why='Base is too tight for the light'; }
   else if(hd && hd.arms.length<3){ ok=false; why='Make the base a little wider so the light holder has room for its arms'; }
-  else if(m.closed && !m.pointed && m.capR*2>25){ ok=false; why='Open the top to print here'; }
   else if(starOn(P) && STAR_FIT && !STAR_FIT.pl){ ok=false; why='Make the tree narrower so the star fits'; }
   else if(BOOTH && BOOTH.maxMin && lastStats && lastStats.mins>BOOTH.maxMin){ ok=false; why=`Too long to print (${fmtTime(lastStats.mins)}, max ${fmtTime(BOOTH.maxMin)}): make it shorter or narrower`; }
   printable={ok,why};
@@ -2909,7 +2919,7 @@ function setupIdle(){
 }
 
 /* ---------- per-step reset ---------- */
-const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge','tip','slant','star','starN','starPlump','starSize','starAttach'],
+const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge','tip','slant','top','star','starN','starPlump','starSize','starAttach'],
   secPattern:['pattern','dstyle','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW','lipN','lip','press','lift']};
 const STEP_NAMES={secLight:'Light source', secBody:'Shape', secPattern:'Surface pattern', secLayer:'Layer pattern', secHolder:'Light holder'};
 function resetStep(id){
@@ -2936,13 +2946,13 @@ function addNormalResets(){ for(const id in STEP_KEYS){ const h2=$('#'+id+' > h2
    or in SHARE_URL below for a standalone copy. */
 const SHARE_URL='';
 const SHARE_TEXT='My lamp, designed at the SP FabLab lamp booth #SPFabLab #3Dprinting';
-const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color','dstyle','star','starN','starPlump','starSize','starAttach'];
+const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color','dstyle','star','starN','starPlump','starSize','starAttach','top'];
 function encodeDesign(p){
   return '1~'+SHARE_FIELDS.map(k=>{ let v=p[k]; if(k==='star') v=starOn(p); if(typeof v==='boolean') v=v?1:0; if(k==='color') v=String(v).replace('#',''); return encodeURIComponent(String(v)); }).join('~');
 }
 function decodeDesign(code){
   const parts=String(code).split('~'); if(parts[0]!=='1') return null;
-  const ok={light:Object.fromEntries(Object.keys(LIGHTS).filter(k=>!HIDDEN_LIGHTS.includes(k)).map(k=>[k,1])), body:BODIES, pattern:PATTERNS, layer:LAYERPATS, profile:WAVES, env:ENVS, mode:{vase:1,wall:1}, dstyle:{ridges:1,quilted:1}, starAttach:{point:1,between:1}};
+  const ok={light:Object.fromEntries(Object.keys(LIGHTS).filter(k=>!HIDDEN_LIGHTS.includes(k)).map(k=>[k,1])), body:BODIES, pattern:PATTERNS, layer:LAYERPATS, profile:WAVES, env:ENVS, mode:{vase:1,wall:1}, dstyle:{ridges:1,quilted:1}, starAttach:{point:1,between:1}, top:{open:1,closed:1}};
   const out={};
   SHARE_FIELDS.forEach((k,i)=>{
     let v; try{ v=decodeURIComponent(parts[i+1]==null?'':parts[i+1]); }catch(e){ return; }
@@ -3041,6 +3051,7 @@ async function openShare(){
 function goodToKnowHtml(){ const mins=lastStats?lastStats.mins:0;
   return `<div class="goodtoknow"><strong>Good to know</strong>
     <ul><li>You may find a few thin plastic strings inside the lamp. That's normal for 3D printing. Just peel or pull them off.</li>
+    ${P.top==='closed'&&current&&current.closed&&!current.pointed?`<li>Your lamp has a lid. a 3D printer can't print onto thin air. The lid is printed straight across the open top (this is called bridging), so its underside may sag a little and show some strings. That's normal and doesn't affect the lamp. The top of the lid will look neat.</li>`:''}
     <li>Your lamp is made by a machine in about ${fmtTime(mins)}. It won't be 100% perfect: small lines, marks or bumps are part of the 3D printed look. It's a good lamp for the time it takes to make.</li></ul></div>`; }
 /* ---------- seed code ----------
    The seed plus every design setting, packed into a short code people can write down, share and key in
@@ -3054,7 +3065,7 @@ const SC_FIELDS=[
   ['count','N',0,72,1,7], ['depth','N',0.5,10,0.1,7], ['freq','N',1,30,1,5], ['twist','N',-360,360,5,8],
   ['profile','L',['round','pointed','square','fluted'],2], ['env','L',['uniform','rise','fade','swell','ends'],3],
   ['layer','L',['none','bands','ridges','shingles','brick','steptwist'],3], ['bandN','N',2,60,1,6], ['layerOff','N',0.2,2.5,0.05,6],
-  ['color','C',3]
+  ['color','C',3], ['top','L',['open','closed'],1]   // added later: older codes read the padding bit as 'open'
 ];
 function scCheck(str){ const h=hashStr(str); return SC_ABC[h%32]+SC_ABC[(h>>>5)%32]; }   // two check letters catch typos
 function seedCode(p){
@@ -3357,6 +3368,7 @@ setTimeout(startFacts, 800);
 $('#btnSeedLoad').addEventListener('click',()=>{ const v=$('#seedLoadIn').value.trim(); if(v && loadSeedCode(v)){ $('#seedLoadIn').value=''; if(PORTRAIT_TABS.length && curStep===PORTRAIT_TABS.length-1) goStep(1); } });
 $('#seedLoadIn').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#btnSeedLoad').click(); } });
 $('#btnSeedCopy').addEventListener('click',()=>copyText(seedCode(P)));
+$('#capTop').addEventListener('change',e=>{ setParam('top', e.target.checked?'closed':'open'); if(e.target.checked) toast('Lid on. Read the note about the underside.'); });
 })();
 </script>
 
