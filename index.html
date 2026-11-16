@@ -721,7 +721,7 @@ const PATTERNS = {
    wave, so rows only touch where the waves cross and the gaps between them glow. It is printed from a toolpath written here
    (direct G-code, no slicer). Settings below are the ones tested on the MK4 with PLA (Nov 2026): 230 °C, 110% flow on a
    0.75 x layer-height line (rectangle model), and the first layer of each row (it spans the gaps) thinner and faster so it droops less. */
-const SCALES={z0:12, ramp:3, lw:0.75, speed:45, temp:230, fan:100, flow:1.10, bflow:0.85, bspeed:25, maxAmp:0.3, seg:480, holderMin:14, holderMm3:6000,
+const SCALES={z0:12, ramp:3, lw:0.75, speed:45, temp:230, fan:100, flow:1.10, bflow:0.85, bspeed:25, maxAmp:0.3, seg:480, holderMin:14, holderMm3:6000, firstLayer:0.3, brim:3, firstSpeed:20,
   countMin:6, countMax:24, rowsMin:4, rowsMax:16, depthMin:2};
 /* radial offset of the fish-scale wave. u = layers since the scales start; rows = layers per row */
 function scaleOff(p, th, u, rBase){
@@ -1490,7 +1490,7 @@ function gcPlan(pIn, oIn){
   if(p.pattern==='voronoi') throw new Error('Voronoi has thick ribs and a thin skin, so it cannot be printed as one single line. Use the normal 3MF for this design.');
   if(p.top==='closed' && !(p.body==='pagoda'&&p.tip)) throw new Error('A capped top cannot be printed as one continuous spiral. Use the normal 3MF for this design, or untick Cap the top.');
   const scl=p.pattern==='scales';
-  if(scl) Object.assign(o,{lw:SCALES.lw, speed:SCALES.speed, temp:SCALES.temp, fan:SCALES.fan});   // tested fish-scale settings
+  if(scl) Object.assign(o,{lw:SCALES.lw, speed:SCALES.speed, temp:SCALES.temp, fan:SCALES.fan, brim:SCALES.brim, firstSpeed:SCALES.firstSpeed});   // tested fish-scale settings
   const m=buildMesh(scl?{...p, pattern:'smooth'}:p,{dz:o.lh, maxRings:5000, seg:scl?SCALES.seg:720, segMax:scl?SCALES.seg:720, perRib:24});   // fish scale: plain base shape, the wave is added to the spiral below
   const hd=buildHolder(p,m);
   const seg=m.seg, H=m.H, w=o.lw, hw=o.holderLW;
@@ -1499,7 +1499,7 @@ function gcPlan(pIn, oIn){
   const armGs=[]; { const nA=Math.max(3,Math.round(p.holderArms)); for(let k=0;k<nA;k++){ const g=armGeom(p,m,PI/nA+k*TAU/nA,hd.rsO,hd.ha,w/2); if(g) armGs.push(g); } }
   const flatUntil=Math.max(hd.top||topZ, hd.ha+ARM.gH, archTop+o.lh);
   const j0=Math.floor(seg/2);                                             // seam / spiral start at the back (opposite the cable slot)
-  const fl=0.2;                                                           // first layer height
+  const fl=scl?SCALES.firstLayer:0.2;                                     // first layer height (fish scale: 0.3, as in the test prints that stuck well)
   const layers=[];
   const P2=(r,a)=>[r*Math.cos(a), r*Math.sin(a)];
   // ---- flat layers
@@ -1733,6 +1733,7 @@ function gcText(plan){
       `; layer num/total_layer_count: ${li+1}/${total}`, `M73 L${li+1}`, `M991 S0 P${li}`);
     const pct=Math.min(99,Math.floor(tDone/Math.max(1e-6,plan.mins)*100)); out.push(`M73 P${pct} R${Math.max(0,Math.round(plan.mins-tDone))}`);
     if(li===0) fanSet(0); else if(li===1) fanSet(o.fan*0.5); else fanSet(o.fan);
+    if(prusa && li===0) out.push('M204 P500 ; gentle first layer, as PrusaSlicer does'); else if(prusa && li===1) out.push('M204 P2000 T4000');
     if(prusa && li===1) out.push(`M104 S${o.temp} ; normal printing temperature after the first layer`);
     for(const pa of L.paths){
       if(prusa) out.push(`;TYPE:${fType[pa.feature]||pa.feature}`,`;WIDTH:${pa.w.toFixed(3)}`);
