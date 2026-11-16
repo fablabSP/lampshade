@@ -1,4 +1,10 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0D0F12">
 <title>FabLab Lampshade Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -172,6 +178,9 @@ canvas#lens{width:100%;height:150px;display:block;border:1px solid var(--line);b
 .ideas{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .idea{border:1px solid var(--line);border-radius:8px;background:var(--stage);padding:0;cursor:pointer;overflow:hidden;aspect-ratio:4/5;max-width:100%}
 .idea img{width:100%;height:100%;object-fit:cover;display:block}
+.idea{position:relative}
+.ideatag{position:absolute;left:6px;right:6px;bottom:6px;padding:3px 7px;border-radius:6px;background:rgba(8,9,11,.72);color:#F2F3F5;font:600 12px var(--f-body);text-align:center;pointer-events:none}
+html.booth .ideatag{font-size:15px;padding:5px 8px}
 .idea:hover{border-color:var(--accent)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:13px;max-width:min(92vw,520px);z-index:10;box-shadow:0 6px 24px rgba(0,0,0,.25)}
 .busy{position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,9,11,.55);color:#F2F3F5;font:500 13px var(--f-mono)}
@@ -339,8 +348,11 @@ html.booth .seedload input{font-size:20px;padding:12px 14px}
   html.booth .steptitle{font-size:26px}
   html.booth .stepdesc{font-size:17px}
 }
+#secLayer.dim .chips,#secLayer.dim .field{opacity:.35;pointer-events:none}
 </style>
 
+</head>
+<body>
 <div class="app">
   <header class="top">
     <div class="brand"><h1><button class="titlebtn" id="btnTitle" type="button" title="Switch between staff and kiosk mode">Lampshade Generator</button></h1><span class="modebadge" id="modeBadge">Staff</span><span class="xmasbadge" id="xmasBadge" title="Christmas mode is on"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 6.1 6.6.6-5 4.4 1.5 6.5L12 16.7 6.2 20.1l1.5-6.5-5-4.4 6.6-.6z"/></svg></span><span class="tag"><button class="brandbtn" id="btnFablab" type="button">SP FabLab</button> · <button class="brandbtn" id="btnBrand" type="button">Prusa</button></span></div>
@@ -479,12 +491,21 @@ html.booth .seedload input{font-size:20px;padding:12px 14px}
           <div class="seg" data-key="dstyle">
             <button data-v="ridges">Ridges</button><button data-v="quilted">Quilted</button>
           </div><p class="hint" id="dstyleHint"></p></div>
+        <div class="field" data-pat="vcells"><span class="lbl">Cells</span>
+          <div class="seg" data-key="vcells"><button data-v="skin">Thin skin (glows)</button><button data-v="open">Open holes</button></div>
+          <p class="hint" id="vcellsHint" style="margin:4px 0 0"></p></div>
+        <div class="field" data-pat="jitter"><label for="jitter">Cell shape <output id="jittero"></output></label>
+          <input type="range" id="jitter" data-key="jitter" min="0" max="1" step="0.05"></div>
+        <div class="field" data-pat="ribw"><label for="ribw">Rib thickness <output id="ribwo"></output></label>
+          <input type="range" id="ribw" data-key="ribw" min="0.1" max="0.6" step="0.025">
+          </div>
         <div class="field" data-pat="count"><label for="count" id="countLbl">Count <output id="counto"></output></label>
           <input type="range" id="count" data-key="count" min="0" max="72" step="1"></div>
         <div class="field" data-pat="depth"><label for="depth">Depth <output id="deptho"></output></label>
           <input type="range" id="depth" data-key="depth" min="0.5" max="10" step="0.1"></div>
         <div class="field" data-pat="freq"><label for="freq" id="freqLbl">Rows <output id="freqo"></output></label>
           <input type="range" id="freq" data-key="freq" min="1" max="30" step="1"></div>
+        <p class="hint" data-pat="scalesnote" id="scalesNote" style="margin:2px 0 0"></p>
         <div class="field" data-pat="twist"><label for="twist">Twist pattern <output id="twisto"></output></label>
           <input type="range" id="twist" data-key="twist" min="-360" max="360" step="5"></div>
         <div class="field" data-pat="profile"><span class="lbl">Rib profile</span>
@@ -652,6 +673,9 @@ const BODIES = {
   bottle:   {name:'Bottle',    bulge:'Neck pinch', f:(t,B,a,b)=>{ const ss=(x,e0,e1)=>{ const u=Math.max(0,Math.min(1,(x-e0)/(e1-e0))); return u*u*(3-2*u); };
               const neck=Math.max(14,Math.min(a,b)-B); const body=a+(neck-a)*ss(t,0.5,0.7); return body+(b-neck)*ss(t,0.8,1.0); }}
 };
+BODIES.gem  = {name:'Gem',  bulge:'Middle width', f:(t,B,a,b)=>{ const m=Math.max(a,b)+B, c=0.3; return t<c ? a+(m-a)*t/c : (t>1-c ? m+(b-m)*(t-1+c)/c : m); }};   // faceted lantern: angled bottom, straight middle, angled top
+BODIES.deco = {name:'Deco', bulge:'Tier size', f:(t,B,a,b)=>{ const ss=(x,e0,e1)=>{ const u=Math.max(0,Math.min(1,(x-e0)/(e1-e0))); return u*u*(3-2*u); };   // stacked rounded tiers
+  const mid=(a+B+b)/2; return a + 0.5*B*ss(t,0.15,0.22) + 0.5*B*ss(t,0.33,0.40) - (a+B-mid)*ss(t,0.63,0.70) - (mid-b)*ss(t,0.83,0.90); }};
 const ENVS = {
   uniform:t=>1, rise:t=>0.15+0.85*t, fade:t=>1-0.85*t, swell:t=>Math.sin(PI*t), ends:t=>1-0.85*Math.sin(PI*t)
 };
@@ -672,6 +696,12 @@ function normalizeDesign(q){
   if(q.dstyle!=='quilted' && (q.dstyle!=null || q.pattern==='diamonds')) q.dstyle='ridges';
   for(const k in RENAMED) if(RENAMED[k][q[k]]) q[k]=RENAMED[k][q[k]];
   if(+q.Db<90) q.Db=90;
+  if(q.pattern==='scales'){   // one wavy line from the toolpath: no layer pattern, open level top, sensible ranges
+    q.layer='none'; q.top='open'; q.slant=0; q.twist=0; q.env='uniform';
+    q.count=Math.max(SCALES.countMin,Math.min(SCALES.countMax,Math.round(+q.count||12)));
+    q.freq=Math.max(SCALES.rowsMin,Math.min(SCALES.rowsMax,Math.round(+q.freq||8)));
+    q.depth=Math.max(SCALES.depthMin,Math.min(10,+q.depth||9));
+  }
   return q;
 }
 const PATTERNS = {
@@ -682,9 +712,26 @@ const PATTERNS = {
   pillows:{name:'Pillows', uses:['count','depth','freq','env','twist'], count:'Around', freq:'Rows'},
   facets: {name:'Facets',  uses:['count','twist','env'], count:'Sides'},
   organic:{name:'Organic', uses:['depth','freq','env','twist'], freq:'Scale'},
-  diamonds:{name:'Diamonds', uses:['dstyle','count','depth','freq','profile','env','twist'], count:'Diamonds around', freq:'Rows up'}
+  diamonds:{name:'Diamonds', uses:['dstyle','count','depth','freq','profile','env','twist'], count:'Diamonds around', freq:'Rows up'},
+  origami:{name:'Origami', uses:['count','depth','freq','env','twist'], count:'Pleats around', freq:'Folds up'},
+  voronoi:{name:'Voronoi', uses:['vcells','count','depth','freq','jitter','ribw','env','twist'], count:'Cells around', freq:'Cells up'},
+  scales: {name:'Fish scale', uses:['count','depth','freq','scalesnote'], count:'Scales around', freq:'Layers per row'}
 };
-const RIBBED = new Set(['ribs','lattice','bubbles','pillows','facets','waves','diamonds','pinstripe','juno','fluted']);
+/* Fish scale (clay-printing style): the wall is ONE wavy line. Each row of layers waves in and out, the next row is shifted half a
+   wave, so rows only touch where the waves cross and the gaps between them glow. It is printed from a toolpath written here
+   (direct G-code, no slicer). Settings below are the ones tested on the MK4 with PLA (Nov 2026): 230 °C, 110% flow on a
+   0.75 x layer-height line (rectangle model), and the first layer of each row (it spans the gaps) thinner and faster so it droops less. */
+const SCALES={z0:12, ramp:3, lw:0.75, speed:45, temp:230, fan:100, flow:1.10, bflow:0.85, bspeed:25, maxAmp:0.3, seg:480, holderMin:14, holderMm3:6000,
+  countMin:6, countMax:24, rowsMin:4, rowsMax:16, depthMin:2};
+/* radial offset of the fish-scale wave. u = layers since the scales start; rows = layers per row */
+function scaleOff(p, th, u, rBase){
+  if(u<0) return 0;
+  const n=Math.max(1,Math.round(p.count)), rows=Math.max(1,Math.round(p.freq));
+  const amp=Math.min(Math.max(0,+p.depth)/2, SCALES.maxAmp*rBase) * Math.min(1, u/SCALES.ramp);
+  const sgn=(Math.floor(u/rows)&1)?-1:1;
+  return sgn*amp*Math.sin(n*th);
+}
+const RIBBED = new Set(['scales','origami','voronoi','ribs','lattice','bubbles','pillows','facets','waves','diamonds','pinstripe','juno','fluted']);
 const LAYERPATS = {
   none:     {name:'None'},
   bands:    {name:'Bands',   uses:['band','off'], hint:'Alternating bands stepped out by the offset. Each band is a set number of layers, so changing layer height changes band size.'},
@@ -704,6 +751,27 @@ function hashStr(s){ let h=1779033703^s.length; for(let i=0;i<s.length;i++){h=Ma
 function rng(seed){ let a=hashStr(String(seed)); return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function newSeed(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<6;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
 
+/* Voronoi on the lamp's surface: cells wrap round (nU cells around), v runs up (1 unit = one cell up). jitter 0 = a regular
+   diamond lattice (seeds staggered every half cell up, so every cell is a diamond with a pointed top: holes print with no
+   flat roof), 1 = random organic cells. Returns F2-F1: 0 on a cell edge. */
+const VORO={skin:0.8, openWall:1.0, cut:0.7, band:12, rim:3};   // skin: thin 0.8 mm diffuser in the cells. open: real holes, ribs at least 1 mm + rib height, solid band at the bottom (holder arms) and a rim at the top   // the "holes" keep a thin 0.8 mm skin (2 lines) that diffuses the light instead of being open
+function vhash(x,y,s){ let h=Math.imul(x|0,374761393)+Math.imul(y|0,668265263)+Math.imul(s|0,1442695041)|0; h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967296; }
+function voroEdge(u, v, nU, jit, seed){
+  const w=2*v, iu=Math.floor(u), iw=Math.floor(w); let d1=1e9, d2=1e9;   // seed rows every half cell, alternate rows shifted half a cell
+  for(let dw=-2;dw<=2;dw++) for(let du=-2;du<=2;du++){
+    const cu=iu+du, cw=iw+dw, wu=((cu%nU)+nU)%nU, off=(cw&1)?0.5:0;
+    const px=cu+off+jit*0.7*(vhash(wu,cw,seed)-0.5), py=(cw+0.5)/2+jit*0.35*(vhash(wu,cw,seed+7)-0.5);
+    const d=Math.hypot(u-px, v-py);
+    if(d<d1){ d2=d1; d1=d; } else if(d<d2) d2=d;
+  }
+  return d2-d1;
+}
+// steepness of the diamond hole tops in degrees from horizontal (45° and up prints cleanly); twist shears one side flatter
+function voroTopAngle(p, m){
+  const R=m?(m.maxR+m.minR)/2:(+p.Db+ +p.Dt)/4, n=Math.max(3,Math.round(+p.count)), f=Math.max(1,+p.freq), H=m?m.H:+p.H;
+  const W=TAU*R/n, Hc=H/f, S=Math.abs((+p.twist||0)*PI/180*R/f);
+  return Math.atan2(Hc, W+S)*180/PI;
+}
 /* value noise for the organic pattern */
 function h3(x,y,z,s){ let h=Math.imul(x,374761393)^Math.imul(y,668265263)^Math.imul(z,1274126177)^Math.imul(s,2246822519); h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967295; }
 function vnoise(x,y,z,s){ const xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z); const xf=x-xi,yf=y-yi,zf=z-zi; const u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf),w=zf*zf*(3-2*zf);
@@ -714,12 +782,12 @@ function fbm(x,y,z,s){ return vnoise(x,y,z,s)*0.6+vnoise(x*2.1,y*2.1,z*2.1,s+7)*
 const P = {
   light:'strimsav', printer:'mk4', nozzle:'0.4', lh:0.28, mode:'wall', vaseLW:0.6, wall:1.2, base:'open', arch:true,
   body:'barrel', H:180, Db:130, Dt:95, bulge:18,
-  pattern:'ribs', dstyle:'ridges', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
+  pattern:'ribs', dstyle:'ridges', jitter:0.5, ribw:0.3, vcells:'skin', count:24, depth:4, freq:6, twist:90, profile:'round', env:'uniform',
   layer:'none', bandN:12, layerOff:0.8,
   fix:true, maxA:45, top:'open', tip:false, slant:0, star:true, starN:5, starPlump:0.45, starSize:60, starAttach:'between', holder:true, holderArms:4, holderH:4, cupExtra:0, slotW:10, cupD:60.1, slotBridge:1.6, lipN:3, lip:0.8, press:true, lift:1.5, color:'#EDE4D0', seed:'FABLAB', edited:false
 };
 const DEFAULT_P = JSON.parse(JSON.stringify(P));   // starting values, used by the step Reset buttons
-const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','slant','top','star','starN','starPlump','starSize','starAttach','pattern','dstyle','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
+const DESIGN_KEYS = ['body','H','Db','Dt','bulge','tip','slant','top','jitter','ribw','vcells','star','starN','starPlump','starSize','starAttach','pattern','dstyle','count','depth','freq','twist','profile','env','layer','bandN','layerOff'];
 const history = [];
 
 let BOOTH=null, lastStats=null;
@@ -740,11 +808,12 @@ function buildMesh(p, Q){
   const lh=+p.lh, vase=p.mode==='vase', t=wallT(p);
   const N=Math.max(1,Math.round(p.bandN));
   let dzT = Q.dz; if(p.layer!=='none') dzT=Math.min(dzT, Math.max(lh, N*lh/3));
+  if(p.pattern==='scales') dzT=Math.min(dzT, Math.max(lh, Math.round(p.freq)*lh/4));
   const k=Math.max(1, Math.round(dzT/lh), Math.ceil(H/lh/Q.maxRings));
   const dz=k*lh, nz=Math.max(12, Math.round(H/dz));
   const n=Math.max(p.pattern==='facets'?3:1, Math.round(p.count));
   let seg=Q.seg;
-  if(RIBBED.has(p.pattern) && p.count>0){ seg=Math.max(seg, n*Q.perRib); seg=Math.min(seg, Q.segMax); seg=Math.max(n*2, Math.round(seg/n)*n); }
+  if(RIBBED.has(p.pattern) && p.count>0){ seg=Math.max(seg, n*Q.perRib*(p.pattern==='voronoi'?4:1)); seg=Math.min(seg, Q.segMax); seg=Math.max(n*2, Math.round(seg/n)*n); }
   const Rb=p.Db/2, Rt=p.Dt/2, B=p.bulge, A=p.depth;
   const body=BODIES[p.body].f, env=ENVS[p.env], w=WAVES[p.profile];
   const tw=p.twist*PI/180, o=p.layerOff, f=p.freq;
@@ -764,6 +833,10 @@ function buildMesh(p, Q){
   const slant = (pointed||capped) ? 0 : Math.max(0, Math.min(H*0.4, +p.slant||0));   // slanted top: drop from the high side (back) to the low side (front)
   const tipR=1.2;
 
+  let RAbase=0, RAedge=1;   // radius without the pattern (Voronoi: the thin skin sits here); Voronoi edge distance
+  const openCells = !vase && p.pattern==='voronoi' && p.vcells==='open' && !pointed && !capped && !ring;
+  const scl = !vase && p.pattern==='scales';
+  const vor = !vase && p.pattern==='voronoi', jit=Math.max(0,Math.min(1,+p.jitter||0)), ribw=Math.max(0.08,Math.min(0.7,+p.ribw||0.3));
   function radiusAt(th0, z, tn){
     const L=z/lh, b=Math.floor(L/N), fr=L/N-b;
     const tt = p.layer==='steptwist' ? Math.min(1,(b*N*lh)/H) : tn;
@@ -784,29 +857,35 @@ function buildMesh(p, Q){
                          : A*(diamondRidge(n*th/TAU, Math.max(1,f)*tn)-0.3); break;   // ridges: sharp raised diamond outlines
       case 'pinstripe': d=0.5*A*WAVES.pointed(n*th); break;
       case 'fluted': { const u=n*th/TAU; const x=2*(u-Math.floor(u))-1; d=A*(Math.sqrt(Math.max(0,1-x*x))-0.6); break; }   // round flutes meeting in sharp grooves
+      case 'origami': { const tri=x=>2*Math.abs(x-Math.floor(x)-0.5); const sh=0.45*tri(Math.max(1,f)*tn); d=A*(tri(n*th/TAU+sh)-0.5); break; }   // folded paper: sharp pleats that zigzag at every fold row
+      case 'voronoi': { const e2=voroEdge(Math.round(n)*th/TAU, Math.max(1,f)*tn, Math.max(3,Math.round(n)), jit, sN); RAedge=e2; const g=Math.max(0,1-e2/ribw); d=A*Math.sqrt(g*(2-g)); break; }   // rounded raised ribs on the cell edges, 0 in the cells
       case 'juno': { const k=Math.max(0,Math.min(1,(tn-0.52)/0.1)), kk=k*k*(3-2*k);   // diamonds below, straight flutes above
         d=A*((1-kk)*(diamondRidge(n*th/TAU, Math.max(1,f)*tn)-0.3) + kk*0.55*(Math.cos(2*n*th)+0.4)); break; }
     }
-    r += d*e;
+    const r0=r; r += d*e;
+    let lo=0;
     switch(p.layer){
-      case 'bands': if(b&1) r+=o; break;
-      case 'ridges': { const x=(fr-0.5)*N*lh/sig; r+=o*Math.exp(-x*x); break; }
-      case 'shingles': r+=o*fr; break;
+      case 'bands': if(b&1) lo=o; break;
+      case 'ridges': { const x=(fr-0.5)*N*lh/sig; lo=o*Math.exp(-x*x); break; }
+      case 'shingles': lo=o*fr; break;
     }
-    return r;
+    RAbase=r0+lo;
+    return r+lo;
   }
 
-  const R=new Float32Array((nz+1)*seg), Z=new Float32Array((nz+1)*seg);
+  const R=new Float32Array((nz+1)*seg), Z=new Float32Array((nz+1)*seg), RB=vor?new Float32Array((nz+1)*seg):null, EG=openCells?new Float32Array((nz+1)*seg):null;
   let rawSlope=0, slope=0, maxR=0, minR=1e9, maxZ=0;
   for(let j=0;j<seg;j++){
     const th0=TAU*j/seg;
     let a=0;
     if(arch){ let u=th0>PI?th0-TAU:th0; u/=archHalf; if(Math.abs(u)<1) a=archH*Math.pow(Math.cos(u*PI/2),0.7); }
-    const rFull=z=>{ let r=radiusAt(th0,z,z/H); if(z<=needZ) r=Math.max(r,needR); r=Math.max(r, 12+(vase?0:t)); if(pointed) r=Math.min(r, tipR+(H-z)*tanA); return r; };
+    let rbLast=0;
+    const rFull=z=>{ let r=radiusAt(th0,z,z/H); let rb=RAbase; if(z<=needZ){ r=Math.max(r,needR); rb=Math.max(rb,needR); } r=Math.max(r, 12+(vase?0:t)); rb=Math.max(rb,12+(vase?0:t)); if(pointed) r=Math.min(r, tipR+(H-z)*tanA); rbLast=Math.min(rb,r); return r; };
     const Hj = H - slant*(1+Math.sin(th0))/2;                // top height of this column
     for(let i=0;i<=nz;i++){
       const z=a+(Hj-a)*i/nz;
-      R[i*seg+j]=rFull(z); Z[i*seg+j]=z;
+      R[i*seg+j]=rFull(z); Z[i*seg+j]=z; if(RB) RB[i*seg+j]=rbLast;
+      if(EG) EG[i*seg+j] = (z<VORO.band || z>Hj-VORO.rim) ? 1 : ribw*VORO.cut-RAedge;   // >=0: solid (rib, band or rim), <0: hole
     }
     if(p.fix && a>0){   // cable arch column: carry the overhang limit up from the bed so it matches its neighbours
       const ns=Math.max(1,Math.ceil(a/Math.max(0.2,(H-a)/nz))), st=a/ns, mm=tanA*st; let rv=rFull(0);
@@ -819,8 +898,13 @@ function buildMesh(p, Q){
       if(p.fix){ const m=tanA*dzc; if(R[q]>R[qp]+m) R[q]=R[qp]+m; else if(R[q]<R[qp]-m) R[q]=R[qp]-m; }
       const s1=Math.abs(R[q]-R[qp])/dzc; if(s1>slope) slope=s1;
     }
+    if(scl) for(let i=0;i<=nz;i++){ const q=i*seg+j; R[q]+=scaleOff(p, th0, (Z[q]-SCALES.z0)/lh, R[q]); }   // fish scale: after the overhang limit (the rows overlap on purpose)
   }
   for(let q=0;q<R.length;q++){ if(R[q]>maxR) maxR=R[q]; if(R[q]<minR) minR=R[q]; }
+  // inner surface: the wall follows the outside (constant thickness), except Voronoi: smooth inside, thin skin in the cells
+  let RI=null;
+  if(RB){ const sk=openCells?VORO.openWall:VORO.skin; RI=new Float32Array(R.length); for(let q=0;q<R.length;q++) RI[q]=Math.min(RB[q], R[q])-sk; }
+  const IN = RI ? (q=>RI[q]) : (q=>R[q]-t);
 
   // assemble vertices
   // vase export = closed solid (Bambu's spiral vase opens the top itself).
@@ -830,8 +914,8 @@ function buildMesh(p, Q){
   let iTip=nz, zApex=H-t;
   if(pointed){                                   // inner surface stops where the wall would pinch shut; above that the tip is solid
     iTip=0;
-    for(let i=0;i<=nz;i++){ let mn=1e9; for(let j=0;j<seg;j++) mn=Math.min(mn,R[i*seg+j]-t); if(mn>=1.2) iTip=i; else if(i>nz*0.3) break; }
-    let rIn=1e9, zIn=0; for(let j=0;j<seg;j++){ rIn=Math.min(rIn,R[iTip*seg+j]-t); zIn=Math.max(zIn,Z[iTip*seg+j]); }
+    for(let i=0;i<=nz;i++){ let mn=1e9; for(let j=0;j<seg;j++) mn=Math.min(mn,IN(i*seg+j)); if(mn>=1.2) iTip=i; else if(i>nz*0.3) break; }
+    let rIn=1e9, zIn=0; for(let j=0;j<seg;j++){ rIn=Math.min(rIn,IN(iTip*seg+j)); zIn=Math.max(zIn,Z[iTip*seg+j]); }
     zApex=Math.min(H-t, zIn+rIn/tanA);
   }
   const vOuter=(nz+1)*seg;
@@ -858,13 +942,40 @@ function buildMesh(p, Q){
   for(let ii=0;ii<nInner;ii++){ const rw=rows[ii]; for(let j=0;j<seg;j++){
     let r,z;
     if(rw.kind==='rc'){ r=rc; z=Z[rw.i*seg+j]; }
-    else if(rw.kind==='src'){ r=R[rw.i*seg+j]-t; z=Z[rw.i*seg+j]; }
-    else { const zc=H-t; let i=rw.i; while(i<nz-1 && Z[(i+1)*seg+j]<zc) i++; const za=Z[i*seg+j], zb=Z[(i+1)*seg+j]; const u=Math.max(0,Math.min(1,(zc-za)/((zb-za)||1))); r=R[i*seg+j]*(1-u)+R[(i+1)*seg+j]*u-t; z=zc; if(r>capR) capR=r; }
+    else if(rw.kind==='src'){ r=IN(rw.i*seg+j); z=Z[rw.i*seg+j]; }
+    else { const zc=H-t; let i=rw.i; while(i<nz-1 && Z[(i+1)*seg+j]<zc) i++; const za=Z[i*seg+j], zb=Z[(i+1)*seg+j]; const u=Math.max(0,Math.min(1,(zc-za)/((zb-za)||1))); r=IN(i*seg+j)*(1-u)+IN((i+1)*seg+j)*u; z=zc; if(r>capR) capR=r; }
     const v=(vOuter+ii*seg+j)*3; pos[v]=r*cosT[j]; pos[v+1]=r*sinT[j]; pos[v+2]=z;
   }}
   const cA=(vOuter+nInner*seg)*3;
   if(vase&&!shell){ pos[cA+5]=H; }
   if(closed){ pos[cA+2]=H; pos[cA+5]=pointed?zApex:H-t; }
+  if(openCells && shell && nInner===nz+1 && !closed){
+    /* Voronoi with open holes: marching squares over the (around, up) grid. Each grid cell keeps only its solid part
+       (outer + inner faces), the hole outline gets a side wall between them, and crossing points sit on grid edges so
+       neighbouring cells share them: the mesh stays closed. */
+    const P=Array.from(pos.subarray(0,(vOuter+nInner*seg)*3)), T=[];
+    const O2=(i,j)=>i*seg+(((j%seg)+seg)%seg), I2=(i,j)=>vOuter+O2(i,j), S=(i,j)=>EG[O2(i,j)];
+    const xo=new Map();      // grid edge -> [outer vertex, inner vertex]
+    const cross=(i0,j0,i1,j1)=>{ const a=O2(i0,j0), b=O2(i1,j1), key=a<b?a+'_'+b:b+'_'+a; let v=xo.get(key); if(v) return v;
+      const sa=EG[a], sb=EG[b], u=sa/(sa-sb), add=(qa,qb)=>{ const k=P.length/3; for(let c=0;c<3;c++) P.push(P[qa*3+c]+(P[qb*3+c]-P[qa*3+c])*u); return k; };
+      v=[add(a,b), add(vOuter+a,vOuter+b)]; xo.set(key,v); return v; };
+    for(let i=0;i<nz;i++) for(let j=0;j<seg;j++){
+      const cs=[[i,j],[i,j+1],[i+1,j+1],[i+1,j]], poly=[];   // corners counter-clockwise (around = x, up = y)
+      for(let k=0;k<4;k++){ const [ia,ja]=cs[k], [ib,jb]=cs[(k+1)&3], sa=S(ia,ja), sb=S(ib,jb);
+        if(sa>=0) poly.push({o:O2(ia,ja), in:I2(ia,ja), x:false});
+        if((sa>=0)!==(sb>=0)){ const c=cross(ia,ja,ib,jb); poly.push({o:c[0], in:c[1], x:true, e:k}); } }
+      if(poly.length<3) continue;
+      for(let k=1;k<poly.length-1;k++){ T.push(poly[0].o,poly[k].o,poly[k+1].o); T.push(poly[0].in,poly[k+1].in,poly[k].in); }
+      for(let k=0;k<poly.length;k++){ const A2=poly[k], B2=poly[(k+1)%poly.length];
+        if(A2.x && B2.x && A2.e!==B2.e){ T.push(B2.o,A2.o,A2.in); T.push(B2.o,A2.in,B2.in); } }   // hole outline: side wall
+    }
+    for(let j=0;j<seg;j++){   // bottom rim and open top rim (both always solid)
+      T.push(O2(0,j),I2(0,j),I2(0,j+1)); T.push(O2(0,j),I2(0,j+1),O2(0,j+1));
+      T.push(O2(nz,j),I2(nz,j+1),I2(nz,j)); T.push(O2(nz,j),O2(nz,j+1),I2(nz,j+1));
+    }
+    return {pos:new Float32Array(P), idx:new Uint32Array(T), seg, nz, dz, k, H, slant, vOuter, nInner, ring, ic, vase, shell, closed, pointed, effA, capR, t, rc, puckR, puckH, maxR, minR,
+      rawAngle:Math.atan(rawSlope)*180/PI, angle:Math.atan(slope)*180/PI, R, Z, RI, voronoi:true, openCells:true};
+  }
   const nt = nz*seg*2 + (shell ? (nInner-1)*seg*2 + seg*4 : seg*2);
   const idx=new Uint32Array(nt*3); let ti=0;
   const O=(i,j)=>i*seg+(j%seg), I=(ii,j)=>vOuter+ii*seg+(j%seg);
@@ -883,7 +994,7 @@ function buildMesh(p, Q){
     }
   }
   return {pos, idx, seg, nz, dz, k, H, slant, vOuter, nInner, ring, ic, vase, shell, closed, pointed, effA, capR, t, rc, puckR, puckH, maxR, minR,
-    rawAngle:Math.atan(rawSlope)*180/PI, angle:Math.atan(slope)*180/PI, R, Z};
+    rawAngle:Math.atan(rawSlope)*180/PI, angle:Math.atan(slope)*180/PI, R, Z, RI, voronoi:!!RI};
 }
 
 function meshStats(m, p){
@@ -895,11 +1006,20 @@ function meshStats(m, p){
     vol += (ax*(by*cz-bz*cy) - ay*(bx*cz-bz*cx) + az*(bx*cy-by*cx))/6;
     if(q/3<outerTris){ const ux=bx-ax,uy=by-ay,uz=bz-az,vx=cx-ax,vy=cy-ay,vz=cz-az; const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx; area+=0.5*Math.sqrt(nx*nx+ny*ny+nz*nz); }
   }
+  if(p.pattern==='scales' && !m.vase){   // one wavy line from the toolpath: length of every lap (exact time is worked out when it is sent)
+    let len=0; const seg=m.seg;
+    for(let i=0;i<m.nz;i++){ let L=0; for(let j=0;j<seg;j++){ const a=i*seg+j, b=i*seg+(j+1)%seg, ta=TAU*j/seg, tb=TAU*(j+1)/seg;
+        L+=Math.hypot(m.R[b]*Math.cos(tb)-m.R[a]*Math.cos(ta), m.R[b]*Math.sin(tb)-m.R[a]*Math.sin(ta)); }
+      len+=L*(m.Z[(i+1)*seg]-m.Z[i*seg])/p.lh; }
+    const plasticS=len*SCALES.flow*SCALES.lw*p.lh + SCALES.holderMm3;
+    return {grams:plasticS/1000*1.24, metres:plasticS/(PI*0.875*0.875)/1000, mins:len/SCALES.speed/60*1.1 + SCALES.holderMin + 8, layers:Math.ceil(m.H/p.lh)};
+  }
   const plastic = m.vase ? area*p.vaseLW : vol*0.97; // solid wall: the slicer fills it completely (checked against PrusaSlicer: 113.6 g vs 112.5 g + holder)
   const grams = plastic/1000*1.24;
   const metres = plastic/(PI*0.875*0.875)/1000;
   const flow = m.vase ? 11 : (isPrusa(p) ? 6.7 : 8); // mm³/s average incl. travel (MK4 barrel: 91.6 cm³ in 3 h 48 m)
-  const mins = plastic/flow/60 + 6;
+  const flowK = m.openCells ? 0.8 : (m.voronoi ? 0.88 : 1);   // open holes: ~40 short pieces a layer (PrusaSlicer 4 h 20 m)   // Voronoi: lots of short moves round the ribs (PrusaSlicer: 3 h 25 m where this said 3 h 02 m)
+  const mins = plastic/(flow*flowK)/60 + 6;
   return {grams, metres, mins, layers:Math.ceil(m.H/p.lh)};
 }
 
@@ -1011,6 +1131,7 @@ function extrude(pts, z0, z1, acc){
    0.28 mm layers, gentler than the old 45° that strung), reaches STOP.lip mm over the light's top edge, and is one
    closed ring: above the cable plug the cable slot is bridged, so every layer is a single loop with no jumps. */
 const LID_SLICER={top_solid_layers:'5', bottom_solid_layers:'3', top_solid_min_thickness:'0', bottom_solid_min_thickness:'0'};   // capped top: solid lid, bridged underside
+const VORO_SLICER={top_solid_layers:'3', bottom_solid_layers:'3', top_solid_min_thickness:'0', bottom_solid_min_thickness:'0'};   // solid rib surfaces, light infill inside (100% infill took 6 h)
 const STOP={angle:35, lip:1.5, flat:0.6, closed:false};   // closed:true bridges the cable slot too (tested: more travel, not less)
 function buildHolder(p, m){
   const Lt=LIGHTS[p.light], puckR=Lt.d/2, puckH=Lt.h, H0=HOLDER;
@@ -1283,7 +1404,8 @@ async function build3mf(p, what){
   const ct='<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/><Default Extension="config" ContentType="text/xml"/></Types>';
   const rels='<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>';
   const files=[{name:'[Content_Types].xml',data:enc.encode(ct)},{name:'_rels/.rels',data:enc.encode(rels)},{name:'3D/3dmodel.model',data:model}];
-  const lidCfg = (what!=='holder' && m.closed && !m.pointed) ? LID_SLICER : null;   // the booth profile has no top/bottom layers; a lid needs them
+  let lidCfg = (what!=='holder' && m.closed && !m.pointed) ? {...LID_SLICER} : null;   // the booth profile has no top/bottom layers; a lid needs them
+  if(what!=='holder' && m.voronoi) lidCfg = {...(lidCfg||{}), ...VORO_SLICER};      // Voronoi: ribs are thick, fill them solid so no infill shows
   if(extras.length || lidCfg) files.push({name:'Metadata/Slic3r_PE_model.config', data:enc.encode(objectConfig([{name:title, settings:lidCfg, ntri:obj.idx.length/3}].concat(extras.map(e=>({name:e.name, settings:STAR.slicer, ntri:e.mesh.idx.length/3})))))});
   const blob=await makeZip(files);
   return {blob, name:title+'.3mf', mesh:obj, starNote, star:extras.length>0};
@@ -1365,8 +1487,11 @@ function gcPlan(pIn, oIn){
   const o={...GC_DEF, ...oIn};
   const p=lockFixed({...pIn, lh:o.lh});
   if(+p.slant>0 && !(p.body==='pagoda'&&p.tip)) throw new Error('A slanted top cannot be printed as one continuous spiral. Use the normal 3MF for this design, or set Slanted top to level.');
+  if(p.pattern==='voronoi') throw new Error('Voronoi has thick ribs and a thin skin, so it cannot be printed as one single line. Use the normal 3MF for this design.');
   if(p.top==='closed' && !(p.body==='pagoda'&&p.tip)) throw new Error('A capped top cannot be printed as one continuous spiral. Use the normal 3MF for this design, or untick Cap the top.');
-  const m=buildMesh(p,{dz:o.lh, maxRings:5000, seg:720, segMax:720, perRib:24});
+  const scl=p.pattern==='scales';
+  if(scl) Object.assign(o,{lw:SCALES.lw, speed:SCALES.speed, temp:SCALES.temp, fan:SCALES.fan});   // tested fish-scale settings
+  const m=buildMesh(scl?{...p, pattern:'smooth'}:p,{dz:o.lh, maxRings:5000, seg:scl?SCALES.seg:720, segMax:scl?SCALES.seg:720, perRib:24});   // fish scale: plain base shape, the wave is added to the spiral below
   const hd=buildHolder(p,m);
   const seg=m.seg, H=m.H, w=o.lw, hw=o.holderLW;
   const slotW=Math.max(4,+p.slotW||10), topZ=hd.ledge+hd.hs, bt=hd.press&&hd.clips&&STOP.closed ? topZ-hd.clips.z0 : Math.min(Math.max(0,+p.slotBridge||0), hd.hs-3);
@@ -1441,19 +1566,22 @@ function gcPlan(pIn, oIn){
   // ---- spiral
   const zF=layers[layers.length-1].z;
   const tipStop = w*0.75;
+  // fish scale: plastic per mm as tested (flow x line width x layer height), and the first lap of each row (it spans the gaps) thinner
+  const eA=gcArea(w,o.lh)*GC_FIL.flow, eS=scl?SCALES.flow*w*o.lh/eA:1, eB=scl?SCALES.bflow*w*o.lh/eA:1, rows=Math.max(1,Math.round(p.freq));
   let done=false, k=0;
   while(!done && zF<H-1e-6){
     const pts=[], zz=[], ef=[];
+    const rowStart = scl && k>0 && k%rows===0;          // first lap of a new row: bridges between the crossing points
     for(let s=0;s<=seg;s++){
       let zN=zF+(k+s/seg)*o.lh, last=false;
       if(zN>=H){ zN=H; last=true; }
       const j=(j0+s)%seg, R=gcSampleR(m,j,Math.max(0,zN-o.lh/2));
-      const r=R-w/2;
+      const r=R-w/2 + (scl ? scaleOff(p, TAU*j/seg, k+Math.min(s,seg-1)/seg, R) : 0);   // the row flips at the seam, where both waves meet
       if(r<tipStop){ done=true; break; }
-      pts.push(P2(r,TAU*j/seg)); zz.push(zN); ef.push(k===0 ? s/seg : 1);
+      pts.push(P2(r,TAU*j/seg)); zz.push(zN); ef.push((k===0 ? s/seg : 1)*(rowStart?eB:eS));
       if(last && s===seg){ done=true; }
     }
-    if(pts.length>1) layers.push({z:zz[zz.length-1], h:o.lh, paths:[{pts, zz, ef, w, h:o.lh, speed:o.speed, feature:'Outer wall', spiral:true}], flat:false});
+    if(pts.length>1) layers.push({z:zz[zz.length-1], h:o.lh, paths:[{pts, zz, ef, w, h:o.lh, speed:rowStart?SCALES.bspeed:o.speed, feature:rowStart?'Bridge':'Outer wall', spiral:true, fanMax:rowStart}], flat:false});
     if(zz.length && zz[zz.length-1]>=H-1e-6) done=true;
     k++;
     if(k>5000) break;
@@ -1461,7 +1589,7 @@ function gcPlan(pIn, oIn){
   // final flat lap at the top rim, tapering the flow to zero (open tops only)
   if(!m.pointed){
     const pts=[], zz=[], ef=[];
-    for(let s=0;s<=seg;s++){ const j=(j0+s)%seg; const R=gcSampleR(m,j,H-o.lh/2)-w/2; pts.push(P2(R,TAU*j/seg)); zz.push(H); ef.push(1-s/seg); }
+    for(let s=0;s<=seg;s++){ const j=(j0+s)%seg, R0=gcSampleR(m,j,H-o.lh/2); const R=R0-w/2+(scl?scaleOff(p, TAU*j/seg, k-1+Math.min(s,seg-1)/seg, R0):0); pts.push(P2(R,TAU*j/seg)); zz.push(H); ef.push((1-s/seg)*eS); }
     layers.push({z:H, h:o.lh, paths:[{pts, zz, ef, w, h:o.lh, speed:o.speed, feature:'Outer wall', spiral:true}], flat:false});
   }
   // ---- stats (time, filament) with minimum layer time
@@ -1485,7 +1613,7 @@ function gcPlan(pIn, oIn){
   }
   const grams=vol/1000*GC_FIL.density, metres=vol*ePerMm3/1000/GC_FIL.flow;
   const nFlat=layers.filter(L=>L.flat).length;
-  return {o, p, m, hd, layers, nFlat, nSpiral:layers.length-nFlat, H, vol, grams, metres, mins:tPrint/60, box:[minX,minY,maxX,maxY], flatUntil, volFlow:gcFlowVol(o), ePerMm3};
+  return {o, p, m, hd, layers, nFlat, nSpiral:layers.length-nFlat, H, vol, grams, metres, mins:tPrint/60, box:[minX,minY,maxX,maxY], flatUntil, volFlow:gcFlowVol(o)*(scl?eS:1), ePerMm3, scales:scl};
 }
 
 /* Bambu Studio placeholder language: [var], {expr}, {if}{else}{endif} */
@@ -1909,7 +2037,7 @@ function openFablabMenu(){
     [['Cancel','',closeModal],[XMAS_ON?'Christmas mode off':'Christmas mode on','',kioskXmasToggle],['G-code to printer','',()=>{ closeModal(); setTimeout(openGcodeTools,60); }],['Test printer','',()=>{ closeModal(); setTimeout(testPrinter,60); }],['Fast wall G-code (test)','',()=>{ closeModal(); setTimeout(openGcodePanel,60); }],['Download 3MF','primary',()=>{ closeModal(); doExport(); }]]);
 }
 
-window.__lamp = {P, redraw:()=>{ lastFitKey=''; refresh(); }, buildMesh, buildHolder, build3mf, meshStats, gcPlan, gcText, gcPackage, gcTemplate, gcCheckEnd, md5hex, armGeom, armSlice, cupInnerR, HOLDER, buildStarParts, starPlate, starOnTree, starShape, capDims, setXmasForTest:v=>{ XMAS_ON=!!v; }}; // exposed for testing
+window.__lamp = {P, redraw:()=>{ lastFitKey=''; refresh(); }, buildMesh, buildHolder, build3mf, meshStats, gcPlan, gcText, gcPackage, gcTemplate, gcCheckEnd, md5hex, armGeom, armSlice, cupInnerR, HOLDER, buildStarParts, starPlate, starOnTree, starShape, capDims, setXmasForTest:v=>{ XMAS_ON=!!v; }, get seedCode(){ return seedCode; }, get readSeedCode(){ return readSeedCode; }, SCALES, scaleOff}; // exposed for testing
 
 /* ---------- quality presets ---------- */
 const Q_PREVIEW={dz:0.8, maxRings:320, seg:200, segMax:432, perRib:6, shell:true};
@@ -1921,7 +2049,7 @@ const Q_EXPORT ={dz:0.4, maxRings:800, seg:256, segMax:576, perRib:8};
 function describe(p){
   const b=BODIES[p.body].name, pt=PATTERNS[p.pattern];
   let s=b;
-  if(p.pattern!=='smooth'){ s+=' · '+(p.pattern==='diamonds'&&p.dstyle==='quilted'?'Quilted diamonds':pt.name); if(pt.uses.includes('count')&&p.count>0) s+=' × '+Math.round(p.count); if(pt.uses.includes('twist')&&p.twist) s+=` · ${p.twist>0?'+':''}${p.twist}° twist`; }
+  if(p.pattern!=='smooth'){ s+=' · '+(p.pattern==='diamonds'&&p.dstyle==='quilted'?'Quilted diamonds':p.pattern==='voronoi'&&p.vcells==='open'?'Open Voronoi':pt.name); if(pt.uses.includes('count')&&p.count>0) s+=' × '+Math.round(p.count); if(pt.uses.includes('twist')&&p.twist) s+=` · ${p.twist>0?'+':''}${p.twist}° twist`; }
   if(p.layer!=='none') s+=` · ${LAYERPATS[p.layer].name} / ${p.bandN} layers`;
   if(p.body==='pagoda' && p.tip) s+= starOn(p) ? ` · ${Math.round(+p.starN)}-point star` : ' · pointed top';
   else if(p.top==='closed') s+=' · capped top';
@@ -1942,7 +2070,7 @@ function randomDesign(seed, base){
   q.Dt=Math.round(rr(40,cap*0.75));
   if(q.body==='bell'){ q.Dt=Math.round(Math.min(q.Dt,q.Db*0.6)); }
   q.bulge=Math.round(rr(4,q.body==='hourglass'?Math.min(q.Db,q.Dt)*0.25:32));
-  q.pattern=pick(['ribs','ribs','ribs','waves','diamonds','bubbles','pillows','facets','facets','organic','smooth','diamonds','diamonds']);
+  q.pattern=pick(['ribs','ribs','ribs','waves','diamonds','bubbles','pillows','facets','facets','organic','smooth','diamonds','diamonds','origami','origami','voronoi','voronoi','scales']);
   q.count = q.pattern==='facets' ? pick([5,6,7,8,9,10,12,16]) : q.pattern==='waves' ? pick([0,0,3,4,5,6,8]) : q.pattern==='pinstripe' ? Math.round(rr(40,72)) : (q.pattern==='diamonds'||q.pattern==='juno') ? Math.round(rr(10,22)) : q.pattern==='fluted' ? Math.round(rr(14,30)) : Math.round(rr(q.pattern==='ribs'?10:5,q.pattern==='ribs'?44:18));
   q.depth=Math.round(rr(1.5,q.pattern==='bubbles'?5:7)*10)/10;
   q.freq=q.pattern==='waves'?Math.round(rr(3,16)):q.pattern==='organic'?Math.round(rr(3,14)):Math.round(rr(4,14));
@@ -1961,11 +2089,15 @@ function randomDesign(seed, base){
   if(q.pattern==='diamonds'){ q.dstyle=r()<0.5?'ridges':'quilted';
     if(q.dstyle==='ridges'){ q.depth=Math.round(rr(1.5,3.5)*10)/10; q.freq=Math.round(rr(6,14)); q.twist=0; }
     else { q.count=Math.round(rr(6,18)); q.depth=Math.round(rr(3,6.5)*10)/10; q.freq=Math.round(rr(4,12)); } }
+  if(q.pattern==='origami'){ q.count=Math.round(rr(24,40)); q.freq=Math.round(rr(3,6)); q.depth=Math.round(rr(2.5,4)*10)/10; q.twist=pick([0,0,0,45,90]); }
+  if(q.pattern==='scales'){ q.count=Math.round(rr(10,16)); q.freq=Math.round(rr(6,10)); q.depth=Math.round(rr(7,10)*10)/10; q.layer='none'; }
+  if(q.pattern==='voronoi'){ q.count=Math.round(rr(7,13)); q.freq=Math.round(rr(5,9)); q.depth=Math.round(rr(2,3.5)*10)/10; q.jitter=Math.round(rr(0,1)*20)/20; q.ribw=Math.round(rr(0.24,0.4)*40)/40; q.vcells=r()<0.3?'open':'skin'; }
   q.slant = (q.body!=='pagoda' && r()<0.2) ? Math.round(rr(10,35)) : 0;
   if(XMAS_ON && r()<0.45){   // Christmas mode: plenty of trees with stars
     q.body='pagoda'; q.tip=true; q.slant=0; q.star=true; q.bulge=Math.round(rr(8,30));
     q.starN=pick([4,5,5,5,6,6,7,8]); q.starPlump=Math.round(rr(0.35,0.62)*100)/100; q.starAttach=pick(['between','between','point']); q.starSize=pick([50,55,60,60,65]);
   }
+  if(q.pattern==='scales') normalizeDesign(q);
   return fitToBed(q);
 }
 function fitToBed(q){
@@ -1984,13 +2116,14 @@ function mutate(p){
   q.depth=jit(q.depth,0.3,0.5,10,0.1); q.count=Math.max(q.pattern==='facets'?3:0,jit(q.count,0.2,0,48));
   q.twist=Math.max(-360,Math.min(360,Math.round((q.twist+(r()*2-1)*45)/5)*5)); q.freq=jit(q.freq,0.25,1,30);
   if(r()<0.25) q.profile=['round','pointed','square','scallop'][Math.floor(r()*4)];
+  if(q.pattern==='scales') normalizeDesign(q);
   return fitToBed(q);
 }
 
 /* ---------- UI build ---------- */
 function profileSvg(key){
   const f=BODIES[key].f; const pts=[];
-  const defs={column:[34,22,0],barrel:[30,24,8],bell:[40,14,6],globe:[22,16,14],tulip:[24,30,8],gourd:[26,14,12],hourglass:[34,30,10],lantern:[26,24,9],pagoda:[34,18,8],teardrop:[18,10,18],capsule:[28,28,10],bottle:[30,30,14]}[key];
+  const defs={column:[34,22,0],barrel:[30,24,8],bell:[40,14,6],globe:[22,16,14],tulip:[24,30,8],gourd:[26,14,12],hourglass:[34,30,10],lantern:[26,24,9],pagoda:[34,18,8],teardrop:[18,10,18],capsule:[28,28,10],bottle:[30,30,14],gem:[22,22,12],deco:[22,14,14]}[key];
   for(let i=0;i<=24;i++){ const t=i/24; const r=Math.max(4,f(t,defs[2],defs[0],defs[1])); pts.push([r,t]); }
   const s=0.42, cx=17, bot=31, h=28;
   const right=pts.map(([r,t])=>`${(cx+r*s).toFixed(1)},${(bot-t*h).toFixed(1)}`);
@@ -2008,6 +2141,9 @@ function patSvg(key){
     facets:`<path d="M17 4l11 6.5v13L17 30 6 23.5v-13z M17 4v26M6 10.5l22 13M28 10.5l-22 13" ${S}/>`,
     organic:`<path d="M8 8c5-3 8 3 12 0s6 4 6 8-5 3-6 8-8 4-10 0-6-2-5-7 0-6 3-9z" ${S}/>`,
     diamonds:`<path d="M5 9l6-5 6 5 6-5 6 5M5 9l6 6 6-6 6 6 6-6M5 21l6-6 6 6 6-6 6 6M5 21l6 6 6-6 6 6 6-6" ${S}/>`,
+    origami:`<path d="M6 5l4 6-4 6 4 6-4 6M13 5l4 6-4 6 4 6-4 6M20 5l4 6-4 6 4 6-4 6M27 5l-3 6" ${S}/>`,
+    scales:`<path d="M4 10c3-5 6-5 7 0 1-5 5-5 6 0 1-5 5-5 6 0 1-5 5-5 7 0M4 18c1-5 5-5 7 0M11 18c1-5 5-5 6 0 1-5 5-5 6 0 1-5 4-5 7 0M4 26c3-5 6-5 7 0 1-5 5-5 6 0 1-5 5-5 6 0 1-5 5-5 7 0" ${S}/>`,
+    voronoi:`<path d="M5 7c4-3 8-3 11 1 3-4 8-4 12-1M5 7c0 5 2 8 6 9M16 8c-1 4-2 6-5 8M16 8c1 4 3 6 6 8M28 7c0 5-2 8-6 9M11 16c-3 3-5 6-5 11M11 16c2 4 3 7 2 11M22 16c-2 4-3 7-2 11M22 16c3 3 5 6 5 11" ${S}/>`,
     pinstripe:`<path d="M8 5v24M11 5v24M14 5v24M17 5v24M20 5v24M23 5v24M26 5v24" stroke="currentColor" stroke-width="0.9" fill="none"/>`,
     fluted:`<path d="M6 29V8a2.75 2.75 0 0 1 5.5 0v21M11.5 29V8a2.75 2.75 0 0 1 5.5 0v21M17 29V8a2.75 2.75 0 0 1 5.5 0v21M22.5 29V8a2.75 2.75 0 0 1 5.5 0v21" ${S}/>`,
     juno:`<path d="M10 4v9M14 4v9M18 4v9M22 4v9M26 4v9" ${S}/><path d="M7 16l5 5 5-5 5 5 5-5M7 26l5-5 5 5 5-5 5 5" ${S}/>`
@@ -2041,6 +2177,7 @@ function buildLayerSeg(){
 const fmt = {
   H:v=>v+' mm', Db:v=>v+' mm', Dt:v=>v+' mm', bulge:v=>v+' mm', count:v=>v, depth:v=>(+v).toFixed(1)+' mm', freq:v=>v,
   twist:v=>(v>0?'+':'')+v+'°', bandN:v=>v+' layers', layerOff:v=>(+v).toFixed(2)+' mm', maxA:v=>{ const e=effMaxA({...P,maxA:+v}); return e<+v ? `${v}° (${e}° at ${(+P.lh).toFixed(2)} mm layers)` : v+'°'; }, holderH:v=>(+v).toFixed(1)+' mm', cupD:v=>{ const g=(v-LIGHTS[P.light].d)/2; return `${(+v).toFixed(1)} mm (gap ${g>=0?'+':''}${g.toFixed(2)})`; }, slotBridge:v=>{ if(+v<=0) return 'off'; const hs=Math.max(4,LIGHTS[P.light].h+(+P.cupExtra||0)); return `${(+v).toFixed(1)} mm (opening ${Math.max(0,hs-v).toFixed(1)} mm tall)`; }, slotW:v=>(+v).toFixed(1)+' mm', lip:v=>{ const d=cupInnerR(P)*2-2*v; return `${(+v).toFixed(1)} mm in (opening Ø${d.toFixed(1)} vs light Ø${LIGHTS[P.light].d})`; }, lipN:v=>'', slant:v=>(+v>0?`${v} mm lower at the front`:'level'), lift:v=>`${(+v).toFixed(2)} mm (how far the lamp moves down to click)`, cupExtra:v=>(+v===0?'flush':(v>0?'+':'')+(+v).toFixed(1)+' mm'), wall:v=>(+v).toFixed(1)+' mm', vaseLW:v=>(+v).toFixed(2)+' mm',
+  jitter:v=>(+v<0.15?'regular diamonds':+v<0.6?'a little random':'organic cells'), ribw:v=>(+v<0.22?'thin':+v<0.38?'medium':'thick'),
   starPlump:v=>`${Math.round(v*100)}% · ${v<0.4?'slim':v<0.55?'classic':'plump'}`, starSize:v=>v+' mm wide'
 };
 function syncUI(){
@@ -2058,11 +2195,21 @@ function syncUI(){
   const pt=PATTERNS[P.pattern];
   const ridges = P.pattern==='diamonds' && P.dstyle!=='quilted';   // rib profile only shapes the quilted style
   $$('[data-pat]').forEach(el=>el.hidden=!pt.uses.includes(el.dataset.pat) || (ridges && el.dataset.pat==='profile'));
+  { const vh=$('#vcellsHint'); if(vh) vh.textContent = P.vcells==='open'
+      ? 'Real holes, so the light shines straight through. Each layer is printed as many short pieces, so expect more thin strings across the holes (peel them off). The tops of the holes need to slope: regular diamonds with more cells around, fewer cells up and little twist print cleanest; organic cells can have flatter tops that droop. The bottom 12 mm stays solid for the light holder.'+(P.top==='closed'?' (With the lid on, the cells keep their thin skin.)':'')+(voroTopAngle(P,current)<40?` Hole tops are only ${voroTopAngle(P,current).toFixed(0)}° steep now: add cells around, take away cells up or twist.`:'')
+      : 'The cells aren\'t holes: they keep a thin 0.8 mm skin that glows and spreads the light, while the raised ribs stay darker. Prints cleanly with no strings across.';
+    if(P.vcells==='open') vh.classList.add('capnote'); else vh.classList.remove('capnote'); }
   $('#dstyleHint').textContent = P.dstyle==='quilted' ? 'Soft puffy cushions in a criss-cross grid. Rib profile changes how rounded they are.' : 'Sharp raised lines in a diamond grid, like cut glass.';
   $('#countLbl').firstChild.textContent=(pt.count||'Count')+' ';
   $('#freqLbl').firstChild.textContent=(pt.freq||'Rows')+' ';
-  $('#count').min = P.pattern==='facets'?3:(P.pattern==='waves'?0:2);
-  $('#count').max = P.pattern==='ribs'?72:(P.pattern==='facets'?16:48);
+  $('#count').min = P.pattern==='facets'?3:(P.pattern==='waves'?0:P.pattern==='scales'?SCALES.countMin:2);
+  $('#count').max = P.pattern==='ribs'?72:(P.pattern==='facets'?16:P.pattern==='scales'?SCALES.countMax:48);
+  $('#freq').min = P.pattern==='scales'?SCALES.rowsMin:1; $('#freq').max = P.pattern==='scales'?SCALES.rowsMax:30;
+  $('#depth').min = P.pattern==='scales'?SCALES.depthMin:0.5;
+  { const sn=$('#scalesNote'); if(sn && P.pattern==='scales'){ const span=Math.PI*(Math.min(P.Db,P.Dt)/2)/Math.max(1,P.count);
+      sn.innerHTML=`Printed as one wavy line, the way clay printers work. Each row of ${P.freq} layers waves in and out, and the next row is shifted half a wave, so the gaps between rows glow. <b>The first layer of each row spans about ${Math.round(span)} mm of open air, so it droops a little: that is part of the look.</b> ${span>13?'More scales around makes shorter spans and less droop.':''} Prints on the Prusa printer only.`; } }
+  $('#secLayer').classList.toggle('dim', P.pattern==='scales');
+  { const be=$('#btnExport'); if(be && be.lastChild && be.lastChild.nodeType===3) be.lastChild.textContent = P.pattern==='scales' ? 'Export G-code' : 'Export 3MF'; }
   $('#bulgeLbl').firstChild.textContent=BODIES[P.body].bulge+' ';
   $('#envHint').textContent={uniform:'The pattern is the same depth from the bottom of the lamp to the top.',
     rise:'The pattern starts almost flat at the bottom and gets deeper towards the top.',
@@ -2083,7 +2230,7 @@ function syncUI(){
   $('#capNote').hidden = !(P.top==='closed' && !pointedTip);
   const lp=LAYERPATS[P.layer];
   $$('[data-lay]').forEach(el=>el.hidden=!(lp.uses||[]).includes(el.dataset.lay));
-  $('#layerHint').textContent=lp.hint||'Plain layers. Pick a layer pattern to add texture that follows your layer height.';
+  $('#layerHint').textContent=P.pattern==='scales' ? 'Fish scale makes its own rows of layers, so layer patterns are switched off.' : (lp.hint||'Plain layers. Pick a layer pattern to add texture that follows your layer height.');
   $('#bandMm').textContent = P.layer!=='none' ? `${P.bandN} × ${(+P.lh).toFixed(2)} = ${(P.bandN*P.lh).toFixed(2)} mm` : '';
   $$('[data-show]').forEach(el=>el.hidden=(el.dataset.show!==P.mode) || (P.holder && el.hasAttribute('data-noholder')));
   $$('[data-hold]').forEach(el=>el.hidden=!P.holder);
@@ -2339,6 +2486,8 @@ function updateAnalysis(m){
   rows.push([P.fix&&m.rawAngle>m.effA+0.5?`Overhang (angled from ${m.rawAngle.toFixed(0)}° to ${m.effA}°)`:'Steepest overhang', `<span class="pill ${angClass}">${ang.toFixed(0)}°</span>`]);
   if(P.mode==='vase' && P.layer!=='none' && ['bands','shingles'].includes(P.layer) && P.layerOff>P.vaseLW*0.9 && !P.fix) rows.push(['Layer offset vs wall','<span class="pill warn">steps wider than wall</span>']);
   if(m.pointed) rows.push(['Pointed top', '<span class="pill ok">closes as a cone, no supports</span>']);
+  if(m.openCells){ const ang=voroTopAngle(P,m); rows.push([`Open holes · tops ${ang.toFixed(0)}° steep`, ang<40?'<span class="pill bad">flat hole tops will sag</span>':'<span class="pill warn">expect some strings</span>']); }
+  else if(m.voronoi) rows.push(['Voronoi cells', '<span class="pill ok">0.8 mm glowing skin</span>']);
   if(starOn(P) && STAR_FIT) rows.push([`Star · ${STAR_FIT.sp.sh.N} points · ${STAR_FIT.size} mm`, !STAR_FIT.pl?'<span class="pill bad">no room</span>':STAR_FIT.shrunk?'<span class="pill warn">made smaller</span>':'<span class="pill ok">on the plate</span>']);
   else if(m.closed) rows.push([`Lid bridges Ø${(m.capR*2).toFixed(0)} mm`, '<span class="pill warn">underside may sag or string</span>']);
   if(P.mode==='vase' && P.vaseLW>parseFloat(P.nozzle)*2) rows.push(['Line width vs nozzle','<span class="pill warn">over 2× nozzle</span>']);
@@ -2353,7 +2502,7 @@ function updateAnalysis(m){
 }
 function minRadBottom(m){ let r=1e9; const lim=m.puckH+1; for(let j=0;j<m.seg;j++) for(let i=0;i<=m.nz;i++){ const q=i*m.seg+j; if(m.Z[q]>lim) break; if(m.R[q]<r) r=m.R[q]; } return r; }
 function topRad(m){ let r=1e9; for(let j=0;j<m.seg;j++){ const v=m.R[m.nz*m.seg+j]-(m.vase?m.t:m.t); if(v<r) r=v; } return r; }
-function fmtTime(mins){ const h=Math.floor(mins/60), mm=Math.round(mins%60); return h?`${h} h ${mm} m`:`${mm} min`; }
+function fmtTime(mins){ const tot=Math.max(0,Math.round(mins)), h=Math.floor(tot/60), mm=tot%60; return h?`${h} h ${mm} m`:`${mm} min`; }   // round first, so 239.6 min reads 4 h 0 m, not 3 h 60 m
 function settingsText(m,st){
   const pr=PRINTERS[P.printer]; const lh=(+P.lh).toFixed(2);
   const lines=[`Printer   ${pr.name}, ${P.nozzle} mm nozzle`,`Layer     ${lh} mm  (${st.layers} layers)`];
@@ -2472,7 +2621,7 @@ function drawLens(m){
     }
   });
   x.fillStyle=muted; x.font='500 11px "IBM Plex Mono", monospace'; x.textAlign='left';
-  x.fillText(`${lh.toFixed(2)} mm layers · ${loops>1?loops+' walls × ':''}${lw.toFixed(2)} mm line`,8,h-9);
+  x.fillText(P.pattern==='scales' ? `${lh.toFixed(2)} mm layers · 1 wavy line × ${SCALES.lw.toFixed(2)} mm` : `${lh.toFixed(2)} mm layers · ${loops>1?loops+' walls × ':''}${lw.toFixed(2)} mm line`,8,h-9);
   x.textAlign='right'; x.fillStyle=acc; x.fillText(`zoom at z ${z0.toFixed(0)} mm`,w-8,16);
   x.fillStyle=muted; x.textAlign='left'; x.fillText('← inside   outside →',8,16);
 }
@@ -2491,20 +2640,30 @@ function initThumbs(){
   thumbMesh=new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({roughness:0.6}));
   thumbScene.add(thumbMesh);
 }
+/* named samples, shown first in Ideas (from photos of lamps the FabLab liked) */
+const SAMPLES=[
+  {name:'Paper lantern', d:{body:'barrel', H:165, Db:118, Dt:104, bulge:20, pattern:'origami', count:32, freq:4, depth:3.5, twist:0, env:'uniform', layer:'none', slant:0, top:'open', tip:false, seed:'ORIGAMI'}},
+  {name:'Gem lantern',   d:{body:'gem', H:120, Db:96, Dt:96, bulge:32, pattern:'facets', count:8, twist:0, env:'uniform', layer:'none', slant:0, top:'open', tip:false, seed:'GEMLAMP'}},
+  {name:'Deco tiers',    d:{body:'deco', H:140, Db:100, Dt:66, bulge:30, pattern:'smooth', layer:'none', slant:0, top:'open', tip:false, seed:'DECO'}},
+  {name:'Voronoi glow',  d:{body:'tulip', H:135, Db:96, Dt:106, bulge:10, pattern:'voronoi', vcells:'skin', count:12, freq:5, depth:2.0, twist:45, jitter:0, ribw:0.24, env:'uniform', layer:'none', slant:0, top:'open', tip:false, seed:'VORONOI'}},
+  {name:'Fish scale',    d:{body:'barrel', H:120, Db:110, Dt:96, bulge:8, pattern:'scales', count:14, freq:8, depth:9, twist:0, env:'uniform', layer:'none', slant:0, top:'open', tip:false, seed:'SCALES'}}
+];
 let ideaSet=[];
 function makeIdeas(){
   if(!thumbR) initThumbs();
   const host=$('#ideas'); host.innerHTML='';
   ideaSet=[];
-  for(let i=0;i<6;i++){
-    const d=randomDesign(newSeed(), {...P});
+  const fromSamples=SAMPLES.map(sm=>{ const d=fitToBed(normalizeDesign({...P, ...sm.d})); d.sampleName=sm.name; return d; });
+  for(let i=0;i<6+SAMPLES.length;i++){
+    const d= i<SAMPLES.length ? fromSamples[i] : randomDesign(newSeed(), {...P});
     ideaSet.push(d);
     const m=meshWithStar(d,buildMesh(d,Q_THUMB)); const Ht=m.H+(m.starTop||0);
     thumbMesh.geometry.dispose(); thumbMesh.geometry=toGeometry(m); thumbMesh.material.color.set(P.color);
     const dist=Math.max(Ht*1.1,m.maxR*2.3)*2.2; thumbCam.position.set(dist*Math.cos(-0.9)*0.95,dist*Math.sin(-0.9)*0.95,Ht*0.45+dist*0.3); thumbCam.lookAt(0,0,Ht*0.45);
     thumbR.render(thumbScene,thumbCam);
-    const b=document.createElement('button'); b.className='idea'; b.title=describe(d)+' · seed '+d.seed; b.setAttribute('aria-label','Load idea: '+describe(d));
+    const b=document.createElement('button'); b.className='idea'; b.title=(d.sampleName?d.sampleName+': ':'')+describe(d)+' · seed '+d.seed; b.setAttribute('aria-label','Load idea: '+(d.sampleName||describe(d)));
     const img=new Image(); img.alt=''; img.src=thumbR.domElement.toDataURL('image/png'); b.appendChild(img);
+    if(d.sampleName){ const tg=document.createElement('span'); tg.className='ideatag'; tg.textContent=d.sampleName; b.appendChild(tg); }
     b.addEventListener('click',()=>{ pushHistory(); DESIGN_KEYS.forEach(k=>P[k]=d[k]); P.seed=d.seed; P.edited=false; lastFitKey=''; refresh(); if(PORTRAIT_TABS.length && curStep===PORTRAIT_TABS.length-1) goStep(1); });
     host.appendChild(b);
   }
@@ -2553,6 +2712,12 @@ async function doExport(what, via){
   const btn=via==='share'?$('#btnShare'):(what==='holder'?$('#btnHolderOnly'):what==='star'?$('#btnStarOnly'):$('#btnExport')); btn.disabled=true; $('#busy').hidden=false;
   await new Promise(r=>setTimeout(r,30));
   try{
+    if(P.pattern==='scales' && !what){   // fish scale is a toolpath, not a solid: hand out the printer file (Prusa MK4 / MK3.5, or Bambu A1)
+      const plan=gcPlan(P,{lh:+P.lh}); const text=gcText(plan); const {blob,name}=await gcPackage(plan,text);
+      $('#busy').hidden=true; toast(`Fish scale: G-code for the ${gcMachine(P).name} only (about ${fmtTime(plan.mins+8)})`);
+      if(via==='share') await shareFile(name.replace('-fastwall-','-fishscale-'), blob); else await offerFile(name.replace('-fastwall-','-fishscale-'), blob);
+      return;
+    }
     const {blob,name,starNote}=await build3mf(P, what);
     $('#busy').hidden=true;
     if(starNote) toast('Star: '+starNote);
@@ -2564,7 +2729,7 @@ async function doExport(what, via){
 /* ---------- wiring ---------- */
 let dragTimer=0;
 function setParam(key,val,live){
-  const num=['starN','starPlump','starSize','slant','lift','lipN','lip','slotBridge','cupD','slotW','cupExtra','holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
+  const num=['jitter','ribw','starN','starPlump','starSize','slant','lift','lipN','lip','slotBridge','cupD','slotW','cupExtra','holderArms','holderH','H','Db','Dt','bulge','count','depth','freq','twist','bandN','layerOff','maxA','wall','vaseLW','lh'];
   if(num.includes(key)) val=parseFloat(val);
   if(P[key]===val && !live) return;
   P[key]=val;
@@ -2579,6 +2744,14 @@ function setParam(key,val,live){
   // good starting values when picking one of the vase-style patterns
   if(key==='pattern' && val!=='ribs' && P.count>48) P.count=24;
   if(key==='pattern' && val==='diamonds' && P.dstyle!=='quilted'){ P.count=Math.max(10,Math.min(22,P.count)); if(P.freq<5) P.freq=10; P.depth=Math.min(Math.max(P.depth,2),3.5); }
+  if(key==='pattern' && val==='origami'){ P.count=Math.max(24,Math.min(40,P.count)); P.freq=Math.max(3,Math.min(6,P.freq)); P.depth=Math.max(2.5,Math.min(4,P.depth)); P.twist=0; }
+  if(key==='vcells' && val==='open'){   // open holes need sloped tops: add cells around, then fewer up, until the tops are 45° or steeper
+    for(let it=0; it<120 && voroTopAngle(P,current)<45; it++){
+      if(P.count<16) P.count++; else if(P.freq>4) P.freq--; else if(Math.abs(P.twist)>0) P.twist-=Math.sign(P.twist)*5; else if(P.count<24) P.count++; else break; }
+  }
+  if(key==='pattern' && val==='scales'){ P.count=12; P.freq=8; P.depth=9; }   // the tested fish-scale settings
+  if(P.pattern==='scales') normalizeDesign(P);   // fish scale: no layer pattern, open level top
+  if(key==='pattern' && val==='voronoi'){ P.count=Math.max(6,Math.min(14,P.count)); P.freq=Math.max(4,Math.min(10,P.freq)); P.depth=Math.max(2,Math.min(3.5,P.depth)); }
   if(key==='dstyle' && val==='quilted'){ P.count=Math.max(6,Math.min(18,P.count)); if(P.freq<4) P.freq=8; P.depth=Math.max(P.depth,4); }
   if(key==='dstyle' && val==='ridges'){ P.count=Math.max(10,Math.min(22,P.count)); if(P.freq<5) P.freq=10; P.depth=Math.min(Math.max(P.depth,2),3.5); }
   if(live){ refresh(Q_DRAG); clearTimeout(dragTimer); dragTimer=setTimeout(()=>{ keepWidth(key); refresh(); },260); }
@@ -2642,6 +2815,7 @@ function checkPrintable(m, bedOk, clearance, hd){
   else if(!hd && clearance<0.3){ ok=false; why='Base is too tight for the light'; }
   else if(hd && hd.arms.length<3){ ok=false; why='Make the base a little wider so the light holder has room for its arms'; }
   else if(starOn(P) && STAR_FIT && !STAR_FIT.pl){ ok=false; why='Make the tree narrower so the star fits'; }
+  else if(P.pattern==='scales' && BOOTH && !(gcMachine(P) && gcMachine(P).kind==='prusa')){ ok=false; why='Fish scale prints on the Prusa printer only'; }
   else if(BOOTH && BOOTH.maxMin && lastStats && lastStats.mins>BOOTH.maxMin){ ok=false; why=`Too long to print (${fmtTime(lastStats.mins)}, max ${fmtTime(BOOTH.maxMin)}): make it shorter or narrower`; }
   printable={ok,why};
   { const ss=$('#sendSeed'); if(ss) ss.innerHTML=seedCodeHtml(true); }
@@ -2867,9 +3041,17 @@ function modal(title, bodyHtml, actions){
   $('#modal').hidden=false; const first=a.querySelector('.primary')||a.lastChild; if(first) first.focus();
 }
 function closeModal(){ $('#modal').hidden=true; }
+let scalePlan=null;   // fish scale: the real toolpath, made when Send is pressed (exact time and weight)
+function makeScalePlan(){ const plan=gcPlan(P,{lh:+P.lh}); return {plan, mins:plan.mins+8, grams:plan.grams}; }
 function startPrintFlow(){
   if($('#btnPrint').disabled) return;
-  const m=current, st=lastStats;
+  const m=current; let st=lastStats;
+  scalePlan=null;
+  if(P.pattern==='scales'){
+    try{ scalePlan=makeScalePlan(); st={...lastStats, mins:scalePlan.mins, grams:scalePlan.grams}; }
+    catch(e){ modal('This fish scale cannot print', `<div>${String(e.message||e)}</div>`,[['OK','primary',closeModal]]); return; }
+    if(BOOTH && BOOTH.maxMin && st.mins>BOOTH.maxMin){ modal('Too long to print', `<div>This fish scale takes about ${fmtTime(st.mins)}. The booth allows ${fmtTime(BOOTH.maxMin)}. Make it shorter or narrower.</div>`,[['OK','primary',closeModal]]); return; }
+  }
   const esc=t=>String(t).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
   modal('Before we print', `<div>${esc(describe(P))}</div><div class="kv">
     <span>Size</span><span>${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm</span>
@@ -2883,21 +3065,29 @@ function startPrintFlow(){
   const go=$('#mdActions .primary'); go.disabled=true;
   $('#plateOk').addEventListener('change',e=>{ go.disabled=!e.target.checked; });
 }
+async function afterSend(r, mins){
+  let js={}; try{ js=await r.json(); }catch(e){}
+  if(r.status===202){
+    myJob=js.job&&js.job.id;
+    modal(`Lamp #${myJob} is on its way`, `<div>The printer starts in a moment. It takes about ${fmtTime(mins)}.</div><div class="hint">Watch the progress at the top right. Carry on designing if you like. When it finishes, collect it from the door.</div>${factHtml()}`,[['Take it home (QR)','',openShare],['OK','primary big',closeModal]]);
+  } else if(r.status===409){
+    modal('The printer is busy', `<div>${js.message||'Another lamp is printing. Try again when it has finished.'}</div>`,[['OK','primary',closeModal]]);
+  } else {
+    modal('That did not work', `<div>${js.message||('The booth answered '+r.status)}</div><div class="hint">Your design is still here. Please ask FabLab staff.</div>`,[['OK','primary',closeModal]]);
+  }
+}
 async function sendPrint(){
   if(!$('#plateOk')||!$('#plateOk').checked) return;
   modal('Sending your lamp…','<div>Building the file and handing it to the printer.</div>',[]);
   try{
+    if(P.pattern==='scales'){   // direct toolpath: the booth PC checks it and sends it to the printer (no slicing)
+      const sp=scalePlan||makeScalePlan(); const text=gcText(sp.plan);
+      const r=await fetch('api/print',{method:'POST',body:new Blob([text],{type:'text/plain'}),headers:{'Content-Type':'text/plain','X-Kind':'gcode','X-Job-Name':fileBase(P)+'-fishscale','X-Mode':P.mode,'X-Desc':encodeURIComponent(describe(P)),'X-Est-Min':String(Math.round(sp.mins)),'X-Plate-Clear':'1','X-Printer':P.printer}});
+      return afterSend(r, sp.mins);
+    }
     const {blob,name}=await build3mf(P);
     const r=await fetch('api/print',{method:'POST',body:blob,headers:{'Content-Type':'application/vnd.ms-package.3dmanufacturing-3dmodel+xml','X-Job-Name':name,'X-Mode':P.mode,'X-Desc':encodeURIComponent(describe(P)),'X-Est-Min':String(Math.round(lastStats?lastStats.mins:0)),'X-Plate-Clear':'1','X-Printer':P.printer,'X-Layer':String(P.lh)}});
-    let js={}; try{ js=await r.json(); }catch(e){}
-    if(r.status===202){
-      myJob=js.job&&js.job.id;
-      modal(`Lamp #${myJob} is on its way`, `<div>The printer starts in a moment. It takes about ${fmtTime(lastStats?lastStats.mins:0)}.</div><div class="hint">Watch the progress at the top right. Carry on designing if you like. When it finishes, collect it from the door.</div>${factHtml()}`,[['Take it home (QR)','',openShare],['OK','primary big',closeModal]]);
-    } else if(r.status===409){
-      modal('The printer is busy', `<div>${js.message||'Another lamp is printing. Try again when it has finished.'}</div>`,[['OK','primary',closeModal]]);
-    } else {
-      modal('That did not work', `<div>${js.message||('The booth answered '+r.status)}</div><div class="hint">Your design is still here. Please ask FabLab staff.</div>`,[['OK','primary',closeModal]]);
-    }
+    return afterSend(r, lastStats?lastStats.mins:0);
   }catch(e){
     modal('Could not reach the printer', '<div>Your design is still here. Please ask FabLab staff.</div>',[['OK','primary',closeModal]]);
   }
@@ -2920,7 +3110,7 @@ function setupIdle(){
 
 /* ---------- per-step reset ---------- */
 const STEP_KEYS={secLight:['light'], secBody:['body','H','Db','Dt','bulge','tip','slant','top','star','starN','starPlump','starSize','starAttach'],
-  secPattern:['pattern','dstyle','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW','lipN','lip','press','lift']};
+  secPattern:['pattern','dstyle','vcells','jitter','ribw','count','depth','freq','twist','profile','env'], secLayer:['layer','bandN','layerOff'], secHolder:['holderH','cupD','slotBridge','cupExtra','slotW','lipN','lip','press','lift']};
 const STEP_NAMES={secLight:'Light source', secBody:'Shape', secPattern:'Surface pattern', secLayer:'Layer pattern', secHolder:'Light holder'};
 function resetStep(id){
   pushHistory();
@@ -2946,13 +3136,13 @@ function addNormalResets(){ for(const id in STEP_KEYS){ const h2=$('#'+id+' > h2
    or in SHARE_URL below for a standalone copy. */
 const SHARE_URL='';
 const SHARE_TEXT='My lamp, designed at the SP FabLab lamp booth #SPFabLab #3Dprinting';
-const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color','dstyle','star','starN','starPlump','starSize','starAttach','top'];
+const SHARE_FIELDS=['light','body','H','Db','Dt','bulge','tip','slant','pattern','count','depth','freq','twist','profile','env','layer','bandN','layerOff','mode','wall','holder','holderArms','seed','color','dstyle','star','starN','starPlump','starSize','starAttach','top','jitter','ribw','vcells'];
 function encodeDesign(p){
   return '1~'+SHARE_FIELDS.map(k=>{ let v=p[k]; if(k==='star') v=starOn(p); if(typeof v==='boolean') v=v?1:0; if(k==='color') v=String(v).replace('#',''); return encodeURIComponent(String(v)); }).join('~');
 }
 function decodeDesign(code){
   const parts=String(code).split('~'); if(parts[0]!=='1') return null;
-  const ok={light:Object.fromEntries(Object.keys(LIGHTS).filter(k=>!HIDDEN_LIGHTS.includes(k)).map(k=>[k,1])), body:BODIES, pattern:PATTERNS, layer:LAYERPATS, profile:WAVES, env:ENVS, mode:{vase:1,wall:1}, dstyle:{ridges:1,quilted:1}, starAttach:{point:1,between:1}, top:{open:1,closed:1}};
+  const ok={light:Object.fromEntries(Object.keys(LIGHTS).filter(k=>!HIDDEN_LIGHTS.includes(k)).map(k=>[k,1])), body:BODIES, pattern:PATTERNS, layer:LAYERPATS, profile:WAVES, env:ENVS, mode:{vase:1,wall:1}, dstyle:{ridges:1,quilted:1}, starAttach:{point:1,between:1}, top:{open:1,closed:1}, vcells:{skin:1,open:1}};
   const out={};
   SHARE_FIELDS.forEach((k,i)=>{
     let v; try{ v=decodeURIComponent(parts[i+1]==null?'':parts[i+1]); }catch(e){ return; }
@@ -3052,6 +3242,7 @@ function goodToKnowHtml(){ const mins=lastStats?lastStats.mins:0;
   return `<div class="goodtoknow"><strong>Good to know</strong>
     <ul><li>You may find a few thin plastic strings inside the lamp. That's normal for 3D printing. Just peel or pull them off.</li>
     ${P.top==='closed'&&current&&current.closed&&!current.pointed?`<li>Your lamp has a lid. a 3D printer can't print onto thin air. The lid is printed straight across the open top (this is called bridging), so its underside may sag a little and show some strings. That's normal and doesn't affect the lamp. The top of the lid will look neat.</li>`:''}
+    ${P.pattern==='scales'?`<li>Fish scale is printed as one wavy line, like clay printing. The first layer of each row hangs across small gaps, so it droops a little. That's part of the look, and light shines through the gaps.</li>`:''}
     <li>Your lamp is made by a machine in about ${fmtTime(mins)}. It won't be 100% perfect: small lines, marks or bumps are part of the 3D printed look. It's a good lamp for the time it takes to make.</li></ul></div>`; }
 /* ---------- seed code ----------
    The seed plus every design setting, packed into a short code people can write down, share and key in
@@ -3059,13 +3250,14 @@ function goodToKnowHtml(){ const mins=lastStats?lastStats.mins:0;
    still works too, but only the full code brings back changes made after Randomise. Lists are append-only. */
 const SC_ABC='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const SC_FIELDS=[
-  ['light','L',['strimsav','mittled'],2], ['body','L',['column','barrel','bell','tulip','gourd','hourglass','pagoda','teardrop','bottle','globe','lantern','capsule'],4],
+  ['light','L',['strimsav','mittled'],2], ['body','L',['column','barrel','bell','tulip','gourd','hourglass','pagoda','teardrop','bottle','globe','lantern','capsule','gem','deco'],4],
   ['H','N',60,180,1,7], ['Db','N',90,180,1,7], ['Dt','N',30,180,1,8], ['bulge','N',0,60,1,6], ['tip','B'], ['slant','N',0,40,1,6],
-  ['pattern','L',['smooth','ribs','waves','bubbles','pillows','facets','organic','diamonds'],4], ['dstyle','L',['ridges','quilted'],1],
+  ['pattern','L',['smooth','ribs','waves','bubbles','pillows','facets','organic','diamonds','origami','voronoi','scales'],4], ['dstyle','L',['ridges','quilted'],1],
   ['count','N',0,72,1,7], ['depth','N',0.5,10,0.1,7], ['freq','N',1,30,1,5], ['twist','N',-360,360,5,8],
   ['profile','L',['round','pointed','square','fluted'],2], ['env','L',['uniform','rise','fade','swell','ends'],3],
   ['layer','L',['none','bands','ridges','shingles','brick','steptwist'],3], ['bandN','N',2,60,1,6], ['layerOff','N',0.2,2.5,0.05,6],
-  ['color','C',3], ['top','L',['open','closed'],1]   // added later: older codes read the padding bit as 'open'
+  ['color','C',3], ['top','L',['open','closed'],1],   // added later: older codes read the padding bit as 'open'
+  ['jitter','N',0,1,0.05,5], ['ribw','N',0.1,0.6,0.025,5], ['vcells','L',['skin','open'],1]
 ];
 function scCheck(str){ const h=hashStr(str); return SC_ABC[h%32]+SC_ABC[(h>>>5)%32]; }   // two check letters catch typos
 function seedCode(p){
@@ -3372,4 +3564,5 @@ $('#capTop').addEventListener('change',e=>{ setParam('top', e.target.checked?'cl
 })();
 </script>
 
-</body></html>
+</body>
+</html>
