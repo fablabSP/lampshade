@@ -349,6 +349,62 @@ html.booth .seedload input{font-size:20px;padding:12px 14px}
   html.booth .stepdesc{font-size:17px}
 }
 #secLayer.dim .chips,#secLayer.dim .field{opacity:.35;pointer-events:none}
+
+/* ---- kiosk portrait v2 (Nov 2026): the lit lamp is the hero, 3 steps, big tiles, controls in the lower half ---- */
+.stephero{display:none}
+.sendstats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.sendstats div{background:var(--chip);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.sendstats span{font-size:13px;color:var(--muted)}
+.sendstats b{font:700 20px var(--f-display)}
+#secPrinting .pv-top{display:flex;align-items:center;gap:22px}
+#secPrinting .pv-ring{flex:0 0 auto;width:150px;height:150px}
+#secPrinting h2{margin:0;font:700 26px var(--f-display);text-transform:none;letter-spacing:0;color:var(--ink)}
+#secPrinting .pv-sub{margin:6px 0 0;font-size:17px}
+html.printview #secPrinting{order:-1}
+@media (orientation: portrait){
+  html.booth .work{grid-template-rows:minmax(0,45%) auto minmax(0,1fr) auto}
+  html.booth #btnMutate,html.booth #btnRandom{display:none}
+  html.booth header.top .steptabs{display:flex;flex:1;justify-content:flex-end;gap:14px;padding:0;border:0;background:none;overflow:visible}
+  html.booth header.top .steptabs button{flex:0 0 auto;flex-direction:row;min-height:48px;border:0;background:none;gap:8px;padding:0 2px;font:500 16px var(--f-body,inherit);color:var(--muted)}
+  html.booth header.top .steptabs button .n{width:36px;height:36px;line-height:32px;border:2px solid var(--muted);background:none;color:var(--muted)}
+  html.booth header.top .steptabs button.done .n,html.booth header.top .steptabs button[aria-current="step"] .n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  html.booth header.top .steptabs button[aria-current="step"]{background:none;color:var(--ink);font-weight:700}
+  html.booth .stephero{display:flex;grid-row:2;align-items:flex-end;justify-content:space-between;gap:16px;padding:22px 28px 4px;background:var(--bg)}
+  html.booth .stephero h2{margin:0;font:700 34px var(--f-display);text-transform:none;letter-spacing:0;color:var(--ink)}
+  html.booth .stephero p{margin:4px 0 0;font-size:18px;color:var(--muted)}
+  html.booth .stephero .btn{min-height:60px;border-radius:30px;border:2px solid var(--accent);color:var(--accent-strong);background:none;font-size:18px;font-weight:600;padding:0 24px;white-space:nowrap}
+  html.booth .panel.left{background:var(--bg)}
+  html.booth .panel.left .sec{border:0;padding:14px 28px 16px}
+  html.booth .stephead,html.booth #secSize>h2{display:none}
+  html.booth #bodyChips{grid-template-columns:repeat(4,1fr)}
+  html.booth .chips{gap:14px}
+  html.booth .chips button{min-height:128px;border-radius:18px;font-size:17px;gap:10px}
+  html.booth .chips button svg{width:56px;height:56px}
+  html.booth .panel.left input[type=range]{min-height:56px}
+  html.booth .stepnav{padding:14px 28px calc(22px + env(safe-area-inset-bottom));gap:16px;background:var(--bg);border-top:0}
+  html.booth .stepnav .btn{min-height:96px;font-size:24px;font-weight:700;border-radius:18px}
+  html.booth .stepnav #stepBack{flex:0 0 220px}
+  html.booth .stepnav #stepNext{flex:1}
+  html.booth .stepnav .where{display:none}
+  html.booth .stepnav .btn{justify-content:center;text-align:center}
+  html.booth .panel.left label,html.booth .panel.left .lbl{font-size:18px}
+  html.booth .panel.left .hint{font-size:16px;line-height:1.45}
+  html.booth .panel.left output{font-size:17px}
+  html.booth #btnPrint2{display:none}
+  html.booth .stepnav .btn[hidden]{display:none!important}
+  html.booth #sendSummary{display:none}
+  html.booth .sendstats div{padding:16px 18px;background:var(--panel)}
+  html.booth .sendstats span{font-size:16px}
+  html.booth .sendstats b{font-size:26px}
+  html.booth #btnPrint2{min-height:104px;font-size:26px;border-radius:18px}
+  html.booth.printview .stephero,html.booth.printview .stepnav{display:none}
+  html.booth.printview .panel.left .sec{display:none}
+  html.booth.printview .panel.left #secPrinting{display:grid;gap:18px;align-content:start}
+  html.booth #secPrinting .pv-ring{width:190px;height:190px}
+  html.booth #secPrinting h2{font-size:34px}
+  html.booth #secPrinting .pv-sub{font-size:21px}
+  html.booth #btnAgain{min-height:96px;font-size:24px;border-radius:18px}
+}
 </style>
 
 </head>
@@ -538,11 +594,21 @@ html.booth .seedload input{font-size:20px;padding:12px 14px}
       </section>
       <section class="sec" id="secSend" hidden>
         <p class="hint" id="sendSummary"></p>
+        <div class="sendstats" id="sendStats"></div>
         <div id="sendSeed"></div>
         <p class="hint" id="sendNote">Expect a few thin strings inside: just peel them off. 3D prints aren't 100% perfect, but your lamp will be a good one for the time it takes to print.</p>
         <button class="factbox" id="factBox" type="button" title="Tap for another fact"><span class="ic">?</span><span><span class="ft"><span>Did you know?</span><span>tap for another</span></span><span class="fx" id="factTxt"></span></span></button>
         <button class="btn primary big" id="btnPrint2" type="button"><span>Send to printer</span></button>
         <button class="btn" id="btnTakeHome" type="button">Take it home: picture and QR code</button>
+      </section>
+      <section class="sec" id="secPrinting" hidden>
+        <div class="pv-top">
+          <svg class="pv-ring" viewBox="0 0 220 220" role="img" aria-label="Print progress"><circle cx="110" cy="110" r="94" fill="none" stroke="var(--line)" stroke-width="18"/><circle id="pvArc" cx="110" cy="110" r="94" fill="none" stroke="var(--accent)" stroke-width="18" stroke-linecap="round" stroke-dasharray="0 600" transform="rotate(-90 110 110)"/><text id="pvPct" x="110" y="128" text-anchor="middle" fill="currentColor" font-size="54" font-weight="700">0%</text></svg>
+          <div><h2 id="pvHead">Your lamp is printing</h2><p class="hint pv-sub" id="pvSub"></p><p class="hint" style="margin:6px 0 0">The lamp above grows with the real print.</p></div>
+        </div>
+        <div id="pvSeed"></div>
+        <p class="hint">Some thin strings are normal. Peel them off when the lamp is done. Collect it from the door when it finishes.</p>
+        <button class="btn primary big" id="btnAgain" type="button">Design another lamp</button>
       </section>
     </aside>
 
@@ -2665,7 +2731,7 @@ function makeIdeas(){
     const b=document.createElement('button'); b.className='idea'; b.title=(d.sampleName?d.sampleName+': ':'')+describe(d)+' · seed '+d.seed; b.setAttribute('aria-label','Load idea: '+(d.sampleName||describe(d)));
     const img=new Image(); img.alt=''; img.src=thumbR.domElement.toDataURL('image/png'); b.appendChild(img);
     if(d.sampleName){ const tg=document.createElement('span'); tg.className='ideatag'; tg.textContent=d.sampleName; b.appendChild(tg); }
-    b.addEventListener('click',()=>{ pushHistory(); DESIGN_KEYS.forEach(k=>P[k]=d[k]); P.seed=d.seed; P.edited=false; lastFitKey=''; refresh(); if(PORTRAIT_TABS.length && curStep===PORTRAIT_TABS.length-1) goStep(1); });
+    b.addEventListener('click',()=>{ pushHistory(); DESIGN_KEYS.forEach(k=>P[k]=d[k]); P.seed=d.seed; P.edited=false; lastFitKey=''; refresh(); if(PORTRAIT_TABS.length && curStep===PORTRAIT_TABS.length-1) goStep(0); });
     host.appendChild(b);
   }
 }
@@ -2823,6 +2889,7 @@ function checkPrintable(m, bedOk, clearance, hd){
   if(BOOTH){
     updatePrintButton();
     const st=lastStats; const sm=$('#sendSummary');
+    { const sx=$('#sendStats'); if(sx && st) sx.innerHTML=`<div><span>Print time</span><b>${fmtTime(st.mins)}</b></div><div><span>Plastic</span><b>${st.grams.toFixed(0)} g</b></div><div><span>Size</span><b>${m.H.toFixed(0)} × Ø${(m.maxR*2).toFixed(0)} mm</b></div>`; }
     if(sm && st) sm.textContent=`${m.H.toFixed(0)} mm tall · Ø${(m.maxR*2).toFixed(0)} mm · about ${fmtTime(st.mins)} to print · ${st.grams.toFixed(0)} g of ${BOOTH.colorName||'PLA'} · ${PRINTERS[P.printer].name}, ${(+P.lh).toFixed(2)} mm layers`;
   }
 }
@@ -2907,36 +2974,73 @@ function setupPortraitSteps(){
   const ideasSec=$('#btnIdeas').closest('section'); ideasSec.id='secIdeas';
   const pv=$('#btnPrev'); const tn=[...pv.childNodes].reverse().find(n=>n.nodeType===3&&n.textContent.trim()); if(tn) tn.textContent='Undo'; pv.title='Undo your last change';
   const ideasHead=document.createElement('div'); ideasHead.className='stephead portraitOnly';
-  const tabs=[...STEPS.map(([id,t])=>[id,t]),['secIdeas','Ideas']];
+  // size sliders get their own block, shown with the Send step
+  const sizeSec=document.createElement('section'); sizeSec.className='sec'; sizeSec.id='secSize'; sizeSec.innerHTML='<h2>Size</h2>';
+  sizeSec.appendChild($('#H').closest('.field')); sizeSec.appendChild($('#Db').closest('.row2'));
+  const send=$('#secSend'); send.parentNode.insertBefore(sizeSec,send); sizeSec.style.order=STEPS.length; send.style.order=STEPS.length+1;
+  const tabs=[
+    {ids:['secBody'],                tab:'Shape',          title:'Pick a shape',   sub:'Step 1 of 3. You can change it later.',              next:'Next: pattern'},
+    {ids:['secPattern','secLayer'],  tab:'Pattern',        title:'Pick a pattern', sub:'Step 2 of 3. Light shines through the thinner parts.', next:'Next: size'},
+    {ids:['secSize','secSend'],      tab:'Size and print', title:'Set the size',   sub:'Step 3 of 3. Bigger lamps take longer to print.', print:true},
+    {ids:['secIdeas'],               tab:'Ideas',          title:'Ideas',          sub:'Tap one to start from it.'}
+  ];
   const bar=document.createElement('nav'); bar.className='steptabs'; bar.setAttribute('aria-label','Steps');
-  tabs.forEach(([id,t],k)=>{ const b=document.createElement('button'); b.type='button'; b.dataset.k=k;
-    b.innerHTML=`<span class="n">${k<STEPS.length?k+1:'★'}</span><span>${t.replace('Surface pattern','Pattern').replace('Layer pattern','Layers').replace('Send to printer','Send').replace('Light source','Light')}</span>`;
+  tabs.forEach((t,k)=>{ const b=document.createElement('button'); b.type='button'; b.dataset.k=k;
+    b.innerHTML=`<span class="n">${k<N_STEPS?k+1:'★'}</span><span>${t.tab}</span>`;
     b.addEventListener('click',()=>goStep(k)); bar.appendChild(b); });
+  const hero=document.createElement('div'); hero.className='stephero';
+  hero.innerHTML='<div><h2 id="heroTitle"></h2><p id="heroSub"></p></div><button class="btn" type="button" id="btnSurprise">Surprise me</button>';
   const nav=document.createElement('div'); nav.className='stepnav';
-  nav.innerHTML='<button class="btn" type="button" id="stepBack">‹ Back</button><span class="where" id="stepWhere"></span><button class="btn primary" type="button" id="stepNext">Next ›</button>';
-  const work=$('.work'); work.insertBefore(bar,$('#controls')); work.appendChild(nav);
+  nav.innerHTML='<button class="btn" type="button" id="stepBack">Back</button><span class="where" id="stepWhere"></span><button class="btn primary" type="button" id="stepNext">Next</button>';
+  const work=$('.work'); $('header.top').insertBefore(bar,$('#btnPrev')); work.insertBefore(hero,$('#controls')); work.appendChild(nav);
+  $('#btnSurprise').addEventListener('click',()=>$('#btnRandom').click());
   $('#stepBack').addEventListener('click',()=>goStep(curStep-1));
-  $('#stepNext').addEventListener('click',()=>goStep(curStep+1));
+  $('#stepNext').addEventListener('click',()=>{ if(PORTRAIT_TABS[curStep].print) startPrintFlow(); else goStep(curStep+1); });
+  $('#btnAgain').addEventListener('click',()=>setPrintView(false));
   const mq=matchMedia('(orientation: portrait)');
   const place=()=>{ if(mq.matches) $('#controls').appendChild(ideasSec); else document.querySelector('.panel.right').appendChild(ideasSec); };
   mq.addEventListener('change',place); place();
   PORTRAIT_TABS=tabs; goStep(0);
 }
-let PORTRAIT_TABS=[];
+let PORTRAIT_TABS=[]; const N_STEPS=3;
 function goStep(k){
   const n=PORTRAIT_TABS.length; k=Math.max(0,Math.min(n-1,k)); curStep=k; seen.add(k);
-  PORTRAIT_TABS.forEach(([id],i)=>{ const sec=$('#'+id); if(sec) sec.classList.toggle('cur',i===k); });
-  document.querySelectorAll('.steptabs button').forEach((b,i)=>{ if(i===k) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); b.classList.toggle('done',seen.has(i)&&i!==k); });
-  const last=STEPS.length-1;
+  document.querySelectorAll('#controls .sec.cur').forEach(x=>x.classList.remove('cur'));
+  PORTRAIT_TABS[k].ids.forEach(id=>{ const sec=$('#'+id); if(sec) sec.classList.add('cur'); });
+  document.querySelectorAll('.steptabs button').forEach((b,i)=>{ if(i===k) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); b.classList.toggle('done',seen.has(i)&&i!==k&&i<N_STEPS); });
+  const t=PORTRAIT_TABS[k];
+  $('#heroTitle').textContent=t.title; $('#heroSub').textContent=t.sub;
   $('#stepBack').hidden=(k===0);
-  $('#stepNext').hidden=(k>=last);
-  $('#stepNext').textContent = k===last-1 ? 'Next: send ›' : 'Next ›';
-  $('#stepWhere').textContent = k<STEPS.length ? `Step ${k+1} of ${STEPS.length}` : 'Ideas';
+  $('#stepNext').hidden=!(t.next||t.print); $('#stepNext').disabled=false; if(t.next) $('#stepNext').textContent=t.next; else if(t.print) updatePrintButton();
+  $('#stepWhere').textContent = k<N_STEPS ? `Step ${k+1} of ${N_STEPS}` : 'Ideas';
   $('#controls').scrollTop=0;
+}
+/* printing view: after Send, the controls give way to progress, and the lamp on screen grows with the real print */
+let printView=false, pvJob=null;
+const clipPlane=new THREE.Plane(new THREE.Vector3(0,0,-1),1e6);
+function setPrintView(on,jobId){
+  printView=!!on; pvJob=on?jobId:null;
+  document.documentElement.classList.toggle('printview',printView); $('#secPrinting').hidden=!printView;
+  renderer.localClippingEnabled=printView;
+  [matStd,matLit,matHolder].forEach(m=>{ m.clippingPlanes=printView?[clipPlane]:null; m.needsUpdate=true; });
+  if(printView){ $('#pvSeed').innerHTML=seedCodeHtml(true); updatePrintView(boothState||{}); }
+  else { clipPlane.constant=1e6; if(PORTRAIT_TABS.length) goStep(0); }
+  needsRender=true;
+}
+function updatePrintView(s){
+  if(!printView) return;
+  const st=s.state, j=s.job;
+  if(st==='pickup'||st==='ready'||st==='error'||(j&&pvJob!=null&&j.id!==pvJob)){ setPrintView(false); return; }
+  const p=Math.max(0,Math.min(100,(j&&j.progress)||0));
+  clipPlane.constant=Math.max(1.5, p/100*(current?current.H:100));
+  $('#pvArc').setAttribute('stroke-dasharray',`${(p/100*2*Math.PI*94).toFixed(0)} 600`); $('#pvPct').textContent=p+'%';
+  $('#pvHead').textContent = p ? 'Your lamp is printing' : 'Getting ready to print';
+  $('#pvSub').textContent = p ? (j.remaining_min!=null?`About ${fmtTime(j.remaining_min)} left.`:'') : 'Levelling the bed and heating up. This takes a few minutes.';
+  needsRender=true;
 }
 function enterBooth(s){
   BOOTH={...KIOSK_DEFAULTS, ...(s.booth||{})};
-  document.documentElement.classList.add('booth');
+  document.documentElement.classList.add('booth'); document.documentElement.dataset.theme='dark';
   applyMachine(); applyLimits();
   // kiosk lamps: solid wall with the holder cross built in, printability handled automatically
   P.mode='wall'; P.wall=+BOOTH.wall||1.2; P.holder=true; P.holderH=4; P.cupExtra=+BOOTH.cupExtra||0; P.slotW=+BOOTH.slotW||10; P.slotBridge=(BOOTH.slotBridge!=null?+BOOTH.slotBridge:1.6); P.cupD=+BOOTH.cupD||60.1; P.lipN=(BOOTH.lipN!=null?+BOOTH.lipN:3); P.lip=(BOOTH.lip!=null?+BOOTH.lip:0.8); P.press=(BOOTH.press!=null?!!BOOTH.press:true); P.lift=(BOOTH.lift!=null?+BOOTH.lift:1.5); P.top='open'; P.arch=true; P.base='open';
@@ -2948,7 +3052,7 @@ function enterBooth(s){
   buildSteps();
   $('#ideasHint').textContent='Need inspiration? Tap one to start from it.';
   setupPortraitSteps();
-  setTouch(true);
+  setTouch(true); setLit(true);
   $('#btnPrint').hidden=false; $('#boothBar').hidden=false;
   fitToBed(P);
   lastFitKey=''; refresh();
@@ -3021,7 +3125,7 @@ function boothUpdate(s){
   const pk=st==='pickup';
   $('#pickup').hidden=!pk;
   if(pk && j){ $('#pkNum').textContent=`Lamp #${j.id}`; $('#pkNote').textContent = s.door_sensor ? 'The screen unlocks by itself once the door is closed.' : 'Then tap the button so the next lamp can print.'; }
-  updatePrintButton();
+  updatePrintButton(); updatePrintView(s);
 }
 function updatePrintButton(){
   const b=$('#btnPrint'); if(!b) return; const lab=b.querySelector('span');
@@ -3034,7 +3138,8 @@ function updatePrintButton(){
   else if(st==='error') text='Booth needs staff';
   else text='Printer offline';
   b.disabled=dis; lab.textContent=text;
-  const b2=$('#btnPrint2'); if(b2){ b2.disabled=dis; b2.querySelector('span').textContent=text; }
+  const b2=$('#btnPrint2'); if(b2){ b2.disabled=dis; b2.querySelector('span').textContent=(!dis&&lastStats)?`Print my lamp · ${fmtTime(lastStats.mins)}`:text; }
+  const sn=$('#stepNext'); if(sn && PORTRAIT_TABS.length && PORTRAIT_TABS[curStep].print){ sn.disabled=dis; sn.textContent=(!dis&&lastStats)?`Print my lamp · ${fmtTime(lastStats.mins)}`:text; }
 }
 function modal(title, bodyHtml, actions){
   $('#mdTitle').textContent=title; $('#mdBody').innerHTML=bodyHtml; const a=$('#mdActions'); a.innerHTML='';
@@ -3070,7 +3175,7 @@ async function afterSend(r, mins){
   let js={}; try{ js=await r.json(); }catch(e){}
   if(r.status===202){
     myJob=js.job&&js.job.id;
-    modal(`Lamp #${myJob} is on its way`, `<div>The printer starts in a moment. It takes about ${fmtTime(mins)}.</div><div class="hint">Watch the progress at the top right. Carry on designing if you like. When it finishes, collect it from the door.</div>${factHtml()}`,[['Take it home (QR)','',openShare],['OK','primary big',closeModal]]);
+    closeModal(); setPrintView(true,myJob); toast(`Lamp #${myJob} is on its way. It takes about ${fmtTime(mins)}.`);
   } else if(r.status===409){
     modal('The printer is busy', `<div>${js.message||'Another lamp is printing. Try again when it has finished.'}</div>`,[['OK','primary',closeModal]]);
   } else {
@@ -3100,7 +3205,7 @@ function setupIdle(){
   const limit=(BOOTH.idleResetSec||180)*1000;
   setInterval(()=>{
     const st=boothState&&boothState.state;
-    if(st==='pickup' || !$('#modal').hidden) return;
+    if(st==='pickup' || printView || !$('#modal').hidden) return;
     const idle=Date.now()-lastInteract;
     if(!idleOn && idle>limit){
       idleOn=true; idleCycle=Date.now(); history.length=0; doRandom(); history.length=0;
@@ -3558,7 +3663,7 @@ requestAnimationFrame(frame);
 setTimeout(makeIdeas, 60);
 $('#factBox').addEventListener('click',()=>{ nextFact(); clearInterval(factTimer); factTimer=setInterval(()=>{ const sec=$('#secSend'); if(sec && sec.offsetParent) nextFact(); },12000); });
 setTimeout(startFacts, 800);
-$('#btnSeedLoad').addEventListener('click',()=>{ const v=$('#seedLoadIn').value.trim(); if(v && loadSeedCode(v)){ $('#seedLoadIn').value=''; if(PORTRAIT_TABS.length && curStep===PORTRAIT_TABS.length-1) goStep(1); } });
+$('#btnSeedLoad').addEventListener('click',()=>{ const v=$('#seedLoadIn').value.trim(); if(v && loadSeedCode(v)){ $('#seedLoadIn').value=''; if(PORTRAIT_TABS.length && curStep===PORTRAIT_TABS.length-1) goStep(0); } });
 $('#seedLoadIn').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#btnSeedLoad').click(); } });
 $('#btnSeedCopy').addEventListener('click',()=>copyText(seedCode(P)));
 $('#capTop').addEventListener('change',e=>{ setParam('top', e.target.checked?'closed':'open'); if(e.target.checked) toast('Lid on. Read the note about the underside.'); });
