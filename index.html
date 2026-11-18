@@ -65,6 +65,8 @@ header.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 
 .titlebtn{all:unset;cursor:pointer;border-radius:6px;padding:2px 4px;margin:-2px -4px;-webkit-user-select:none;user-select:none}
 .titlebtn:hover{background:var(--chip)}
 .titlebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.verbadge{font:500 10.5px var(--f-mono);color:var(--muted);align-self:center}
+.verbadge.warn{color:#d9534f}
 .modebadge{font:600 10.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);align-self:center}
 .brandbtn{all:unset;cursor:default}
 .booth .brandbtn{cursor:pointer}
@@ -364,11 +366,13 @@ html.printview #secPrinting{order:-1}
 @media (orientation: portrait){
   html.booth .work{grid-template-rows:minmax(0,45%) auto minmax(0,1fr) auto}
   html.booth #btnMutate,html.booth #btnRandom{display:none}
-  html.booth header.top .steptabs{display:flex;flex:1;justify-content:flex-end;gap:14px;padding:0;border:0;background:none;overflow:visible}
+  html.booth header.top .brand{flex:0 0 auto}
+  html.booth header.top .steptabs{display:flex;flex:1 1 auto;min-width:0;margin-left:auto;justify-content:flex-end;gap:14px;padding:0;border:0;background:none;overflow:visible;position:static}
   html.booth header.top .steptabs button{flex:0 0 auto;flex-direction:row;min-height:48px;border:0;background:none;gap:8px;padding:0 2px;font:500 16px var(--f-body,inherit);color:var(--muted)}
   html.booth header.top .steptabs button .n{width:36px;height:36px;line-height:32px;border:2px solid var(--muted);background:none;color:var(--muted)}
   html.booth header.top .steptabs button.done .n,html.booth header.top .steptabs button[aria-current="step"] .n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
   html.booth header.top .steptabs button[aria-current="step"]{background:none;color:var(--ink);font-weight:700}
+  html.booth header.top .steptabs button:not([aria-current="step"]) span:not(.n){display:none}
   html.booth .stephero{display:flex;grid-row:2;align-items:flex-end;justify-content:space-between;gap:16px;padding:22px 28px 4px;background:var(--bg)}
   html.booth .stephero h2{margin:0;font:700 34px var(--f-display);text-transform:none;letter-spacing:0;color:var(--ink)}
   html.booth .stephero p{margin:4px 0 0;font-size:18px;color:var(--muted)}
@@ -411,7 +415,7 @@ html.printview #secPrinting{order:-1}
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><h1><button class="titlebtn" id="btnTitle" type="button" title="Switch between staff and kiosk mode">Lampshade Generator</button></h1><span class="modebadge" id="modeBadge">Staff</span><span class="xmasbadge" id="xmasBadge" title="Christmas mode is on"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 6.1 6.6.6-5 4.4 1.5 6.5L12 16.7 6.2 20.1l1.5-6.5-5-4.4 6.6-.6z"/></svg></span><span class="tag"><button class="brandbtn" id="btnFablab" type="button">SP FabLab</button> · <button class="brandbtn" id="btnBrand" type="button">Prusa</button></span></div>
+    <div class="brand"><h1><button class="titlebtn" id="btnTitle" type="button" title="Switch between staff and kiosk mode">Lampshade Generator</button></h1><span class="verbadge" id="verBadge" title="App version"></span><span class="modebadge" id="modeBadge">Staff</span><span class="xmasbadge" id="xmasBadge" title="Christmas mode is on"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.7 6.1 6.6.6-5 4.4 1.5 6.5L12 16.7 6.2 20.1l1.5-6.5-5-4.4 6.6-.6z"/></svg></span><span class="tag"><button class="brandbtn" id="btnFablab" type="button">SP FabLab</button> · <button class="brandbtn" id="btnBrand" type="button">Prusa</button></span></div>
     <div class="seedbox"><label for="seedIn">Seed</label><input id="seedIn" maxlength="48" spellcheck="false" autocomplete="off" title="Type a seed (FABLAB) or a full seed code (FABLAB-A7K2-…)"><button class="btn" id="btnSeedCopy" type="button" title="Copy the seed code for this exact design" style="padding:4px 8px;font-size:12px">Copy code</button></div>
     <button class="btn" id="btnPrev" title="Go back to the previous design" disabled>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3 5 8l5 5"/></svg>Back</button>
@@ -688,6 +692,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 <script>
 (function(){
 'use strict';
+/* VERSION: bump on every change (date-number). Shown in the header, stamped in every G-code and 3MF, and compared with the booth PC's. */
+const APP_VERSION='2026.11.17-4';
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const PI = Math.PI, TAU = PI*2;
@@ -787,7 +793,7 @@ const PATTERNS = {
    wave, so rows only touch where the waves cross and the gaps between them glow. It is printed from a toolpath written here
    (direct G-code, no slicer). Settings below are the ones tested on the MK4 with PLA (Nov 2026): 230 °C, 110% flow on a
    0.75 x layer-height line (rectangle model), and the first layer of each row (it spans the gaps) thinner and faster so it droops less. */
-const SCALES={z0:12, ramp:3, lw:0.75, speed:45, temp:230, fan:100, flow:1.10, bflow:0.85, bspeed:25, maxAmp:0.3, seg:480, holderMin:14, holderMm3:6000, firstLayer:0.3, brim:3, firstSpeed:20,
+const SCALES={z0:12, ramp:3, lw:0.75, speed:45, temp:230, fan:100, flow:1.10, bflow:0.85, bspeed:25, maxAmp:0.3, seg:480, holderMin:14, holderMm3:6000, firstLayer:0.2, brim:3, firstSpeed:20, holderLW:0.7, holderSpeed:40, holderFlow:1.10,
   countMin:6, countMax:24, rowsMin:4, rowsMax:16, depthMin:2};
 /* radial offset of the fish-scale wave. u = layers since the scales start; rows = layers per row */
 function scaleOff(p, th, u, rBase){
@@ -1427,7 +1433,7 @@ function modelXml(m, p, title, descOverride, extras){
   const parts=[]; let s='';
   const desc=descOverride || `${describe(p)}${p.mode==='wall'&&p.top==='closed'?', closed top':''}. Layer height ${(+p.lh).toFixed(2)} mm, ${p.mode==='vase'?'spiral vase mode':'solid wall '+p.wall+' mm'}, nozzle ${p.nozzle} mm, for ${LIGHTS[p.light].name} (Ø${LIGHTS[p.light].d} mm). Seed ${p.seed}.`;
   s+='<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n';
-  s+=`<metadata name="Title">${xmlEsc(title)}</metadata>\n<metadata name="Designer">SP FabLab Lampshade Generator</metadata>\n<metadata name="Description">${xmlEsc(desc)}</metadata>\n<metadata name="CreationDate">${new Date().toISOString().slice(0,10)}</metadata>\n`;
+  s+=`<metadata name="Title">${xmlEsc(title)}</metadata>\n<metadata name="Designer">SP FabLab Lampshade Generator ${APP_VERSION}</metadata>\n<metadata name="Description">${xmlEsc(desc)}</metadata>\n<metadata name="CreationDate">${new Date().toISOString().slice(0,10)}</metadata>\n`;
   s+=`<resources>\n`;
   const objs=[{mesh:m, name:title, tx:PRINTERS[p.printer].x/2, ty:PRINTERS[p.printer].y/2}].concat(extras||[]);
   objs.forEach((o,k)=>{
@@ -1487,7 +1493,7 @@ async function finish3mf(all, title, desc){
 }
 function modelXmlParts(objs, title, desc){
   let s='<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n';
-  s+=`<metadata name="Title">${xmlEsc(title)}</metadata>\n<metadata name="Designer">SP FabLab Lampshade Generator</metadata>\n<metadata name="Description">${xmlEsc(desc)}</metadata>\n<resources>\n`;
+  s+=`<metadata name="Title">${xmlEsc(title)}</metadata>\n<metadata name="Designer">SP FabLab Lampshade Generator ${APP_VERSION}</metadata>\n<metadata name="Description">${xmlEsc(desc)}</metadata>\n<resources>\n`;
   objs.forEach((o,k)=>{ const pos=o.mesh.pos, idx=o.mesh.idx; s+=`<object id="${k+1}" type="model" name="${xmlEsc(o.name)}">\n<mesh>\n<vertices>\n`;
     for(let i=0;i<pos.length;i+=3) s+=`<vertex x="${pos[i].toFixed(3)}" y="${pos[i+1].toFixed(3)}" z="${pos[i+2].toFixed(3)}"/>\n`;
     s+='</vertices>\n<triangles>\n'; for(let i=0;i<idx.length;i+=3) s+=`<triangle v1="${idx[i]}" v2="${idx[i+1]}" v3="${idx[i+2]}"/>\n`;
@@ -1556,7 +1562,7 @@ function gcPlan(pIn, oIn){
   if(p.pattern==='voronoi') throw new Error('Voronoi has thick ribs and a thin skin, so it cannot be printed as one single line. Use the normal 3MF for this design.');
   if(p.top==='closed' && !(p.body==='pagoda'&&p.tip)) throw new Error('A capped top cannot be printed as one continuous spiral. Use the normal 3MF for this design, or untick Cap the top.');
   const scl=p.pattern==='scales';
-  if(scl) Object.assign(o,{lw:SCALES.lw, speed:SCALES.speed, temp:SCALES.temp, fan:SCALES.fan, brim:SCALES.brim, firstSpeed:SCALES.firstSpeed});   // tested fish-scale settings
+  if(scl) Object.assign(o,{lw:SCALES.lw, speed:SCALES.speed, temp:SCALES.temp, fan:SCALES.fan, brim:SCALES.brim, firstSpeed:SCALES.firstSpeed, holderLW:SCALES.holderLW, holderSpeed:SCALES.holderSpeed});   // tested fish-scale settings
   const m=buildMesh(scl?{...p, pattern:'smooth'}:p,{dz:o.lh, maxRings:5000, seg:scl?SCALES.seg:720, segMax:scl?SCALES.seg:720, perRib:24});   // fish scale: plain base shape, the wave is added to the spiral below
   const hd=buildHolder(p,m);
   const seg=m.seg, H=m.H, w=o.lw, hw=o.holderLW;
@@ -1630,6 +1636,7 @@ function gcPlan(pIn, oIn){
     z = +(z+o.lh).toFixed(4);
   }
   // ---- spiral
+  if(scl) for(const L of layers) for(const pa of L.paths) if(!pa.spiral && pa.feature!=='Brim') pa.flow=SCALES.holderFlow;   // holder: wide lines, 110%, slower: like the scale wall
   const zF=layers[layers.length-1].z;
   const tipStop = w*0.75;
   // fish scale: plastic per mm as tested (flow x line width x layer height), and the first lap of each row (it spans the gaps) thinner
@@ -1670,7 +1677,7 @@ function gcPlan(pIn, oIn){
     L.slow=slow;
     for(const pa of L.paths){
       const efAvg = pa.ef ? pa.ef.reduce((a,b)=>a+b,0)/pa.ef.length : 1;
-      vol += pa.len*gcArea(pa.w,pa.h)*efAvg;
+      vol += pa.len*gcArea(pa.w,pa.h)*efAvg*(pa.flow||1);
       tPrint += pa.len/Math.max(5,pa.speed*slow);
       if(prev){ const d=Math.hypot(pa.pts[0][0]-prev[0],pa.pts[0][1]-prev[1]); if(d>0.5){ travel+=d; tPrint+=d/200+ (d>2?0.8:0); } }
       prev=pa.pts[pa.pts.length-1];
@@ -1756,7 +1763,7 @@ function gcText(plan){
       `; printer_model = ${mc.model}`, `; estimated printing time (normal mode) = ${fmtTime(totMin)}`,
       `; filament used [g] = ${plan.grams.toFixed(2)}`, `; layer_height = ${o.lh}`, `; max_layer_z = ${H.toFixed(2)}`, `; design = ${describe(plan.p)} · seed ${plan.p.seed}`, '');
     out.push(gcPrusaStart(mc, plan.box));
-    out.push('; ===== lampshade toolpath =====','M83','G90','M204 P2000 T4000',`${mc.fan}0`);
+    out.push(`; lamp generator ${APP_VERSION}`,'; ===== lampshade toolpath =====','G21','G90','M83',...(mc.model==='MK4'?['M572 S0.036 ; pressure advance, as PrusaSlicer sets for PLA','M142 S36 ; heatbreak target temp, as PrusaSlicer sets']:[]),'M107','M204 P2000 T4000',`${mc.fan}0`);
   } else {
     const vol=Math.min(GC_FIL.maxVol, Math.max(6, plan.volFlow));
     const V={bed_temperature_initial_layer_single:pl.bed, initial_no_support_extruder:0, initial_extruder:0, nozzle_diameter:0.4,
@@ -1778,7 +1785,7 @@ function gcText(plan){
       `; textured_plate_temp = ${pl.bed}`, '; spiral_mode = 1', `; design = ${describe(plan.p)} · seed ${plan.p.seed}`,
       '; CONFIG_BLOCK_END','', '; EXECUTABLE_BLOCK_START');
     out.push(gcTemplate(GC_A1_START, V));
-    out.push('; ===== lampshade toolpath =====','M83','M204 S5000','G90',`${mc.fan}0`);
+    out.push(`; lamp generator ${APP_VERSION}`,'; ===== lampshade toolpath =====','M83','M204 S5000','G90',`${mc.fan}0`);
   }
   let cur=null, curZ=0.2, tDone=0, lastFan=-1, retracted=false;
   const zSafe=z=>Math.min(z, mc.zmax);
@@ -1794,6 +1801,8 @@ function gcText(plan){
   };
   const fType={ 'Outer wall':'External perimeter', 'Inner wall':'Perimeter', 'Bridge':'Bridge infill', 'Brim':'Skirt/Brim' };
   layers.forEach((L,li)=>{
+    // fish scale at the booth: PrusaSlicer prints everything below this line, the booth PC joins our scales on from here
+    if(prusa && plan.scales && li===plan.nFlat) out.push(`;SPIRAL_START Z=${layers[li-1].z.toFixed(3)}`, `M104 S${o.temp}`, 'M204 P2000 T4000');
     if(prusa) out.push(';LAYER_CHANGE',`;Z:${L.z.toFixed(3)}`,`;HEIGHT:${L.h.toFixed(3)}`);
     else out.push('; CHANGE_LAYER',`; Z_HEIGHT: ${L.z.toFixed(3)}`,`; LAYER_HEIGHT: ${L.h.toFixed(3)}`,
       `; layer num/total_layer_count: ${li+1}/${total}`, `M73 L${li+1}`, `M991 S0 P${li}`);
@@ -1805,7 +1814,7 @@ function gcText(plan){
       if(prusa) out.push(`;TYPE:${fType[pa.feature]||pa.feature}`,`;WIDTH:${pa.w.toFixed(3)}`);
       else out.push(`; FEATURE: ${pa.feature}`,`; LINE_WIDTH: ${pa.w.toFixed(3)}`);
       if(pa.fanMax) fanSet(100);
-      const f=Math.round(Math.max(5,pa.speed*L.slow)*60), eLin=gcArea(pa.w,pa.h)*ePer;
+      const f=Math.round(Math.max(5,pa.speed*L.slow)*60), eLin=gcArea(pa.w,pa.h)*ePer*(pa.flow||1);
       const z0 = pa.zz ? pa.zz[0] : L.z;
       travel(pa.pts[0][0], pa.pts[0][1], z0);
       unretract();
@@ -2483,8 +2492,26 @@ function applyLitColors(g,m){
   g.setAttribute('color',new THREE.BufferAttribute(col,3));
 }
 let current=null, lastFitKey='';
+/* kiosk: sliders move in round steps (10 mm sizes, 0.5 mm depth, 15° twist...) and designs are rounded onto them.
+   Staff mode keeps the fine steps. floor:true = round down, so a size never goes past a limit. */
+const KIOSK_STEPS={H:{step:10,floor:true}, Db:{step:10,floor:true}, Dt:{step:10,floor:true}, bulge:{step:5}, slant:{step:5},
+  starSize:{step:5}, depth:{step:0.5}, twist:{step:15}, jitter:{step:0.1}, ribw:{step:0.05}, bandN:{step:2}, layerOff:{step:0.1}, count:{step:1}, freq:{step:1}};
+function applyKioskSteps(){
+  for(const [k,o] of Object.entries(KIOSK_STEPS)){ const el=$('#'+k); if(el) el.step=String(o.step); }
+  const c=$('#count'); if(c) c.step = P.pattern==='ribs' ? '2' : '1';
+}
+function snapKiosk(q){
+  if(!BOOTH) return;
+  for(const [k,o] of Object.entries(KIOSK_STEPS)){
+    const el=$('#'+k); if(!el || q[k]==null || isNaN(+q[k])) continue;
+    const st=parseFloat(el.step)||o.step, mn=parseFloat(el.min), mx=parseFloat(el.max);
+    let v=(+q[k]-mn)/st; v=(o.floor?Math.floor(v+1e-6):Math.round(v))*st+mn; v=Math.min(mx,Math.max(mn,v));
+    q[k]=+v.toFixed(3);
+  }
+}
 function refresh(quality){
   const q=quality||Q_PREVIEW;
+  if(BOOTH){ applyKioskSteps(); snapKiosk(P); }
   const m=buildMesh(P,q);
   const g=toGeometry(m);
   if(lit) applyLitColors(g,m);
@@ -3101,6 +3128,7 @@ const STATE_TEXT={
   printing:['busy','Printing'], pickup:['ok','A lamp is ready to collect'], error:['bad','The booth needs a staff member'], offline:['bad','Printer offline']
 };
 function boothUpdate(s){
+  showVersion(s);
   boothState=s; const st=s.state||'offline'; const j=s.job||null;
   const [cls,txt]=STATE_TEXT[st]||['bad',st];
   $('#bbDot').className='bb-dot '+cls;
@@ -3126,6 +3154,12 @@ function boothUpdate(s){
   $('#pickup').hidden=!pk;
   if(pk && j){ $('#pkNum').textContent=`Lamp #${j.id}`; $('#pkNote').textContent = s.door_sensor ? 'The screen unlocks by itself once the door is closed.' : 'Then tap the button so the next lamp can print.'; }
   updatePrintButton(); updatePrintView(s);
+}
+function showVersion(s){
+  const b=$('#verBadge'); if(!b) return;
+  const bv=s&&s.version; b.textContent='v'+APP_VERSION+(bv&&bv!==APP_VERSION?` · booth ${bv}`:'');
+  b.classList.toggle('warn', !!(bv&&bv!==APP_VERSION));
+  b.title = bv&&bv!==APP_VERSION ? 'This page and the booth PC are different versions. Update the booth PC (install.bat -Update) or reload the page.' : 'App version';
 }
 function updatePrintButton(){
   const b=$('#btnPrint'); if(!b) return; const lab=b.querySelector('span');
@@ -3188,7 +3222,10 @@ async function sendPrint(){
   try{
     if(P.pattern==='scales'){   // direct toolpath: the booth PC checks it and sends it to the printer (no slicing)
       const sp=scalePlan||makeScalePlan(); const text=gcText(sp.plan);
-      const r=await fetch('api/print',{method:'POST',body:new Blob([text],{type:'text/plain'}),headers:{'Content-Type':'text/plain','X-Kind':'gcode','X-Job-Name':fileBase(P)+'-fishscale','X-Mode':P.mode,'X-Desc':encodeURIComponent(describe(P)),'X-Est-Min':String(Math.round(sp.mins)),'X-Plate-Clear':'1','X-Printer':P.printer}});
+      // the booth PC slices the cup, arms and base with PrusaSlicer (proven on the MK4) and adds our scales on top
+      const base=await build3mf({...P, pattern:'smooth', layer:'none'});
+      const pack=await makeZip([{name:'scales.gcode',data:new TextEncoder().encode(text)},{name:'base.3mf',data:new Uint8Array(await base.blob.arrayBuffer())}]);
+      const r=await fetch('api/print',{method:'POST',body:pack,headers:{'Content-Type':'application/zip','X-Kind':'scales','X-Job-Name':fileBase(P)+'-fishscale','X-Mode':P.mode,'X-Desc':encodeURIComponent(describe(P)),'X-Est-Min':String(Math.round(sp.mins)),'X-Plate-Clear':'1','X-Printer':P.printer}});
       return afterSend(r, sp.mins);
     }
     const {blob,name}=await build3mf(P);
@@ -3647,7 +3684,7 @@ $('#btnTree').addEventListener('click',()=>{ pushHistory(); Object.assign(P,{bod
 $('#btnStarOnly').addEventListener('click',()=>doExport('star'));
 
 /* ---------- boot ---------- */
-buildChips(); buildLayerSeg(); buildBed(); buildPuck(); addSteppers(); wire();
+showVersion(null); buildChips(); buildLayerSeg(); buildBed(); buildPuck(); addSteppers(); wire();
 tuneForDevice(); setupFullscreen();
 { const pref=getPref('lampTouch'); setTouch(pref===null ? TOUCH_DEFAULT : pref==='1'); }
 $('#btnTouch').addEventListener('click',()=>{ const on=!document.documentElement.classList.contains('touch'); setTouch(on); setPref('lampTouch',on?'1':'0'); });
